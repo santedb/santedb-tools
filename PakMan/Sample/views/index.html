@@ -1,0 +1,13 @@
+﻿<div xmlns:santedb="http://santedb.org/applet" santedb:layout="/partials/_Layout" xmlns="http://www.w3.org/1999/xhtml">
+    <santedb:state name="org-santedb-sample.index">
+        <santedb:url>/</santedb:url>
+        <santedb:view>
+            <santedb:controller>IndexController</santedb:controller>
+            <santedb:demand>1.3.6.1.4.1.33349.3.1.5.9.2.1</santedb:demand>
+            <santedb:title lang="en">Index</santedb:title>
+            <santedb:script static="false">~/controllers/index.js</santedb:script>
+        </santedb:view>
+    </santedb:state>
+    <a href="#" ng-click="someAction();">{{someLocalVariable}}</a>
+    <!-- #include virtual="/partials/something.html" -->
+</div>

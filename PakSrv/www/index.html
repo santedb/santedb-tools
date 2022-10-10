@@ -1,0 +1,101 @@
+﻿<!DOCTYPE html>
+
+<html ng-app="pakman" lang="en" xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <meta charset="utf-8" />
+    <title>SanteSuite SDK Package Repository</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css"
+        integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous" />
+
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"
+        integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T"
+        crossorigin="anonymous"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular-sanitize.min.js"></script>
+    <script src="./app.js"></script>
+</head>
+
+<body ng-controller="IndexController">
+
+    <nav class="navbar navbar-expand-md navbar-light bg-light fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#"><img src="./logo.png" style="height:24px; width:24px"> SanteDB Package
+                Repository </a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#menu" aria-controls="menu"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarsExampleDefault">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item active">
+                        <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Link</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link disabled" href="#">Disabled</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="http://example.com" id="dropdown01"
+                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Dropdown</a>
+                        <div class="dropdown-menu" aria-labelledby="dropdown01">
+                            <a class="dropdown-item" href="#">Action</a>
+                            <a class="dropdown-item" href="#">Another action</a>
+                            <a class="dropdown-item" href="#">Something else here</a>
+                        </div>
+                    </li>
+                </ul>
+                <form class="form-inline my-2 my-lg-0" ng-submit="searchPackages(searchForm)" name="searchForm">
+                    <input class="form-control mr-sm-2" type="text" placeholder="Search" ng-model="filter"
+                        aria-label="Search">
+                    <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+
+        <div class="starter-template text-center mt-5 pt-2 px-3">
+            <ul class="list-group" id="appletList">
+                <li class="list-group-item" ng-repeat="pkg in packageList">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-2">
+                                <img ng-if="pkg.icon" style="height:48px; width:48px" class="card-img-top"
+                                    src="./asset{{ pkg.icon }}" alt="Package Image">
+                            </div>
+                            <div class="col-8 text-left">
+                                <h5>{{ pkg.name[0].value }}</h5>
+                                <p class="mb-0"><strong>Author:</strong> {{ pkg.author }} </p>
+                                <p class="mb-0"><strong>ID:</strong> {{ pkg.id }} </p>
+                                <p class="mb-0"><strong>Version:</strong> {{ pkg.version }} </p>
+                                <p><small class="text-muted"><b>Published:</b> {{ pkg.ts | date: "medium" }}</small></p>
+                            </div>
+                            <div class="col-2">
+                                <a href="./pak/{{ pkg.id }}/{{ pkg.version }}" class="btn btn-primary"><i class="fas fa-download"></i> Download</a>
+                            </div>
+
+                        </div>
+                    </div>
+                </li>
+            </ul>
+            <div ng-if="!packageList || isLoading">
+                <div class="m-auto">
+                    <i class="fas fa-spin fa-circle-notch"></i> Loading, Please Wait...
+                </div>
+            </div>
+        </div>
+
+    </main><!-- /.container -->
+
+
+
+</body>
+
+</html>
