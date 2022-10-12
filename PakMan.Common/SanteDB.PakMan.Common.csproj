@@ -12,9 +12,21 @@
   <ItemGroup>
     <None Include="..\SanteDB.licenseheader" Link="SanteDB.licenseheader" />
   </ItemGroup>
-
   <ItemGroup>
-    <ProjectReference Include="..\santedb-applets\SanteDB.Core.Applets\SanteDB.Core.Applets.csproj" />
+    <PackageReference Include="MimeMapping" Version="1.0.1.37" />
   </ItemGroup>
+
+  <Choose>
+    <When Condition="$(SolutionName.Contains('-ext'))">
+      <ItemGroup>
+        <ProjectReference Include="..\..\santedb-applets\SanteDB.Core.Applets\SanteDB.Core.Applets.csproj" />
+      </ItemGroup>
+    </When>
+    <Otherwise>
+      <ItemGroup>
+        <PackageReference Include="SanteDB.Core.Applets" Version="$(VersionNumber)" />
+      </ItemGroup>
+    </Otherwise>
+  </Choose>
 
 </Project>

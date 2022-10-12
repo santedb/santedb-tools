@@ -2,8 +2,20 @@
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup Condition="'$(VersionNumber)' == ''">
-    <VersionNumber>2.1.0-debug</VersionNumber>
+    <VersionNumber>3.0-debug</VersionNumber>
   </PropertyGroup>
+  <Choose>
+    <When Condition="$(VersionNumber.Contains('-'))">
+      <PropertyGroup>
+        <VersionNumberInfo>$(VersionNumber.Substring(0, $(VersionNumber.IndexOf('-'))))</VersionNumberInfo>
+      </PropertyGroup>
+    </When>
+    <Otherwise>
+      <PropertyGroup>
+        <VersionNumberInfo>$(VersionNumber)</VersionNumberInfo>
+      </PropertyGroup>
+    </Otherwise>
+  </Choose>
   <ItemGroup>
     <PackageReference Include="MSBuildTasks" Version="1.5.0.235">
       <PrivateAssets>all</PrivateAssets>
@@ -18,7 +30,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>SanteDB.PakMan</RootNamespace>
     <AssemblyName>pakman</AssemblyName>
-    <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <TargetFrameworkProfile />
@@ -66,7 +78,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <StartupObject>PakMan.Program</StartupObject>
+    <StartupObject>
+    </StartupObject>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="MohawkCollege.Util.Console.Parameters, Version=0.2.6316.34524, Culture=neutral, processorArchitecture=MSIL">
@@ -89,7 +102,6 @@
     <Compile Include="Composer.cs" />
     <Compile Include="Emit.cs" />
     <Compile Include="Distributor.cs" />
-    <Compile Include="Packers\JsonPacker.cs" />
     <Compile Include="PakManParameters.cs" />
     <Compile Include="frmKeyPassword.cs">
       <SubType>Form</SubType>
@@ -98,18 +110,10 @@
       <DependentUpon>frmKeyPassword.cs</DependentUpon>
     </Compile>
     <Compile Include="Packer.cs" />
-    <Compile Include="Packers\BinaryFilePacker.cs" />
-    <Compile Include="Packers\CssPacker.cs" />
-    <Compile Include="Packers\HtmlPacker.cs" />
-    <Compile Include="Packers\IFilePacker.cs" />
-    <Compile Include="Packers\JavaScriptPacker.cs" />
-    <Compile Include="Packers\XmlPacker.cs" />
-    <Compile Include="PakManTool.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Version.cs" />
     <Compile Include="Signer.cs" />
-    <Compile Include="ThirdParty\JsMin.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\SanteDB.licenseheader">
@@ -151,15 +155,25 @@
       <Project>{9E67324A-2F6A-4A8C-BCDD-479B68DA286F}</Project>
       <Name>SanteDB.PakMan.Common</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\santedb-applets\SanteDB.Core.Applets\SanteDB.Core.Applets.csproj">
-      <Project>{39e61451-f4fe-493d-b754-5f06eb284aac}</Project>
-      <Name>SanteDB.Core.Applets</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\santedb-model\SanteDB.Core.Model\SanteDB.Core.Model.csproj">
-      <Project>{f1a82a4f-4a57-47d7-ae76-444c8a4ff54a}</Project>
-      <Name>SanteDB.Core.Model</Name>
-    </ProjectReference>
   </ItemGroup>
+  <Choose>
+    <When Condition="$(SolutionName.Contains('-ext'))">
+      <ItemGroup>
+        <ProjectReference Include="..\..\santedb-applets\SanteDB.Core.Applets\SanteDB.Core.Applets.csproj">
+          <Name>SanteDB.Core.Applets</Name>
+        </ProjectReference>
+        <ProjectReference Include="..\..\santedb-model\SanteDB.Core.Model\SanteDB.Core.Model.csproj">
+          <Name>SanteDB.Core.Model</Name>
+        </ProjectReference>
+      </ItemGroup>
+    </When>
+    <Otherwise>
+      <ItemGroup>
+        <PackageReference Include="SanteDB.Core.Applets" Version="$(VersionNumber)" />
+        <PackageReference Include="SanteDB.Core.Model" Version="$(VersionNumber)" />
+      </ItemGroup>
+    </Otherwise>
+  </Choose>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
@@ -169,6 +183,6 @@
   </Target>
   -->
   <Target Name="BeforeBuild" Condition="!$(VersionNumber.EndsWith('-debug'))">
-    <AssemblyInfo CodeLanguage="CS" OutputFile="$(MSBuildProjectDirectory)\Properties\Version.cs" AssemblyVersion="$(VersionNumber)" AssemblyFileVersion="$(VersionNumber)" />
+    <AssemblyInfo CodeLanguage="CS" OutputFile="$(MSBuildProjectDirectory)\Properties\Version.cs" AssemblyVersion="$(VersionNumberInfo)" AssemblyFileVersion="$(VersionNumberInfo)" />
   </Target>
 </Project>

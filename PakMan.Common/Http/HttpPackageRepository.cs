@@ -56,10 +56,9 @@ namespace SanteDB.PakMan.Http
             var nvc = QueryExpressionBuilder.BuildQuery<AppletInfo>(query);
             try
             {
-                var parms = nvc.ToDictionary(o => o.Key, o => o.Value.ToString());
-                parms.Add("_count", count.ToString());
-                parms.Add("_offset", offset.ToString());
-                var results = this.m_client.Get<List<AppletInfo>>("pak", parms.ToArray());
+                nvc.Add("_count", count.ToString());
+                nvc.Add("_offset", offset.ToString());
+                var results = this.m_client.Get<List<AppletInfo>>("pak", nvc.ToArray());
                 totalResults = results.Count();
                 return results;
             }

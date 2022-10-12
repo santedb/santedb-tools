@@ -58,65 +58,43 @@ namespace SanteDB.PakMan
             String manifestFile = this.m_parms.Source;
             if (!File.Exists(manifestFile) && Directory.Exists(manifestFile))
                 manifestFile = Path.Combine(this.m_parms.Source, "manifest.xml");
-
             if (!File.Exists(manifestFile))
                 throw new InvalidOperationException($"Directory {this.m_parms.Source} must have manifest.xml");
             else
             {
-                Console.WriteLine("\t Reading Manifest...", manifestFile);
-
-                using (var fs = File.OpenRead(manifestFile))
+                var packer = new AppletPackager(manifestFile, this.m_parms.Optimize);
+                AppletPackage pkg = packer.Pack(this.m_parms.Version);
+                if(this.m_parms.Sign)
                 {
-                    AppletManifest mfst = AppletManifest.Load(fs);
-                    mfst.Assets.AddRange(this.ProcessDirectory(Path.GetDirectoryName(manifestFile), Path.GetDirectoryName(manifestFile)));
-                    foreach (var i in mfst.Assets)
-                        if (i.Name.StartsWith("/"))
-                            i.Name = i.Name.Substring(1);
+                    pkg = packer.Sign(pkg, this.m_parms.GetSigningCert());
+                }
+                else
+                {
+                    Emit.Message("WARN", "This package is not signed, production release tools may not load it!");
+                }
 
-                    if (!string.IsNullOrEmpty(this.m_parms.Version))
-                        mfst.Info.Version = this.m_parms.Version;
-                    mfst.Info.Version = PakManTool.ApplyVersion(mfst.Info.Version);
+                if (!Directory.Exists(Path.GetDirectoryName(this.m_parms.Output)) && !String.IsNullOrEmpty(Path.GetDirectoryName(this.m_parms.Output)))
+                    Directory.CreateDirectory(Path.GetDirectoryName(this.m_parms.Output));
+                
+                var outFile = this.m_parms.Output ?? pkg.Meta.Id + ".pak";
+                using (var ofs = File.Create(outFile))
+                    pkg.Save(ofs);
 
-                    if (!Directory.Exists(Path.GetDirectoryName(this.m_parms.Output)) && !String.IsNullOrEmpty(Path.GetDirectoryName(this.m_parms.Output)))
-                        Directory.CreateDirectory(Path.GetDirectoryName(this.m_parms.Output));
-
-                    AppletPackage pkg = null;
-
-                    // Is there a signature?
-                    if (this.m_parms.Sign)
+                if (this.m_parms.Install)
+                {
+                    Emit.Message("INFO", "INSTALLING PACKAGE {0}", pkg.Meta.Id);
+                    PackageRepositoryUtil.InstallCache(pkg);
+                }
+                if (this.m_parms.Publish)
+                {
+                    try
                     {
-                        pkg = new Signer(this.m_parms).CreateSignedPackage(mfst);
-                        if (pkg == null) return -102;
+                        Emit.Message("INFO", "PUBLISHING PACKAGE TO {0}", this.m_parms.PublishServer);
+                        PackageRepositoryUtil.Publish(this.m_parms.PublishServer, pkg);
                     }
-                    else
+                    catch (Exception e)
                     {
-                        Emit.Message("WARN", "THIS PACKAGE IS NOT SIGNED - MOST OPEN IZ TOOLS WILL NOT LOAD IT");
-                        mfst.Info.PublicKeyToken = null;
-                        pkg = mfst.CreatePackage();
-                        //pkg.Meta.PublicKeyToken = null;
-                    }
-                    pkg.Meta.Hash = SHA256.Create().ComputeHash(pkg.Manifest);
-
-                    var outFile = this.m_parms.Output ?? mfst.Info.Id + ".pak";
-                    using (var ofs = File.Create(outFile))
-                        pkg.Save(ofs);
-
-                    if (this.m_parms.Install)
-                    {
-                        Emit.Message("INFO", "INSTALLING PACKAGE {0}", pkg.Meta.Id);
-                        PackageRepositoryUtil.InstallCache(pkg);
-                    }
-                    if (this.m_parms.Publish)
-                    {
-                        try
-                        {
-                            Emit.Message("INFO", "PUBLISHING PACKAGE TO {0}", this.m_parms.PublishServer);
-                            PackageRepositoryUtil.Publish(this.m_parms.PublishServer, pkg);
-                        }
-                        catch (Exception e)
-                        {
-                            Emit.Message("ERROR", "ERROR PUBLISHING PACKAGE - {0}", e.Message);
-                        }
+                        Emit.Message("ERROR", "ERROR PUBLISHING PACKAGE - {0}", e.Message);
                     }
                 }
             }
@@ -125,50 +103,6 @@ namespace SanteDB.PakMan
         }
 
 
-        /// <summary>
-        /// Process the specified directory
-        /// </summary>
-        public IEnumerable<AppletAsset> ProcessDirectory(string source, String path)
-        {
-            List<AppletAsset> retVal = new List<AppletAsset>();
-            foreach (var itm in Directory.GetFiles(source))
-            {
-                if (Path.GetFileName(itm).StartsWith("."))
-                {
-                    Console.WriteLine("\t Skipping {0}...", itm);
-                    continue;
-                }
-                retVal.Add(this.ProcessFile(itm, path));
-            }
-
-            // Process sub directories
-            foreach (var dir in Directory.GetDirectories(source))
-                if (!Path.GetFileName(dir).StartsWith("."))
-                    retVal.AddRange(ProcessDirectory(dir, path));
-                else
-                    Console.WriteLine("Skipping directory {0}", dir);
-
-            return retVal.OfType<AppletAsset>();
-        }
-
-        /// <summary>
-        /// Process the specified file
-        /// </summary>
-        /// <param name="itm"></param>
-        /// <returns></returns>
-        private AppletAsset ProcessFile(string itm, String basePath)
-        {
-            if (Path.GetFileName(itm).ToLower() == "manifest.xml")
-                return null;
-            else
-            {
-                Emit.Message("INFO", " Processing file {0}...", itm);
-                var asset = PakManTool.GetPacker(itm).Process(itm, this.m_parms.Optimize);
-                asset.Name = PakManTool.TranslatePath(itm.Replace(basePath, ""));
-                return asset;
-            }
-
-        }
 
 
     }

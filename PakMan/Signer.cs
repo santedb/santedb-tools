@@ -70,43 +70,6 @@ namespace SanteDB.PakMan
             }
         }
 
-        private X509Certificate2 GetSigningCert()
-        {
-            if (!String.IsNullOrEmpty(this.m_parms.SignKeyFile))
-            {
-                if (String.IsNullOrEmpty(this.m_parms.SignPassword))
-                {
-                    using (var frmKey = new frmKeyPassword(this.m_parms.SignKeyFile))
-                        if (frmKey.ShowDialog() == DialogResult.OK)
-                            this.m_parms.SignPassword = frmKey.Password;
-                }
-                else if (File.Exists(this.m_parms.SignPassword))
-                    this.m_parms.SignPassword = File.ReadAllText(this.m_parms.SignPassword);
-                return new X509Certificate2(this.m_parms.SignKeyFile, this.m_parms.SignPassword);
-            }
-            else if (!String.IsNullOrEmpty(this.m_parms.SignKeyHash))
-            {
-                using (var store = new X509Store(StoreName.My, StoreLocation.CurrentUser))
-                {
-                    store.Open(OpenFlags.OpenExistingOnly);
-                    var candidates = store.Certificates.Find(X509FindType.FindByThumbprint, this.m_parms.SignKeyHash, false);
-                    if (candidates.Count == 0)
-                    {
-                        throw new InvalidOperationException("Cannot find specified certificate");
-                    }
-                    if (candidates[0].NotAfter < DateTime.Now)
-                    {
-                        throw new InvalidOperationException("Certificate is expired");
-                    }
-                    return candidates[0];
-                }
-            }
-            else
-            {
-                throw new InvalidOperationException("Signing a package requires either --keyHash or --keyFile");
-            }
-
-        }
 
         /// <summary>
         /// Create a signed package
@@ -115,7 +78,7 @@ namespace SanteDB.PakMan
         {
             try
             {
-                X509Certificate2 signCert = this.GetSigningCert();
+                X509Certificate2 signCert = this.m_parms.GetSigningCert();
 
                 if (!signCert.HasPrivateKey)
                 {
@@ -152,7 +115,7 @@ namespace SanteDB.PakMan
         {
             try
             {
-                X509Certificate2 signCert = this.GetSigningCert();
+                X509Certificate2 signCert = this.m_parms.GetSigningCert();
 
                 if (!signCert.HasPrivateKey)
                 {

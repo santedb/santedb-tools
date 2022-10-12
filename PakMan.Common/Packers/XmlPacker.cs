@@ -66,9 +66,7 @@ namespace SanteDB.PakMan.Packers
             }
             catch (XmlException e)
             {
-                Emit.Message("ERROR", " {0} is not well formed - {1} - @{2}:{3}", file, e.Message, e.LineNumber, e.LinePosition);
-
-                throw;
+                throw new XmlException($"XML {file} is not well formed @ {e.LineNumber}:{e.LinePosition}", e);
             }
         }
     }

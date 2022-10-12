@@ -48,7 +48,6 @@ namespace SanteDB.PakMan.Packers
 
                 if (xe.Name.Namespace != PakManTool.XS_HTML)
                 {
-                    Emit.Message("WARN", "File {0} is not in {1}. Setting namespace", file, PakManTool.XS_HTML);
                     xe.Name = (XNamespace)PakManTool.XS_HTML + xe.Name.LocalName;
                 }
 
@@ -146,12 +145,11 @@ namespace SanteDB.PakMan.Packers
             }
             catch (XmlException e)
             {
-                Emit.Message("ERROR", " {0} is not well formed - {1} - @{2}:{3}", file, e.Message, e.LineNumber, e.LinePosition);
-                throw;
+                throw new XmlException($"{file} is not well formed @ {e.LineNumber}:{e.LinePosition}", e);
             }
             catch (Exception e)
             {
-                Emit.Message("ERROR", "Cannot process {0} : {1}", file, e.Message);
+                throw new InvalidOperationException($"Cannot process HTML {file}", e);
                 throw;
             }
         }

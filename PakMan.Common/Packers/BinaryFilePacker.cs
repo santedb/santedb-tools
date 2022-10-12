@@ -40,7 +40,7 @@ namespace SanteDB.PakMan.Packers
         {
             try
             {
-                var mime = System.Web.MimeMapping.GetMimeMapping(file);
+                var mime = MimeMapping.MimeUtility.GetMimeMapping(file);
                 if (String.IsNullOrEmpty(mime))
                     mime = "application/x-octet-stream";
                 return new AppletAsset()
@@ -51,8 +51,7 @@ namespace SanteDB.PakMan.Packers
             }
             catch (Exception e)
             {
-                Emit.Message("ERROR", " Cannot process {0}: {1}", file, e.Message);
-                throw;
+                throw new InvalidOperationException($"Cannot process {file}", e);
             }
         }
     }

@@ -21,6 +21,9 @@ using MohawkCollege.Util.Console.Parameters;
 using System;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.IO;
+using System.Security.Cryptography.X509Certificates;
+using System.Windows.Forms;
 
 namespace SanteDB.PakMan
 {
@@ -180,5 +183,46 @@ namespace SanteDB.PakMan
         [Description("Publish to the specified URI")]
         public String PublishServer { get; set; }
 
+
+        /// <summary>
+        /// Get the signing certificate
+        /// </summary>
+        public X509Certificate2 GetSigningCert()
+        {
+            if (!String.IsNullOrEmpty(this.SignKeyFile))
+            {
+                if (String.IsNullOrEmpty(this.SignPassword))
+                {
+                    using (var frmKey = new frmKeyPassword(this.SignKeyFile))
+                        if (frmKey.ShowDialog() == DialogResult.OK)
+                            this.SignPassword = frmKey.Password;
+                }
+                else if (File.Exists(this.SignPassword))
+                    this.SignPassword = File.ReadAllText(this.SignPassword);
+                return new X509Certificate2(this.SignKeyFile, this.SignPassword);
+            }
+            else if (!String.IsNullOrEmpty(this.SignKeyHash))
+            {
+                using (var store = new X509Store(StoreName.My, StoreLocation.CurrentUser))
+                {
+                    store.Open(OpenFlags.OpenExistingOnly);
+                    var candidates = store.Certificates.Find(X509FindType.FindByThumbprint, this.SignKeyHash, false);
+                    if (candidates.Count == 0)
+                    {
+                        throw new InvalidOperationException("Cannot find specified certificate");
+                    }
+                    if (candidates[0].NotAfter < DateTime.Now)
+                    {
+                        throw new InvalidOperationException("Certificate is expired");
+                    }
+                    return candidates[0];
+                }
+            }
+            else
+            {
+                throw new InvalidOperationException("Signing a package requires either --keyHash or --keyFile");
+            }
+
+        }
     }
 }

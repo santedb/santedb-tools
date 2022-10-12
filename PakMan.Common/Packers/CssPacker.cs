@@ -60,8 +60,7 @@ namespace SanteDB.PakMan.Packers
             }
             catch (Exception e)
             {
-                Emit.Message("ERROR", "Error processing CSS file {0}: {1}", file, e.Message);
-                throw;
+                throw new InvalidOperationException($"Cannot CSS process {file}", e);
             }
         }
 
