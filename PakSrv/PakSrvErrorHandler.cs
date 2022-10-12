@@ -52,13 +52,13 @@ namespace SanteDB.PakSrv
         public bool ProvideFault(Exception error, RestResponseMessage response)
         {
             if (error is SecurityException)
-                response.StatusCode = 403;
+                response.StatusCode = System.Net.HttpStatusCode.Forbidden;
             else if (error is FileNotFoundException || error is KeyNotFoundException)
-                response.StatusCode = 404;
+                response.StatusCode = System.Net.HttpStatusCode.NotFound;
             else if (error is DuplicateNameException)
-                response.StatusCode = 409;
+                response.StatusCode = System.Net.HttpStatusCode.Conflict;
             else
-                response.StatusCode = 500;
+                response.StatusCode = System.Net.HttpStatusCode.InternalServerError ;
 
             var errorResponse = new ErrorResult(error);
             response.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(errorResponse)));

@@ -24,6 +24,7 @@ using SanteDB.Core.Applets.Model;
 using SanteDB.Core.Model.Query;
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -74,7 +75,7 @@ namespace SanteDB.PakSrv
         /// </summary>
         public List<AppletInfo> Find()
         {
-            var filter = QueryExpressionParser.BuildLinqExpression<AppletInfo>(NameValueCollection.ParseQueryString(RestOperationContext.Current.IncomingRequest.Url.Query));
+            var filter = QueryExpressionParser.BuildLinqExpression<AppletInfo>(RestOperationContext.Current.IncomingRequest.Url.Query.ParseQueryString());
             string offset = RestOperationContext.Current.IncomingRequest.QueryString["_offset"] ?? "0",
                 count = RestOperationContext.Current.IncomingRequest.QueryString["_count"] ?? "10";
             return this.m_configuration.Repository.GetRepository().Find(filter, Int32.Parse(offset), Int32.Parse(count), out int _).ToList();
@@ -143,7 +144,7 @@ namespace SanteDB.PakSrv
             try
             {
                 this.m_configuration.Repository.GetRepository().Get(package.Meta.Id, new Version(package.Meta.Version), true);
-                throw new FaultException(409, $"Package {package.Meta.Id} version {package.Meta.Version} already exists");
+                throw new FaultException(HttpStatusCode.Conflict, $"Package {package.Meta.Id} version {package.Meta.Version} already exists");
             }
             catch (KeyNotFoundException)
             {
