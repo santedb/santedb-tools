@@ -27,7 +27,6 @@ using SanteDB.Core.Model.Map;
 using SanteDB.Core.Model.Query;
 using SanteDB.Core.Security;
 using SanteDB.Core.Services;
-using SanteDB.DisconnectedClient;
 using System;
 using System.Collections;
 using System.Collections.Generic;
