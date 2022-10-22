@@ -1,9 +1,11 @@
-﻿using SanteDB.Core.Applets;
+﻿using SanteDB.Core;
+using SanteDB.Core.Applets;
 using SanteDB.Core.Applets.Configuration;
 using SanteDB.Core.Applets.Model;
 using SanteDB.Core.Applets.Services;
 using SanteDB.Core.Diagnostics;
 using SanteDB.Core.Services;
+using SanteDB.DevTools.Configuration;
 using SanteDB.Disconnected.Services;
 using SanteDB.PakMan;
 using System;
@@ -20,9 +22,8 @@ namespace SanteDB.Tools.Debug.Services
     /// <summary>
     /// The applet manager service which manages applets using files
     /// </summary>
-    public class DebugAppletManagerService : IAppletManagerService
+    public class DebugAppletManagerService : IAppletManagerService, IDaemonService
     {
-
 
         // XSD SanteDB
         private static readonly XNamespace xs_santedb = "http://santedb.org/applet";
@@ -35,9 +36,6 @@ namespace SanteDB.Tools.Debug.Services
         // Tracer for the file based applet manager
         private readonly Tracer m_tracer = Tracer.GetTracer(typeof(DebugAppletManagerService));
 
-        // Applet bas directory
-        private readonly Dictionary<AppletManifest, String> m_appletBaseDir = new Dictionary<AppletManifest, string>();
-
         // File system watchers which will re-process the applications
         private readonly Dictionary<String, FileSystemWatcher> m_fsWatchers = new Dictionary<string, FileSystemWatcher>();
 
@@ -48,26 +46,25 @@ namespace SanteDB.Tools.Debug.Services
         private ReadonlyAppletCollection m_readonlyAppletCollection;
 
         // Configuration 
-        private readonly AppletConfigurationSection m_configuration;
+        private readonly DebugAppletConfigurationSection m_configuration;
         private readonly IAppletHostBridgeProvider m_hostBridgeProvider;
-        private readonly ILocalizationService m_localizationService;
         private readonly IThreadPoolService m_threadPoolService;
 
         /// <summary>
         /// New constructor for the applet manager
         /// </summary>
-        public DebugAppletManagerService(IConfigurationManager configurationManager, 
-            IAppletHostBridgeProvider hostBridgeProvider, 
-            ILocalizationService localizationService,
-            IThreadPoolService threadPoolService)
+        public DebugAppletManagerService(IConfigurationManager configurationManager,
+            IThreadPoolService threadPoolService,
+            IAppletHostBridgeProvider hostBridgeProvider = null)
         {
             this.m_appletCollection = new AppletCollection();
             this.m_readonlyAppletCollection = this.m_appletCollection.AsReadonly();
             this.m_readonlyAppletCollection.CollectionChanged += (o, e) => this.Changed?.Invoke(o, e);
-            this.m_configuration = configurationManager.GetSection<AppletConfigurationSection>();
+            this.m_configuration = configurationManager.GetSection<DebugAppletConfigurationSection>();
             this.m_hostBridgeProvider = hostBridgeProvider;
-            this.m_localizationService = localizationService;
             this.m_threadPoolService = threadPoolService;
+            this.m_appletCollection.Resolver = this.ResolveAppletAsset;
+            this.m_appletCollection.CachePages = false;
         }
 
         /// <summary>
@@ -75,10 +72,24 @@ namespace SanteDB.Tools.Debug.Services
         /// </summary>
         public ReadonlyAppletCollection Applets => this.m_readonlyAppletCollection;
 
+        /// <inheritdoc/>
+        public bool IsRunning => true;
+
+        /// <inheritdoc/>
+        public string ServiceName => "Debug Applet Manager";
+
         /// <summary>
         /// Fired when the applet contents have changed
         /// </summary>
         public event EventHandler Changed;
+        /// <inheritdoc/>
+        public event EventHandler Starting;
+        /// <inheritdoc/>
+        public event EventHandler Started;
+        /// <inheritdoc/>
+        public event EventHandler Stopping;
+        /// <inheritdoc/>
+        public event EventHandler Stopped;
 
         /// <inheritdoc/>
         public AppletManifest GetApplet(string appletId)
@@ -120,12 +131,12 @@ namespace SanteDB.Tools.Debug.Services
                 this.m_appletCollection.DefaultApplet = this.m_readonlyAppletCollection.DefaultApplet = applet;
             }
             applet.Initialize();
+            this.m_tracer.TraceInfo("Adding {0} -> {1}...", applet.Info.Id, sourceManifest);
             if (!String.IsNullOrEmpty(sourceManifest) && File.Exists(sourceManifest))
             {
                 applet = this.LoadSourceApplet(sourceManifest, applet);
             }
 
-            this.m_tracer.TraceInfo("Adding reference {0}...", applet.Info.Id);
             this.m_appletCollection.Add(applet);
             AppletCollection.ClearCaches();
             return true;
@@ -162,7 +173,7 @@ namespace SanteDB.Tools.Debug.Services
                 foreach (var itm in applet.Assets.Where(a => a.Name.Contains("santedb.js")))
                 {
                     //System.Diagnostics.Debugger.Break();
-                    if (itm.Content is byte[] ba)
+                    if (itm.Content is byte[] ba && this.m_hostBridgeProvider != null)
                     {
                         itm.Content = System.Text.Encoding.UTF8.GetString(this.m_appletCollection.RenderAssetContent(itm)) + "\r\n" + this.m_hostBridgeProvider.GetBridgeScript();
                         AppletCollection.ClearCaches();
@@ -360,7 +371,7 @@ namespace SanteDB.Tools.Debug.Services
                         break;
                 }
                 AppletCollection.ClearCaches();
-                this.m_localizationService.Reload();
+                ApplicationServiceContext.Current.GetService<ILocalizationService>().Reload();
                 this.Changed?.Invoke(this, EventArgs.Empty);
             }
             catch (IOException)
@@ -375,6 +386,123 @@ namespace SanteDB.Tools.Debug.Services
                     });
                 }
             }
+        }
+
+        /// <summary>
+        /// Get applet asset from the file system 
+        /// </summary>
+        private object ResolveAppletAsset(AppletAsset navigateAsset)
+        {
+
+            var manifestSource = navigateAsset.Manifest.GetSetting(APPLET_SOURCE);
+            if (String.IsNullOrEmpty(manifestSource))
+                return null;
+
+            String itmPath = System.IO.Path.Combine(
+                                        Path.GetDirectoryName(manifestSource),
+                                        navigateAsset.Name).Replace('/', Path.DirectorySeparatorChar);
+
+            if (!File.Exists(itmPath))
+                return null;
+            else if (navigateAsset.MimeType == "text/html")
+            {
+                XElement xe = XElement.Load(itmPath);
+
+                // Now we have to iterate throuh and add the asset\
+                AppletAssetHtml htmlAsset = null;
+
+                if (xe.Elements().OfType<XElement>().Any(o => o.Name == xs_santedb + "widget"))
+                {
+                    var widgetEle = xe.Elements().OfType<XElement>().FirstOrDefault(o => o.Name == xs_santedb + "widget");
+                    htmlAsset = new AppletWidget()
+                    {
+                        Icon = widgetEle.Element(xs_santedb + "icon")?.Value,
+                        Type = (AppletWidgetType)Enum.Parse(typeof(AppletWidgetType), widgetEle.Attribute("type")?.Value),
+                        Size = (AppletWidgetSize)Enum.Parse(typeof(AppletWidgetSize), widgetEle.Attribute("size")?.Value ?? "Medium"),
+                        View = (AppletWidgetView)Enum.Parse(typeof(AppletWidgetView), widgetEle.Attribute("altViews")?.Value ?? "None"),
+                        ColorClass = widgetEle.Attribute("headerClass")?.Value ?? "bg-light",
+                        Priority = Int32.Parse(widgetEle.Attribute("priority")?.Value ?? "0"),
+                        MaxStack = Int32.Parse(widgetEle.Attribute("maxStack")?.Value ?? "2"),
+                        Order = Int32.Parse(widgetEle.Attribute("order")?.Value ?? "0"),
+                        Context = widgetEle.Attribute("context")?.Value,
+                        Description = widgetEle.Elements().Where(o => o.Name == xs_santedb + "description").Select(o => new LocaleString() { Value = o.Value, Language = o.Attribute("lang")?.Value }).ToList(),
+                        Name = widgetEle.Attribute("name")?.Value,
+                        Controller = widgetEle.Element(xs_santedb + "controller")?.Value,
+                        Guard = widgetEle.Elements().Where(o => o.Name == xs_santedb + "guard").Select(o => o.Value).ToList()
+                    };
+
+                    // TODO Guards
+                }
+                else
+                {
+                    htmlAsset = new AppletAssetHtml();
+                    // View state data
+                    htmlAsset.ViewState = xe.Elements().OfType<XElement>().Where(o => o.Name == xs_santedb + "state").Select(o => new AppletViewState()
+                    {
+                        Name = o.Attribute("name")?.Value,
+                        Priority = Int32.Parse(o.Attribute("priority")?.Value ?? "0"),
+                        Route = o.Elements().OfType<XElement>().FirstOrDefault(r => r.Name == xs_santedb + "url" || r.Name == xs_santedb + "route")?.Value,
+                        IsAbstract = Boolean.Parse(o.Attribute("abstract")?.Value ?? "False"),
+                        View = o.Elements().OfType<XElement>().Where(v => v.Name == xs_santedb + "view")?.Select(v => new AppletView()
+                        {
+                            Priority = Int32.Parse(o.Attribute("priority")?.Value ?? "0"),
+                            Name = v.Attribute("name")?.Value,
+                            Controller = v.Element(xs_santedb + "controller")?.Value
+                        }).ToList()
+                    }).FirstOrDefault();
+                    htmlAsset.Titles = xe.Elements().OfType<XElement>().Where(t => t.Name == xs_santedb + "title")?.Select(t => new LocaleString()
+                    {
+                        Language = t.Attribute("lang")?.Value,
+                        Value = t?.Value
+                    }).ToList();
+                    htmlAsset.Layout = this.CorrectAppletName(xe.Attribute(xs_santedb + "layout")?.Value);
+                    htmlAsset.Static = xe.Attribute(xs_santedb + "static")?.Value == "true";
+                }
+
+                htmlAsset.Titles = new List<LocaleString>(xe.Descendants().OfType<XElement>().Where(o => o.Name == xs_santedb + "title").Select(o => new LocaleString() { Language = o.Attribute("lang")?.Value, Value = o.Value }));
+                htmlAsset.Bundle = new List<string>(xe.Descendants().OfType<XElement>().Where(o => o.Name == xs_santedb + "bundle").Select(o => this.CorrectAppletName(o.Value)));
+                htmlAsset.Script = new List<AssetScriptReference>(xe.Descendants().OfType<XElement>().Where(o => o.Name == xs_santedb + "script").Select(o => new AssetScriptReference()
+                {
+                    Reference = this.CorrectAppletName(o.Value),
+                    IsStatic = Boolean.Parse(o.Attribute("static")?.Value ?? "true")
+                }));
+                htmlAsset.Style = new List<string>(xe.Descendants().OfType<XElement>().Where(o => o.Name == xs_santedb + "style").Select(o => this.CorrectAppletName(o.Value)));
+
+                var demand = xe.DescendantNodes().OfType<XElement>().Where(o => o.Name == xs_santedb + "demand").Select(o => o.Value).ToList();
+
+                var includes = xe.DescendantNodes().OfType<XComment>().Where(o => o?.Value?.Trim().StartsWith("#include virtual=\"") == true).ToList();
+                foreach (var inc in includes)
+                {
+                    String assetName = inc.Value.Trim().Substring(18); // HACK: Should be a REGEX
+                    if (assetName.EndsWith("\""))
+                        assetName = assetName.Substring(0, assetName.Length - 1);
+                    if (assetName == "content")
+                        continue;
+                    var includeAsset = this.CorrectAppletName(assetName);
+                    inc.AddAfterSelf(new XComment(String.Format("#include virtual=\"{0}\"", includeAsset)));
+                    inc.Remove();
+                }
+
+                var xel = xe.Descendants().OfType<XElement>().Where(o => o.Name.Namespace == xs_santedb).ToList();
+                if (xel != null)
+                    foreach (var x in xel)
+                        x.Remove();
+                htmlAsset.Html = xe;
+                return htmlAsset;
+            }
+            else if (navigateAsset.MimeType == "text/javascript" ||
+                navigateAsset.MimeType == "text/css" ||
+                navigateAsset.MimeType == "application/json" ||
+                navigateAsset.MimeType == "text/json" ||
+                navigateAsset.MimeType == "text/xml")
+            {
+                var script = File.ReadAllText(itmPath);
+                if (itmPath.Contains("santedb.js") || itmPath.Contains("santedb.min.js"))
+                    script += this.m_hostBridgeProvider?.GetBridgeScript();
+                return script;
+            }
+            else
+                return File.ReadAllBytes(itmPath);
         }
 
         /// <summary>
@@ -414,6 +542,157 @@ namespace SanteDB.Tools.Debug.Services
         private String CorrectAppletName(string value)
         {
             return value?.ToLower().Replace("\\", "/");
+        }
+
+        /// <inheritdoc/>
+        public bool Start()
+        {
+            this.Starting?.Invoke(this, EventArgs.Empty);
+
+            try
+            {
+                this.LoadReferences();
+                this.LoadSolution();
+                this.LoadApplets();
+            }
+            catch(Exception e)
+            {
+                throw new InvalidOperationException("Could not start the debug application context", e);
+            }
+            this.Started?.Invoke(this, EventArgs.Empty);
+            return true;
+        }
+
+        /// <summary>
+        /// Load applets which are referenced in the configuration file
+        /// </summary>
+        private void LoadApplets()
+        {
+            if (this.m_configuration.AppletReferences?.Any() == true)
+            {
+                foreach (var appletDir in this.m_configuration.AppletReferences)
+                {
+                    try
+                    {
+                        if (!Directory.Exists(appletDir) || !File.Exists(Path.Combine(appletDir, "manifest.xml")))
+                        {
+                            throw new DirectoryNotFoundException($"Applet {appletDir} not found");
+                        }
+
+                        String appletPath = Path.Combine(appletDir, "manifest.xml");
+                        using (var fs = File.OpenRead(appletPath))
+                        {
+                            AppletManifest manifest = AppletManifest.Load(fs);
+                            manifest.AddSetting(APPLET_SOURCE, appletPath);
+                            this.LoadApplet(manifest);
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        throw;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Load the solution to debug
+        /// </summary>
+        private void LoadSolution()
+        {
+            if (!String.IsNullOrEmpty(this.m_configuration.SolutionToDebug))
+            {
+                using (var fs = File.OpenRead(this.m_configuration.SolutionToDebug))
+                {
+                    var solution = AppletManifest.Load(fs);
+
+                    // Load include elements
+                    var solnDir = Path.GetDirectoryName(this.m_configuration.SolutionToDebug);
+
+                    // Preload any manifests
+                    var refManifests = new List<AppletManifest>();
+                    // Load reference manifests
+                    foreach (var mfstFile in Directory.GetFiles(solnDir, "manifest.xml", SearchOption.AllDirectories))
+                    {
+                        using (var manifestStream = File.OpenRead(mfstFile))
+                        {
+                            var manifest = AppletManifest.Load(manifestStream);
+                            manifest.AddSetting(APPLET_SOURCE, mfstFile);
+                            refManifests.Add(manifest);
+                        }
+                    }
+
+                    // Load dependencies
+                    foreach (var dep in solution.Info.Dependencies)
+                    {
+                        // Attempt to load the appropriate manifest file
+                        var cand = refManifests.FirstOrDefault(o => o.Info.Id == dep.Id);
+                        if (cand != null)
+                        {
+                            this.LoadApplet(cand);
+                        }
+                        else if (!this.Applets.Any(a => a.Info.Id == dep.Id))
+                        {
+                            this.m_configuration.AppletReferences.Add($"{dep.Id}:{dep.Version ?? "*"}");
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Load all references
+        /// </summary>
+        private void LoadReferences()
+        {
+            if (this.m_configuration.AppletReferences?.Any() == true)
+            {
+                foreach(var refString in this.m_configuration.AppletReferences)
+                {
+                    if (File.Exists(refString)) // File reference
+                    {
+                        using (var fs = File.OpenRead(refString)) {
+                            var appletPackage = AppletPackage.Load(fs);
+                            if(appletPackage is AppletSolution solution)
+                            {
+                                foreach(var itm in solution.Include)
+                                {
+                                    this.LoadApplet(itm.Unpack());
+                                }
+                            }
+                            else
+                            {
+                                this.LoadApplet(appletPackage.Unpack());
+                            }
+                        }
+                    }
+                    else // Pakman reference
+                    {
+                        var appletName = AppletName.Parse(refString);
+                        var resolvedPackage = PakMan.Repository.PackageRepositoryUtil.GetFromAny(appletName.Id, appletName.GetVersion());
+                        if(resolvedPackage == null)
+                        {
+                            throw new KeyNotFoundException(appletName.ToString());
+                        }
+                        if (resolvedPackage is AppletSolution solution)
+                        {
+                            foreach(var inc in solution.Include)
+                            {
+                                this.LoadApplet(inc.Unpack());
+                            }
+                        }
+                        else
+                        {
+                            this.LoadApplet(resolvedPackage.Unpack());
+                        }
+                    }
+                }
+            }
+        }
+
+        public bool Stop()
+        {
+            throw new NotImplementedException();
         }
     }
 }
