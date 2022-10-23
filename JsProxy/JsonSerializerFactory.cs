@@ -22,6 +22,7 @@ using SanteDB.Core;
 using SanteDB.Core.Applets.ViewModel.Json;
 using SanteDB.Core.Diagnostics;
 using SanteDB.Core.Model;
+using SanteDB.Core.Model.Acts;
 using SanteDB.Core.Model.Attributes;
 using SanteDB.Core.Model.Interfaces;
 using SanteDB.Core.Model.Serialization;
@@ -156,6 +157,7 @@ namespace SanteDB.SDK.JsProxy
 
             foreach (var t in asm.GetTypes().Where(o => o.GetCustomAttribute<JsonObjectAttribute>() != null))
             {
+                
                 var ctdecl = this.CreateViewModelSerializer(t);
                 if (ctdecl != null)
                     retVal.Types.Add(ctdecl);
@@ -384,6 +386,7 @@ namespace SanteDB.SDK.JsProxy
         /// </summary>
         private CodeTypeMember CreateSerializeMethod(Type forType)
         {
+
             var retVal = new CodeMemberMethod()
             {
                 Name = "Serialize",

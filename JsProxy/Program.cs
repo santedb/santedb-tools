@@ -171,12 +171,17 @@ function Exception(type, message, detail, cause, stack, policyId, policyOutcome,
                 // First we want to open the output file
                 using (TextWriter output = File.CreateText(parms.Output ?? "out.cs"))
                 {
-                    foreach (var asm in parms.AssemblyFile)
+                    foreach (var asmFile in parms.AssemblyFile)
                     {
                         JsonSerializerFactory serFact = new JsonSerializerFactory();
                         CSharpCodeProvider csProvider = new CSharpCodeProvider();
                         CodeCompileUnit compileUnit = new CodeCompileUnit();
 
+                        var asm = asmFile;
+                        if(!Path.IsPathRooted(asm))
+                        {
+                            asm = Path.Combine(Path.GetDirectoryName(typeof(Program).Assembly.Location), asm);
+                        }
                         // Add namespace
                         compileUnit.Namespaces.Add(serFact.CreateCodeNamespace(parms.Namespace ?? Path.GetFileNameWithoutExtension(asm) + ".Json.Formatter", Assembly.LoadFile(asm)));
                         compileUnit.ReferencedAssemblies.Add("System.dll");
