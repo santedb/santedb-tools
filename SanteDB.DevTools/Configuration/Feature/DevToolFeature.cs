@@ -3,7 +3,7 @@ using SanteDB.Core.Applets.Services.Impl;
 using SanteDB.Core.Configuration;
 using SanteDB.Core.Configuration.Features;
 using SanteDB.DevTools.Services;
-using SanteDB.Disconnected.Services;
+using SanteDB.Client.Services;
 using SanteDB.Tools.Debug.Services;
 using System;
 using System.Collections.Generic;

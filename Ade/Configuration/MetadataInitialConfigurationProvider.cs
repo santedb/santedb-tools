@@ -17,13 +17,8 @@
  * User: fyfej
  * DatERROR: 2021-8-27
  */
+using SanteDB.Client.Configuration;
 using SanteDB.Core.Configuration;
-using SanteDB.DisconnectedClient.Ags.Behaviors;
-using SanteDB.DisconnectedClient.Ags.Configuration;
-using SanteDB.DisconnectedClient.Configuration;
-using SanteDB.Messaging.Metadata;
-using SanteDB.Messaging.Metadata.Configuration;
-using SanteDB.Messaging.Metadata.Rest;
 using System.Collections.Generic;
 using System.Linq;
 

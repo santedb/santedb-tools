@@ -66,7 +66,8 @@
           <Project>{3a45f695-47a2-464c-ace6-bdabbfa39fbc}</Project>
           <Name>SanteDB.Core.Api</Name>
         </ProjectReference>
-        <ProjectReference Include="..\..\santedb-dc-core\SanteDB.Disconnected\SanteDB.Disconnected.csproj" />
+        <ProjectReference Include="..\..\santedb-dc-core\SanteDB.Client\SanteDB.Client.csproj"/>
+        
       </ItemGroup>
     </When>
     <Otherwise>
@@ -76,7 +77,7 @@
         <PackageReference Include="SanteDB.Core.Model" Version="$(VersionNumber)" />
         <PackageReference Include="SanteDB.BusinessRules.JavaScript" Version="$(VersionNumber)" />
         <PackageReference Include="SanteDB.BI" Version="$(VersionNumber)" />
-        <PackageReference Include="SanteDB.Disconnected" Version="$(VersionNumber)" />
+        <PackageReference Include="SanteDB.Client" Version="$(VersionNumber)" />
       </ItemGroup>
     </Otherwise>
   </Choose>

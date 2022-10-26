@@ -87,7 +87,10 @@
         <ProjectReference Include="..\..\santedb-model\SanteDB.Core.Model\SanteDB.Core.Model.csproj">
           <Name>SanteDB.Core.Model</Name>
         </ProjectReference>
-        <ProjectReference Include="..\..\santedb-api\SanteDB.Core.Api\SanteDB.Core.Api.csproj" />
+        <ProjectReference Include="..\..\santedb-api\SanteDB.Core.Api\SanteDB.Core.Api.csproj">
+          <Project>{3A45F695-47A2-464C-ACE6-BDABBFA39FBC}</Project>
+          <Name>SanteDB.Core.Api</Name>
+        </ProjectReference>
       </ItemGroup>
     </When>
     <Otherwise>

@@ -1,4 +1,4 @@
-﻿using SanteDB.Disconnected.Services;
+﻿using SanteDB.Client.Services;
 using System;
 using System.Collections.Generic;
 using System.IO;

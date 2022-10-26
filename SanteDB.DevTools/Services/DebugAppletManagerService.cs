@@ -6,7 +6,7 @@ using SanteDB.Core.Applets.Services;
 using SanteDB.Core.Diagnostics;
 using SanteDB.Core.Services;
 using SanteDB.DevTools.Configuration;
-using SanteDB.Disconnected.Services;
+using SanteDB.Client.Services;
 using SanteDB.PakMan;
 using System;
 using System.Collections.Generic;
