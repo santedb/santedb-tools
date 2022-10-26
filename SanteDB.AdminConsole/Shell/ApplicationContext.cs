@@ -303,7 +303,7 @@ namespace SanteDB.AdminConsole.Shell
                 // Now authenticate
                 try
                 {
-                    var principal = (authenticationProvider as OAuthIdentityProvider)?.Authenticate(
+                    var principal = (authenticationProvider as AdminConsole.Security.OAuthIdentityProvider)?.Authenticate(
                         new SanteDBClaimsPrincipal(new SanteDBClaimsIdentity(this.m_configuration.User, false, "OAUTH2")), this.m_configuration.Password) ??
                         authenticationProvider.Authenticate(this.m_configuration.User, this.m_configuration.Password);
                     if (principal != null)
