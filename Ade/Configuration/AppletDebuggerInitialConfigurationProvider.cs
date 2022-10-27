@@ -4,11 +4,13 @@ using SanteDB.Caching.Memory;
 using SanteDB.Caching.Memory.Session;
 using SanteDB.Cdss.Xml;
 using SanteDB.Client.Configuration;
+using SanteDB.Client.Tickles;
+using SanteDB.Client.Upstream;
 using SanteDB.Core.Applets.Configuration;
 using SanteDB.Core.Applets.Services.Impl;
 using SanteDB.Core.Configuration;
 using SanteDB.Core.Configuration.Http;
-using SanteDB.Core.Configuration.Upstream;
+using SanteDB.Client.Configuration.Upstream;
 using SanteDB.Core.Diagnostics.Tracing;
 using SanteDB.Core.Http;
 using SanteDB.Core.Model.Audit;
@@ -21,7 +23,6 @@ using SanteDB.Core.Security.Audit;
 using SanteDB.Core.Security.Configuration;
 using SanteDB.Core.Security.Privacy;
 using SanteDB.Core.Services.Impl;
-using SanteDB.DevTools.Configuration;
 using SanteDB.Disconnected.Data.Synchronization.Configuration;
 using System;
 using System.Collections.Generic;
@@ -30,6 +31,8 @@ using System.Linq;
 using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading.Tasks;
+using SanteDB.Core.Data.Backup;
+using SanteDB.Tools.Debug.Services;
 
 namespace SanteDB.SDK.AppletDebugger.Configuration
 {
@@ -51,7 +54,7 @@ namespace SanteDB.SDK.AppletDebugger.Configuration
 
             appServiceSection.ServiceProviders = new List<TypeReferenceConfiguration>() {
                     new TypeReferenceConfiguration(typeof(AesSymmetricCrypographicProvider)),
-                    new TypeReferenceConfiguration(typeof(MemoryTickleService)),
+                    new TypeReferenceConfiguration(typeof(InMemoryTickleService)),
                     new TypeReferenceConfiguration(typeof(DefaultNetworkInformationService)),
                     new TypeReferenceConfiguration(typeof(SHA256PasswordHashingService)),
                     new TypeReferenceConfiguration(typeof(DefaultPolicyDecisionService)),
@@ -67,9 +70,9 @@ namespace SanteDB.SDK.AppletDebugger.Configuration
                     new TypeReferenceConfiguration(typeof(MemoryQueryPersistenceService)),
                     new TypeReferenceConfiguration(typeof(FileSystemDispatcherQueueService)),
                     new TypeReferenceConfiguration(typeof(SimplePatchService)),
-                    new TypeReferenceConfiguration(typeof(DefaultBackupService)),
+                    new TypeReferenceConfiguration(typeof(DefaultBackupManager)),
                     new TypeReferenceConfiguration(typeof(RemoteSecurityChallengeProvider)), // AmiSecurityChallengeProvider
-                    new TypeReferenceConfiguration(typeof(MiniAppletManagerService)),
+                    new TypeReferenceConfiguration(typeof(DebugAppletManagerService)),
                     new TypeReferenceConfiguration(typeof(AppletBiRepository)),
                     new TypeReferenceConfiguration(typeof(DataPolicyFilterService)),
                     new TypeReferenceConfiguration(typeof(DefaultOperatingSystemInfoService)),

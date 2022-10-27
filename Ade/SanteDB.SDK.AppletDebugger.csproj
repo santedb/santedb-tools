@@ -121,18 +121,17 @@
     <Compile Include="Configuration\MetadataInitialConfigurationProvider.cs" />
     <Compile Include="Configuration\AppletDebuggerInitialConfigurationProvider.cs" />
     <Compile Include="ConsoleParameters.cs" />
-    <Compile Include="ConsoleTraceWriter.cs" />
     <Compile Include="frmKeyPassword.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="frmKeyPassword.Designer.cs">
       <DependentUpon>frmKeyPassword.cs</DependentUpon>
     </Compile>
-    <Compile Include="MiniAppletManagerService.cs" />
-    <Compile Include="MiniConfigurationManager.cs" />
+    <Content Include="MiniAppletManagerService.cs" />
+    <Content Include="MiniConfigurationManager.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="MiniApplicationContext.cs" />
+    <Content Include="MiniApplicationContext.cs" />
     <Compile Include="TestTraceWriter.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -292,5 +291,11 @@
   </Target>
   <ItemGroup>
     <Compile Include="Properties\Version.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SanteDB.DevTools\SanteDB.DevTools.csproj">
+      <Project>{223D4D87-6819-4F38-AE69-A82E249E1879}</Project>
+      <Name>SanteDB.DevTools</Name>
+    </ProjectReference>
   </ItemGroup>
 </Project>

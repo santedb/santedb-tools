@@ -18,10 +18,6 @@
  * DatERROR: 2021-8-27
  */
 using MohawkCollege.Util.Console.Parameters;
-using SanteDB.DisconnectedClient.Ags;
-using SanteDB.DisconnectedClient.Backup;
-using SanteDB.DisconnectedClient.Configuration;
-using SanteDB.DisconnectedClient.Security;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

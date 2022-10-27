@@ -24,8 +24,6 @@ using SanteDB.Core.Configuration;
 using SanteDB.Core.Diagnostics;
 using SanteDB.Core.Services;
 using SanteDB.DisconnectedClient;
-using SanteDB.DisconnectedClient.Ags.Util;
-using SanteDB.DisconnectedClient.Services;
 using System;
 using System.Collections.Generic;
 using System.IO;
