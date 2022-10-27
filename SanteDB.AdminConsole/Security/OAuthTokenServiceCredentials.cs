@@ -26,6 +26,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Security.Principal;
 using System.Text;
+using System.Net;
 
 namespace SanteDB.AdminConsole.Security
 {
@@ -49,7 +50,7 @@ namespace SanteDB.AdminConsole.Security
         /// Get the http headers which are requried for the credential
         /// </summary>
         /// <returns>The http headers.</returns>
-        public override System.Collections.Generic.Dictionary<string, string> GetHttpHeaders()
+        public override void SetCredentials(HttpWebRequest webRequest)
         {
             // App ID credentials
             String appAuthString = String.Format("{0}:{1}",
@@ -76,13 +77,9 @@ namespace SanteDB.AdminConsole.Security
             //	claimString.Remove (claimString.Length - 1, 1);
 
             // Add authenticat header
-            var retVal = new System.Collections.Generic.Dictionary<string, string>() {
-                { "Authorization", String.Format("BASIC {0}", Convert.ToBase64String(Encoding.UTF8.GetBytes(appAuthString))) }
-            };
+            webRequest.Headers.Add(HttpRequestHeader.Authorization, String.Format("BASIC {0}", Convert.ToBase64String(Encoding.UTF8.GetBytes(appAuthString))));
             //if (claimString.Length > 0)
             //	retVal.Add ("X-SanteDBClient-Claim", claimString.ToString ());
-
-            return retVal;
         }
         #endregion
 

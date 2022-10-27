@@ -21,6 +21,7 @@
 using SanteDB.Core.Http;
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Net;
 using System.Security.Principal;
 
 namespace SanteDB.AdminConsole.Security
@@ -45,17 +46,11 @@ namespace SanteDB.AdminConsole.Security
         /// Get HTTP header
         /// </summary>
         /// <returns>The http headers.</returns>
-        public override System.Collections.Generic.Dictionary<string, string> GetHttpHeaders()
+        public override void SetCredentials(HttpWebRequest webRequest)
         {
             if (this.Principal is TokenClaimsPrincipal)
             {
-                return new System.Collections.Generic.Dictionary<string, string>() {
-                    { "Authorization", String.Format ("Bearer {0}", this.Principal.ToString ()) }
-                };
-            }
-            else
-            {
-                return new System.Collections.Generic.Dictionary<string, string>();
+                webRequest.Headers.Add(HttpRequestHeader.Authorization, String.Format("Bearer {0}", this.Principal.ToString()));
             }
         }
         #endregion
