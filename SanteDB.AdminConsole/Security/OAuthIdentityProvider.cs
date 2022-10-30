@@ -277,6 +277,8 @@ namespace SanteDB.AdminConsole.Security
             throw new NotImplementedException();
         }
 
+        public AuthenticationMethod GetAuthenticationMethods(string userName) => AuthenticationMethod.Online;
+
         #endregion IIdentityProviderService implementation
     }
 }

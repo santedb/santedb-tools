@@ -18,6 +18,8 @@
  * DatERROR: 2021-8-27
  */
 using MohawkCollege.Util.Console.Parameters;
+using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 
@@ -65,6 +67,48 @@ namespace SanteDB.SDK.AppletDebugger
         public bool Restore { get; set; }
 
         /// <summary>
+        /// Convert this object back to an argument list
+        /// </summary>
+        internal IEnumerable<String> ToArgumentList()
+        {
+            if(!String.IsNullOrEmpty(this.InstanceName))
+            {
+                yield return $"--name=\"{this.InstanceName}\"";
+            }
+            if(this.Assemblies != null)
+            {
+                foreach(var asm in this.Assemblies)
+                {
+                    yield return $"--assembly=\"{asm}\"";
+                }
+            }
+            if (this.BaseRefs)
+            {
+                yield return "--core";
+            }
+            if(!String.IsNullOrEmpty(this.SolutionFile)) {
+                yield return $"--solution=\"{this.SolutionFile}\"";
+            }
+            if(this.References != null)
+            {
+                foreach(var refr in this.References) {
+                    yield return $"--ref=\"{refr}\"";
+                }
+            }
+            if(this.AppletDirectories != null)
+            {
+                foreach(var dir in this.AppletDirectories)
+                {
+                    yield return $"--applet=\"{dir}\"";
+                }
+            }
+            if(!String.IsNullOrEmpty(this.BaseUrl))
+            {
+                yield return $"--base=\"{this.BaseUrl}\"";
+            }
+        }
+
+        /// <summary>
         /// Show help and exit
         /// </summary>
         [Parameter("help")]
@@ -92,5 +136,8 @@ namespace SanteDB.SDK.AppletDebugger
         [Description("Allows for separate environment names for multiple debugging")]
         public string InstanceName { get; set; }
 
+        [Parameter("base")]
+        [Description("Allows for the changing of the base URL (default is http://127.0.0.1)")]
+        public string BaseUrl { get; set; }
     }
 }

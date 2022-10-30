@@ -23,7 +23,6 @@ using SanteDB.Core.Security.Audit;
 using SanteDB.Core.Security.Configuration;
 using SanteDB.Core.Security.Privacy;
 using SanteDB.Core.Services.Impl;
-using SanteDB.Disconnected.Data.Synchronization.Configuration;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -33,6 +32,18 @@ using System.Text;
 using System.Threading.Tasks;
 using SanteDB.Core.Data.Backup;
 using SanteDB.Tools.Debug.Services;
+using SanteDB.Client.Repositories;
+using SanteDB.Core;
+using SanteDB.Core.Diagnostics;
+using SanteDB.Rest.HDSI;
+using SanteDB.Rest.AMI;
+using SanteDB.Rest.BIS;
+using SanteDB.Client.OAuth;
+using SanteDB.Client.UserInterface.Impl;
+using SanteDB.Rest.Common;
+using SanteDB.DevTools.Services;
+using SanteDB.Client.Disconnected.Data.Synchronization.Configuration;
+using SanteDB.Rest.OAuth.Configuration;
 
 namespace SanteDB.SDK.AppletDebugger.Configuration
 {
@@ -44,15 +55,15 @@ namespace SanteDB.SDK.AppletDebugger.Configuration
         /// <summary>
         /// Provide the default configuration
         /// </summary>
-        public SanteDBConfiguration Provide(SanteDBConfiguration configuration)
+        public SanteDBConfiguration Provide(SanteDBHostType hostContext, SanteDBConfiguration configuration)
         {
 
 
             var appServiceSection = configuration.GetSection<ApplicationServiceContextConfigurationSection>();
             var instanceName = appServiceSection.InstanceName;
-            var localDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "santedb", "sdk", "ade");
+            var localDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "santedb", "sdk", "ade", instanceName);
 
-            appServiceSection.ServiceProviders = new List<TypeReferenceConfiguration>() {
+            appServiceSection.ServiceProviders.AddRange(new List<TypeReferenceConfiguration>() {
                     new TypeReferenceConfiguration(typeof(AesSymmetricCrypographicProvider)),
                     new TypeReferenceConfiguration(typeof(InMemoryTickleService)),
                     new TypeReferenceConfiguration(typeof(DefaultNetworkInformationService)),
@@ -61,19 +72,23 @@ namespace SanteDB.SDK.AppletDebugger.Configuration
                     new TypeReferenceConfiguration(typeof(MemoryAdhocCacheService)),
                     new TypeReferenceConfiguration(typeof(AppletLocalizationService)),
                     new TypeReferenceConfiguration(typeof(AppletBusinessRulesDaemon)),
+                    new TypeReferenceConfiguration(typeof(OAuthClient)),
+                    new TypeReferenceConfiguration(typeof(UpstreamPolicyInformationService)),
+                    new TypeReferenceConfiguration(typeof(DefaultUpstreamManagementService)),
                     new TypeReferenceConfiguration(typeof(MemoryCacheService)),
                     new TypeReferenceConfiguration(typeof(DefaultThreadPoolService)),
-                    new TypeReferenceConfiguration(typeof(SimpleCarePlanService)),
+                    new TypeReferenceConfiguration(typeof(ConsoleUserInterfaceInteractionProvider)),
                     new TypeReferenceConfiguration(typeof(MemorySessionManagerService)),
-                    new TypeReferenceConfiguration(typeof(RemoteUpdateManager)), // AmiUpdateManager
-                    new TypeReferenceConfiguration(typeof(AppletClinicalProtocolInstaller)),
+                    new TypeReferenceConfiguration(typeof(UpstreamUpdateManagerService)), // AmiUpdateManager
                     new TypeReferenceConfiguration(typeof(MemoryQueryPersistenceService)),
                     new TypeReferenceConfiguration(typeof(FileSystemDispatcherQueueService)),
                     new TypeReferenceConfiguration(typeof(SimplePatchService)),
                     new TypeReferenceConfiguration(typeof(DefaultBackupManager)),
-                    new TypeReferenceConfiguration(typeof(RemoteSecurityChallengeProvider)), // AmiSecurityChallengeProvider
+                    new TypeReferenceConfiguration(typeof(UpstreamSecurityChallengeProvider)), // AmiSecurityChallengeProvider
                     new TypeReferenceConfiguration(typeof(DebugAppletManagerService)),
                     new TypeReferenceConfiguration(typeof(AppletBiRepository)),
+                    new TypeReferenceConfiguration(typeof(UpstreamIdentityProvider)),
+                    new TypeReferenceConfiguration(typeof(UpstreamApplicationIdentityProvider)),
                     new TypeReferenceConfiguration(typeof(DataPolicyFilterService)),
                     new TypeReferenceConfiguration(typeof(DefaultOperatingSystemInfoService)),
                     new TypeReferenceConfiguration(typeof(AppletSubscriptionRepository)),
@@ -82,8 +97,7 @@ namespace SanteDB.SDK.AppletDebugger.Configuration
                     new TypeReferenceConfiguration(typeof(DefaultDataSigningService)),
                     new TypeReferenceConfiguration(typeof(DefaultBarcodeProviderService)),
                     new TypeReferenceConfiguration(typeof(FileSystemDispatcherQueueService))
-               
-            };
+            });
 
             // Security configuration
             var wlan = NetworkInterface.GetAllNetworkInterfaces().FirstOrDefault(o => o.NetworkInterfaceType == NetworkInterfaceType.Ethernet || o.Description.StartsWith("wlan"));
@@ -121,17 +135,17 @@ namespace SanteDB.SDK.AppletDebugger.Configuration
             {
                 TraceWriter = new System.Collections.Generic.List<TraceWriterConfiguration>() {
                     new TraceWriterConfiguration () {
-                        Filter = System.Diagnostics.Tracing.EventLevel.LogAlways,
+                        Filter = System.Diagnostics.Tracing.EventLevel.Warning,
                         InitializationData = "santedb",
                         TraceWriter = typeof(DebugDiagnosticsTraceWriter)
                     },
                     new TraceWriterConfiguration() {
-                        Filter = System.Diagnostics.Tracing.EventLevel.LogAlways,
+                        Filter = System.Diagnostics.Tracing.EventLevel.Warning,
                         InitializationData = Path.Combine(localDataPath, "log", "santedb.log"),
                         TraceWriter = typeof(RolloverTextWriterTraceWriter)
                     },
                     new TraceWriterConfiguration() {
-                        Filter = System.Diagnostics.Tracing.EventLevel.LogAlways,
+                        Filter = System.Diagnostics.Tracing.EventLevel.Error,
                         InitializationData = "santedb",
                         TraceWriter = typeof(ConsoleTraceWriter)
                     }
@@ -155,11 +169,29 @@ namespace SanteDB.SDK.AppletDebugger.Configuration
             };
 #endif
 
+            // Setup the tracers 
+            diagSection.TraceWriter.ForEach(o => Tracer.AddWriter(Activator.CreateInstance(o.TraceWriter, o.Filter, o.InitializationData, null) as TraceWriter, o.Filter));
             configuration.Sections.Add(new FileSystemDispatcherQueueConfigurationSection()
             {
                 QueuePath = Path.Combine(localDataPath, "queue"),
             });
 
+            var backupSection = new BackupConfigurationSection()
+            {
+                PrivateBackupLocation = Path.Combine(localDataPath, "backup"),
+                PublicBackupLocation = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "santedb", "sdk", "backup")
+            };
+
+            configuration.Sections.Add(new RestClientConfigurationSection()
+            {
+                RestClientType = new TypeReferenceConfiguration(typeof(RestClient))
+            });
+            configuration.Sections.Add(new OAuthConfigurationSection()
+            {
+                AllowClientOnlyGrant = false,
+                JwtSigningKey = "jwsdefault",
+                TokenType = "bearer"
+            });
             configuration.Sections.Add(diagSection);
             configuration.Sections.Add(upstreamConfiguration);
             configuration.Sections.Add(serviceSection);

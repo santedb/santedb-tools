@@ -116,6 +116,8 @@ namespace SanteDB.AdminConsole.Security
             throw new NotSupportedException();
         }
 
+        public AuthenticationMethod GetAuthenticationMethods(string userName) => AuthenticationMethod.Online;
+
         public IEnumerable<IClaim> GetClaims(string userName)
         {
             throw new NotSupportedException();

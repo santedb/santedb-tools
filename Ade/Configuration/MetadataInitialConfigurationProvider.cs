@@ -18,7 +18,15 @@
  * DatERROR: 2021-8-27
  */
 using SanteDB.Client.Configuration;
+using SanteDB.Client.Rest;
+using SanteDB.Core;
 using SanteDB.Core.Configuration;
+using SanteDB.Messaging.Metadata;
+using SanteDB.Messaging.Metadata.Configuration;
+using SanteDB.Messaging.Metadata.Rest;
+using SanteDB.Rest.Common.Behavior;
+using SanteDB.Rest.Common.Configuration;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -32,33 +40,54 @@ namespace SanteDB.SDK.AppletDebugger.Configuration
         /// <summary>
         /// Get the default configuration for this service
         /// </summary>
-        public SanteDBConfiguration Provide(SanteDBConfiguration existing)
+        public SanteDBConfiguration Provide(SanteDBHostType hostContext, SanteDBConfiguration existing)
         {
+            if(hostContext != SanteDBHostType.Gateway)
+            {
+                return existing;
+            }
+
+            var bindingBase = new Uri(AppDomain.CurrentDomain.GetData(RestServiceInitialConfigurationProvider.BINDING_BASE_DATA)?.ToString());
+            if (bindingBase == null)
+            {
+                bindingBase = new Uri("http://0.0.0.0:9200");
+            }
+
+            var appServiceConfig = existing.GetSection<ApplicationServiceContextConfigurationSection>();
+            var restServiceConfig = existing.GetSection<RestConfigurationSection>();
+            if (restServiceConfig == null)
+            {
+                restServiceConfig = new RestConfigurationSection();
+                existing.AddSection(restServiceConfig);
+            }
 
             // Add swagger configuration
-            if (!existing.GetSection<ApplicationServiceContextConfigurationSection>().ServiceProviders.Any(o => o.Type == typeof(MetadataMessageHandler)))
+            if (!appServiceConfig.ServiceProviders.Any(o => o.Type == typeof(MetadataMessageHandler)))
             {
+                appServiceConfig.ServiceProviders.Add(new TypeReferenceConfiguration( typeof(MetadataMessageHandler)));
                 existing.AddSection(new MetadataConfigurationSection()
                 {
                     Services = new List<SanteDB.Core.Interop.ServiceEndpointOptions>()
                 });
-                existing.GetSection<AgsConfigurationSection>().Services.Add(new AgsServiceConfiguration(typeof(MetadataServiceBehavior))
+
+                restServiceConfig.Services.Add(new RestServiceConfiguration(typeof(MetadataServiceBehavior))
                 {
-                    Behaviors = new List<AgsBehaviorConfiguration>()
-                {
-                    new AgsBehaviorConfiguration(typeof(AgsErrorHandlerServiceBehavior))
-                },
-                    Endpoints = new List<AgsEndpointConfiguration>()
-                {
-                    new AgsEndpointConfiguration()
-                            {
-                                Address = "http://127.0.0.1:9200/api-docs",
-                                Behaviors = new List<AgsBehaviorConfiguration>() {
-                                    new AgsBehaviorConfiguration(typeof(AgsSerializationEndpointBehavior))
-                                },
-                                Contract = typeof(IMetadataServiceContract)
-                            }
-                }
+                    ConfigurationName = MetadataMessageHandler.ConfigurationName,
+                    Behaviors = new List<RestServiceBehaviorConfiguration>()
+                    {
+                        new RestServiceBehaviorConfiguration(typeof(ErrorServiceBehavior))
+                    },
+                    Endpoints = new List<RestEndpointConfiguration>()
+                    {
+                        new RestEndpointConfiguration()
+                                {
+                                    Address = $"{bindingBase.Scheme}://{bindingBase.Host}:{bindingBase.Port}/api-docs/",
+                                    Behaviors = new List<RestEndpointBehaviorConfiguration>() {
+                                        new RestEndpointBehaviorConfiguration(typeof(MessageDispatchFormatterBehavior))
+                                    },
+                                    Contract = typeof(IMetadataServiceContract)
+                                }
+                    }
                 });
             }
             return existing;

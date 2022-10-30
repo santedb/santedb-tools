@@ -22,7 +22,7 @@ var guidSeed = null;
 // SanteDB Self-Hosted SHIM
 setInterval(function () {
     $.getJSON({
-        url: "/app/Online",
+        url: "/app/ui/Online",
         success: function (data) { __SanteDBAppService.state = data; }
     });
 }, 10000);
@@ -153,7 +153,7 @@ __SanteDBAppService.NewGuid = function () {
         }
     }
     $.ajax({
-        url: "/app/Uuid",
+        url: "/app/ui/Uuid",
         success: function (data) { retVal = data; },
         async: false,
         noAuth: true

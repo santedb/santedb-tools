@@ -60,6 +60,8 @@ namespace SanteDB.AdminConsole.Shell
         // Token auth
         private IDisposable m_tokenAuth = null;
 
+        public Guid ActivityUuid => Guid.NewGuid();
+
         /// <summary>
         /// Rest clients
         /// </summary>

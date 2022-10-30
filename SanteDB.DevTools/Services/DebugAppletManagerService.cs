@@ -16,6 +16,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using SanteDB.DevTools.Services;
 
 namespace SanteDB.Tools.Debug.Services
 {
@@ -55,13 +56,15 @@ namespace SanteDB.Tools.Debug.Services
         /// </summary>
         public DebugAppletManagerService(IConfigurationManager configurationManager,
             IThreadPoolService threadPoolService,
-            IAppletHostBridgeProvider hostBridgeProvider = null)
+            IServiceManager serviceManager,
+            IAppletHostBridgeProvider hostBridgeProvider = null 
+            )
         {
             this.m_appletCollection = new AppletCollection();
             this.m_readonlyAppletCollection = this.m_appletCollection.AsReadonly();
             this.m_readonlyAppletCollection.CollectionChanged += (o, e) => this.Changed?.Invoke(o, e);
             this.m_configuration = configurationManager.GetSection<DebugAppletConfigurationSection>();
-            this.m_hostBridgeProvider = hostBridgeProvider;
+            this.m_hostBridgeProvider = hostBridgeProvider ?? serviceManager.CreateInjected<WebAppletHostBridgeProvider>();
             this.m_threadPoolService = threadPoolService;
             this.m_appletCollection.Resolver = this.ResolveAppletAsset;
             this.m_appletCollection.CachePages = false;
