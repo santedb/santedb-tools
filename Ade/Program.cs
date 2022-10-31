@@ -40,11 +40,11 @@ namespace SanteDB.SDK.AppletDebugger
 {
     internal class Program
     {
-      
+
         [STAThread()]
         private static void Main(string[] args)
         {
-            
+
             // Gets the console arguments
             var consoleArgs = new ParameterParser<ConsoleParameters>().Parse(args);
             consoleArgs.InstanceName = consoleArgs.InstanceName ?? "default";
@@ -82,7 +82,7 @@ namespace SanteDB.SDK.AppletDebugger
                     Console.WriteLine("Environment Reset Successful");
                     return;
                 }
-                
+
                 // Create start the context
                 try
                 {
@@ -117,14 +117,12 @@ namespace SanteDB.SDK.AppletDebugger
                     });
 
                     // Different binding port?
-                    if (!String.IsNullOrEmpty(consoleArgs.BaseUrl))
+                    if (String.IsNullOrEmpty(consoleArgs.BaseUrl))
                     {
-                        AppDomain.CurrentDomain.SetData(RestServiceInitialConfigurationProvider.BINDING_BASE_DATA, consoleArgs.BaseUrl);
+                        consoleArgs.BaseUrl = "http://127.0.0.1:9200";
                     }
-                    else
-                    {
-                        AppDomain.CurrentDomain.SetData(RestServiceInitialConfigurationProvider.BINDING_BASE_DATA, "http://127.0.0.1:9200");
-                    }
+
+                    AppDomain.CurrentDomain.SetData(RestServiceInitialConfigurationProvider.BINDING_BASE_DATA, consoleArgs.BaseUrl);
 
                     // Establish a configuration environment 
                     IConfigurationManager configurationManager = null;
@@ -164,7 +162,7 @@ namespace SanteDB.SDK.AppletDebugger
                     stopEvent.WaitOne();
 
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine("FATAL ERROR: {0}", e);
