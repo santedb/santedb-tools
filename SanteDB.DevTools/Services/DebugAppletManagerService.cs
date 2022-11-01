@@ -596,6 +596,32 @@ namespace SanteDB.Tools.Debug.Services
                     }
                 }
             }
+
+            if (m_configuration.AppletsToDebug?.Any() == true)
+            {
+                foreach(var appletdir in m_configuration.AppletsToDebug)
+                {
+                    try
+                    {
+                        if (!Directory.Exists(appletdir) || !File.Exists(Path.Combine(appletdir, "manifest.xml")))
+                        {
+                            throw new DirectoryNotFoundException($"Applet {appletdir} not found");
+                        }
+
+                        String appletPath = Path.Combine(appletdir, "manifest.xml");
+                        using (var fs = File.OpenRead(appletPath))
+                        {
+                            AppletManifest manifest = AppletManifest.Load(fs);
+                            manifest.AddSetting(APPLET_SOURCE, appletPath);
+                            this.LoadApplet(manifest);
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        throw;
+                    }
+                }
+            }
         }
 
         /// <summary>
