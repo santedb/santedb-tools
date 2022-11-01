@@ -72,23 +72,23 @@ namespace SanteDB.SDK.AppletDebugger.Configuration
                     new TypeReferenceConfiguration(typeof(MemoryAdhocCacheService)),
                     new TypeReferenceConfiguration(typeof(AppletLocalizationService)),
                     new TypeReferenceConfiguration(typeof(AppletBusinessRulesDaemon)),
-                    new TypeReferenceConfiguration(typeof(OAuthClient)),
-                    new TypeReferenceConfiguration(typeof(UpstreamPolicyInformationService)),
                     new TypeReferenceConfiguration(typeof(DefaultUpstreamManagementService)),
                     new TypeReferenceConfiguration(typeof(MemoryCacheService)),
                     new TypeReferenceConfiguration(typeof(DefaultThreadPoolService)),
                     new TypeReferenceConfiguration(typeof(ConsoleUserInterfaceInteractionProvider)),
-                    new TypeReferenceConfiguration(typeof(MemorySessionManagerService)),
-                    new TypeReferenceConfiguration(typeof(UpstreamUpdateManagerService)), // AmiUpdateManager
                     new TypeReferenceConfiguration(typeof(MemoryQueryPersistenceService)),
                     new TypeReferenceConfiguration(typeof(FileSystemDispatcherQueueService)),
                     new TypeReferenceConfiguration(typeof(SimplePatchService)),
                     new TypeReferenceConfiguration(typeof(DefaultBackupManager)),
-                    new TypeReferenceConfiguration(typeof(UpstreamSecurityChallengeProvider)), // AmiSecurityChallengeProvider
                     new TypeReferenceConfiguration(typeof(DebugAppletManagerService)),
                     new TypeReferenceConfiguration(typeof(AppletBiRepository)),
+                    new TypeReferenceConfiguration(typeof(OAuthClient)),
+                    new TypeReferenceConfiguration(typeof(MemorySessionManagerService)),
+                    new TypeReferenceConfiguration(typeof(UpstreamUpdateManagerService)), // AmiUpdateManager
                     new TypeReferenceConfiguration(typeof(UpstreamIdentityProvider)),
                     new TypeReferenceConfiguration(typeof(UpstreamApplicationIdentityProvider)),
+                    new TypeReferenceConfiguration(typeof(UpstreamSecurityChallengeProvider)), // AmiSecurityChallengeProvider
+                    new TypeReferenceConfiguration(typeof(UpstreamPolicyInformationService)),
                     new TypeReferenceConfiguration(typeof(DataPolicyFilterService)),
                     new TypeReferenceConfiguration(typeof(DefaultOperatingSystemInfoService)),
                     new TypeReferenceConfiguration(typeof(AppletSubscriptionRepository)),
@@ -119,6 +119,13 @@ namespace SanteDB.SDK.AppletDebugger.Configuration
                         Conveyance = UpstreamCredentialConveyance.Secret,
                         CredentialType = UpstreamCredentialType.Device,
                         CredentialSecret = Guid.NewGuid().ToByteArray().HexEncode()
+                    },
+                    new UpstreamCredentialConfiguration()
+                    {
+                        CredentialName = "org.santedb.debug",
+                        CredentialSecret = "A1CF054D04D04CD1897E114A904E328D",
+                        Conveyance = UpstreamCredentialConveyance.Secret,
+                        CredentialType = UpstreamCredentialType.Application
                     }
                 }
             };
