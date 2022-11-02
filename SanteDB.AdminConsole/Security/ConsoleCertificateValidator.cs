@@ -22,6 +22,7 @@ using SanteDB.Core.Http;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Security.Cryptography.X509Certificates;
 
 namespace SanteDB.AdminConsole.Security
 {
@@ -38,7 +39,7 @@ namespace SanteDB.AdminConsole.Security
         /// <summary>
         /// Validate certificate
         /// </summary>
-        public bool ValidateCertificate(object certificate, object chain)
+        public bool ValidateCertificate(X509Certificate2 certificate, X509Chain chain)
         {
             if (m_trustedCerts.Contains(certificate.ToString()))
             {

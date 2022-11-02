@@ -188,30 +188,30 @@
         <ProjectReference Include="..\..\santedb-restsvc\SanteDB.Rest.AppService\SanteDB.Rest.AppService.csproj" />
         <ProjectReference Include="..\..\santedb-restsvc\SanteDB.Rest.WWW\SanteDB.Rest.WWW.csproj" />
         <ProjectReference Include="..\..\santedb-bis\SanteDB.Rest.BIS\SanteDB.Rest.BIS.csproj" />-->
-		    <ProjectReference Include="..\..\santedb-bis\SanteDB.Rest.BIS\SanteDB.Rest.BIS.csproj">
-      <Project>{200AC0CB-EBBF-4FDE-81D0-447CDFFFA2F7}</Project>
-      <Name>SanteDB.Rest.BIS</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\santedb-restsvc\SanteDB.Rest.AMI\SanteDB.Rest.AMI.csproj">
-      <Project>{F14023E2-F8DF-4EBC-B2C4-34A825E3790E}</Project>
-      <Name>SanteDB.Rest.AMI</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\santedb-restsvc\SanteDB.Rest.AppService\SanteDB.Rest.AppService.csproj">
-      <Project>{5044daa9-50a0-42a7-b125-beaa4e9eb386}</Project>
-      <Name>SanteDB.Rest.AppService</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\santedb-restsvc\SanteDB.Rest.HDSI\SanteDB.Rest.HDSI.csproj">
-      <Project>{903E2E75-7B62-4C42-A001-404DC0235A6B}</Project>
-      <Name>SanteDB.Rest.HDSI</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\santedb-restsvc\SanteDB.Rest.OAuth\SanteDB.Rest.OAuth.csproj">
-      <Project>{1e96cd40-c238-44c9-a7e7-72c49e15c8fa}</Project>
-      <Name>SanteDB.Rest.OAuth</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\santedb-restsvc\SanteDB.Rest.WWW\SanteDB.Rest.WWW.csproj">
-      <Project>{09b39a55-466f-4678-a644-fdada2ac5b6a}</Project>
-      <Name>SanteDB.Rest.WWW</Name>
-    </ProjectReference>
+        <ProjectReference Include="..\..\santedb-bis\SanteDB.Rest.BIS\SanteDB.Rest.BIS.csproj">
+          <Project>{200AC0CB-EBBF-4FDE-81D0-447CDFFFA2F7}</Project>
+          <Name>SanteDB.Rest.BIS</Name>
+        </ProjectReference>
+        <ProjectReference Include="..\..\santedb-restsvc\SanteDB.Rest.AMI\SanteDB.Rest.AMI.csproj">
+          <Project>{F14023E2-F8DF-4EBC-B2C4-34A825E3790E}</Project>
+          <Name>SanteDB.Rest.AMI</Name>
+        </ProjectReference>
+        <ProjectReference Include="..\..\santedb-restsvc\SanteDB.Rest.AppService\SanteDB.Rest.AppService.csproj">
+          <Project>{5044daa9-50a0-42a7-b125-beaa4e9eb386}</Project>
+          <Name>SanteDB.Rest.AppService</Name>
+        </ProjectReference>
+        <ProjectReference Include="..\..\santedb-restsvc\SanteDB.Rest.HDSI\SanteDB.Rest.HDSI.csproj">
+          <Project>{903E2E75-7B62-4C42-A001-404DC0235A6B}</Project>
+          <Name>SanteDB.Rest.HDSI</Name>
+        </ProjectReference>
+        <ProjectReference Include="..\..\santedb-restsvc\SanteDB.Rest.OAuth\SanteDB.Rest.OAuth.csproj">
+          <Project>{1e96cd40-c238-44c9-a7e7-72c49e15c8fa}</Project>
+          <Name>SanteDB.Rest.OAuth</Name>
+        </ProjectReference>
+        <ProjectReference Include="..\..\santedb-restsvc\SanteDB.Rest.WWW\SanteDB.Rest.WWW.csproj">
+          <Project>{09b39a55-466f-4678-a644-fdada2ac5b6a}</Project>
+          <Name>SanteDB.Rest.WWW</Name>
+        </ProjectReference>
       </ItemGroup>
     </When>
     <Otherwise>
@@ -321,7 +321,6 @@
     <Compile Include="Properties\Version.cs" />
   </ItemGroup>
   <ItemGroup>
-
     <ProjectReference Include="..\SanteDB.DevTools\SanteDB.DevTools.csproj">
       <Project>{223D4D87-6819-4F38-AE69-A82E249E1879}</Project>
       <Name>SanteDB.DevTools</Name>

@@ -131,7 +131,7 @@ namespace SanteDB.AdminConsole.Security
                     }
 
                     // Set credentials
-                    if (restClient.Description.Binding.Security?.Mode == SecurityScheme.Basic)
+                    if (restClient.Description.Binding.Security?.Mode == SecurityScheme.Basic) 
                     {
                         restClient.Credentials = new OAuthTokenServiceCredentials(principal);
                     }

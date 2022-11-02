@@ -48,7 +48,7 @@ namespace SanteDB.AdminConsole.Security
         /// </summary>
         /// <returns>The credentials.</returns>
         /// <param name="context">Context.</param>
-        public Credentials GetCredentials(IRestClient context)
+        public RestRequestCredentials GetCredentials(IRestClient context)
         {
             if (!AuthenticationContext.Current.Principal.Identity.IsAuthenticated ||
                 AuthenticationContext.Current.Principal == AuthenticationContext.AnonymousPrincipal)
@@ -67,7 +67,7 @@ namespace SanteDB.AdminConsole.Security
         /// Authenticate a user - this occurs when reauth is required
         /// </summary>
         /// <param name="context">Context.</param>
-        public Credentials Authenticate(IRestClient context)
+        public RestRequestCredentials Authenticate(IRestClient context)
         {
 
             // TODO: Determine why we're reauthenticating... if it is an expired token we'll need to get the refresh token
@@ -106,7 +106,7 @@ namespace SanteDB.AdminConsole.Security
         /// <summary>
         /// Get credentials from the specified principal
         /// </summary>
-        public Credentials GetCredentials(IPrincipal principal)
+        public RestRequestCredentials GetCredentials(IPrincipal principal)
         {
             if (principal is TokenClaimsPrincipal)
             {

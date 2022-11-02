@@ -39,7 +39,7 @@ namespace SanteDB.AdminConsole.Security
         /// </summary>
         /// <returns>The credentials.</returns>
         /// <param name="context">Context.</param>
-        public Credentials GetCredentials(IRestClient context)
+        public RestRequestCredentials GetCredentials(IRestClient context)
         {
             return this.GetCredentials(AuthenticationContext.Current.Principal);
         }
@@ -48,7 +48,7 @@ namespace SanteDB.AdminConsole.Security
         /// Authenticate a user - this occurs when reauth is required
         /// </summary>
         /// <param name="context">Context.</param>
-        public Credentials Authenticate(IRestClient context)
+        public RestRequestCredentials Authenticate(IRestClient context)
         {
             if (SanteDB.AdminConsole.Shell.ApplicationContext.Current.Authenticate(new HttpBasicIdentityProvider(), context))
             {
@@ -61,7 +61,7 @@ namespace SanteDB.AdminConsole.Security
         /// <summary>
         /// Get credentials from the specified principal
         /// </summary>
-        public Credentials GetCredentials(IPrincipal principal)
+        public RestRequestCredentials GetCredentials(IPrincipal principal)
         {
             if (principal is IClaimsPrincipal)
             {

@@ -34,7 +34,7 @@ namespace SanteDB.AdminConsole.Security
     /// Represents credentials for this android application on all requests going to the OAuth service
     /// </summary>
     [ExcludeFromCodeCoverage]
-    public class OAuthTokenServiceCredentials : Credentials
+    public class OAuthTokenServiceCredentials : RestRequestCredentials
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="SanteDB.AdminConsole.Security.OAuthTokenServiceCredentials"/> class.

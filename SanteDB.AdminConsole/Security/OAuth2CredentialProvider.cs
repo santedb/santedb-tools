@@ -37,7 +37,7 @@ namespace SanteDB.AdminConsole.Security
         /// </summary>
         /// <returns>The credentials.</returns>
         /// <param name="context">Context.</param>
-        public Credentials GetCredentials(IRestClient context)
+        public RestRequestCredentials GetCredentials(IRestClient context)
         {
             // return this application's credentials
             return new OAuthTokenServiceCredentials(AuthenticationContext.Current.Principal);
@@ -47,7 +47,7 @@ namespace SanteDB.AdminConsole.Security
         /// Authentication request is required
         /// </summary>
         /// <param name="context">Context.</param>
-        public Credentials Authenticate(IRestClient context)
+        public RestRequestCredentials Authenticate(IRestClient context)
         {
             // return this application's credentials
             return new OAuthTokenServiceCredentials(AuthenticationContext.Current.Principal);
@@ -56,7 +56,7 @@ namespace SanteDB.AdminConsole.Security
         /// <summary>
         /// Get oauth credentials
         /// </summary>
-        public Credentials GetCredentials(IPrincipal principal)
+        public RestRequestCredentials GetCredentials(IPrincipal principal)
         {
             // return this application's credentials
             return new OAuthTokenServiceCredentials(AuthenticationContext.Current.Principal);

@@ -138,13 +138,17 @@ namespace SanteDB.SDK.AppletDebugger
 
                     var context = new DebuggerApplicationContext(consoleArgs, configurationManager);
                     ServiceUtil.Start(Guid.NewGuid(), context);
-                    if (configurationManager is InitialConfigurationManager)
+
+                    if (!consoleArgs.NoBrowser)
                     {
-                        Process.Start($"{consoleArgs.BaseUrl}/#!/config/initialSettings");
-                    }
-                    else
-                    {
-                        Process.Start($"{consoleArgs.BaseUrl}/#!/");
+                        if (configurationManager is InitialConfigurationManager)
+                        {
+                            Process.Start($"{consoleArgs.BaseUrl}/#!/config/initialSettings");
+                        }
+                        else
+                        {
+                            Process.Start($"{consoleArgs.BaseUrl}/#!/");
+                        }
                     }
                     ManualResetEvent stopEvent = new ManualResetEvent(false);
                     Console.CancelKeyPress += (o, e) =>

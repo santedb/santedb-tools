@@ -30,7 +30,7 @@ namespace SanteDB.AdminConsole.Security
     /// Represents a Credential which is a token credential
     /// </summary>
     [ExcludeFromCodeCoverage]
-    public class TokenCredentials : Credentials
+    public class TokenCredentials : RestRequestCredentials
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="SanteDB.AdminConsole.Security.TokenCredentials"/> class.

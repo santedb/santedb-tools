@@ -32,7 +32,6 @@ using System.Text;
 using System.Threading.Tasks;
 using SanteDB.Core.Data.Backup;
 using SanteDB.Tools.Debug.Services;
-using SanteDB.Client.Repositories;
 using SanteDB.Core;
 using SanteDB.Core.Diagnostics;
 using SanteDB.Rest.HDSI;
@@ -44,6 +43,10 @@ using SanteDB.Rest.Common;
 using SanteDB.DevTools.Services;
 using SanteDB.Client.Disconnected.Data.Synchronization.Configuration;
 using SanteDB.Rest.OAuth.Configuration;
+using SanteDB.Client.Upstream.Security;
+using SanteDB.Client.Upstream.Management;
+using SanteDB.Client.Upstream.Repositories;
+using SanteDB.Client.Repositories;
 
 namespace SanteDB.SDK.AppletDebugger.Configuration
 {
@@ -73,6 +76,8 @@ namespace SanteDB.SDK.AppletDebugger.Configuration
                     new TypeReferenceConfiguration(typeof(AppletLocalizationService)),
                     new TypeReferenceConfiguration(typeof(AppletBusinessRulesDaemon)),
                     new TypeReferenceConfiguration(typeof(DefaultUpstreamManagementService)),
+                    new TypeReferenceConfiguration(typeof(DefaultUpstreamIntegrationService)),
+                    new TypeReferenceConfiguration(typeof(DefaultUpstreamAvailabilityProvider)),
                     new TypeReferenceConfiguration(typeof(MemoryCacheService)),
                     new TypeReferenceConfiguration(typeof(DefaultThreadPoolService)),
                     new TypeReferenceConfiguration(typeof(ConsoleUserInterfaceInteractionProvider)),
@@ -88,6 +93,9 @@ namespace SanteDB.SDK.AppletDebugger.Configuration
                     new TypeReferenceConfiguration(typeof(UpstreamIdentityProvider)),
                     new TypeReferenceConfiguration(typeof(UpstreamApplicationIdentityProvider)),
                     new TypeReferenceConfiguration(typeof(UpstreamSecurityChallengeProvider)), // AmiSecurityChallengeProvider
+                    new TypeReferenceConfiguration(typeof(UpstreamRoleProviderService)),
+                    new TypeReferenceConfiguration(typeof(UpstreamSecurityRepository)),
+                    new TypeReferenceConfiguration(typeof(UpstreamRepositoryFactory)),
                     new TypeReferenceConfiguration(typeof(UpstreamPolicyInformationService)),
                     new TypeReferenceConfiguration(typeof(DataPolicyFilterService)),
                     new TypeReferenceConfiguration(typeof(DefaultOperatingSystemInfoService)),

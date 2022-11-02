@@ -67,6 +67,13 @@ namespace SanteDB.SDK.AppletDebugger
         public bool Restore { get; set; }
 
         /// <summary>
+        /// Don't launch browser
+        /// </summary>
+        [Parameter("nobrowser")]
+        [Description("When true, don't launch the default web-browser")]
+        public bool NoBrowser { get; set; }
+
+        /// <summary>
         /// Convert this object back to an argument list
         /// </summary>
         internal IEnumerable<String> ToArgumentList()
