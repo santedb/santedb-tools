@@ -719,9 +719,13 @@ namespace SanteDB.Tools.Debug.Services
             }
         }
 
+        /// <inheritdoc/>
         public bool Stop()
         {
-            throw new NotImplementedException();
+            this.Stopping?.Invoke(this, EventArgs.Empty);
+
+            this.Stopped?.Invoke(this, EventArgs.Empty);
+            return true;
         }
     }
 }

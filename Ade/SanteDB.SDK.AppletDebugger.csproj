@@ -212,6 +212,10 @@
           <Project>{09b39a55-466f-4678-a644-fdada2ac5b6a}</Project>
           <Name>SanteDB.Rest.WWW</Name>
         </ProjectReference>
+		 <ProjectReference Include="..\..\santedb-certs-bc\SanteDB.Security.Certs.BouncyCastle\SanteDB.Security.Certs.BouncyCastle.csproj">
+      <Project>{C4F21107-E045-4D8E-BDB3-BE67EDE5DD5B}</Project>
+      <Name>SanteDB.Security.Certs.BouncyCastle</Name>
+    </ProjectReference>
       </ItemGroup>
     </When>
     <Otherwise>
@@ -236,6 +240,7 @@
         <PackageReference Include="SanteDB.Cdss.Xml" Version="$(VersionNumber)" />
         <PackageReference Include="SanteDB.Core.Model.AMI" Version="$(VersionNumber)" />
         <PackageReference Include="SanteDB.Core.Model.RISI" Version="$(VersionNumber)" />
+		<PackageReference Include="SanteDB.Security.Certs.BouncyCastle" Version="$(VersionNumber)"/>
       </ItemGroup>
     </Otherwise>
   </Choose>
@@ -321,6 +326,7 @@
     <Compile Include="Properties\Version.cs" />
   </ItemGroup>
   <ItemGroup>
+   
     <ProjectReference Include="..\SanteDB.DevTools\SanteDB.DevTools.csproj">
       <Project>{223D4D87-6819-4F38-AE69-A82E249E1879}</Project>
       <Name>SanteDB.DevTools</Name>

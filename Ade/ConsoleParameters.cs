@@ -60,6 +60,13 @@ namespace SanteDB.SDK.AppletDebugger
         public StringCollection References { get; set; }
 
         /// <summary>
+        /// Bind the certificate 
+        /// </summary>
+        [Parameter("install-cert")]
+        [Description("Bind a debugging certificate to the HTTPs port")]
+        public bool AutoBindCertificate { get; set; }
+
+        /// <summary>
         /// Restore from backup
         /// </summary>
         [Parameter("restore")]

@@ -47,6 +47,7 @@ using SanteDB.Client.Upstream.Security;
 using SanteDB.Client.Upstream.Management;
 using SanteDB.Client.Upstream.Repositories;
 using SanteDB.Client.Repositories;
+using SanteDB.Security.Certs.BouncyCastle;
 
 namespace SanteDB.SDK.AppletDebugger.Configuration
 {
@@ -104,7 +105,8 @@ namespace SanteDB.SDK.AppletDebugger.Configuration
                     new TypeReferenceConfiguration(typeof(AuditDaemonService)),
                     new TypeReferenceConfiguration(typeof(DefaultDataSigningService)),
                     new TypeReferenceConfiguration(typeof(DefaultBarcodeProviderService)),
-                    new TypeReferenceConfiguration(typeof(FileSystemDispatcherQueueService))
+                    new TypeReferenceConfiguration(typeof(FileSystemDispatcherQueueService)),
+                    new TypeReferenceConfiguration(typeof(BouncyCastleCertificateGenerator))
             });
 
             // Security configuration
@@ -125,8 +127,7 @@ namespace SanteDB.SDK.AppletDebugger.Configuration
                     {
                         CredentialName = $"Debugee-{macAddress.Replace(" ", "")}",
                         Conveyance = UpstreamCredentialConveyance.Secret,
-                        CredentialType = UpstreamCredentialType.Device,
-                        CredentialSecret = Guid.NewGuid().ToByteArray().HexEncode()
+                        CredentialType = UpstreamCredentialType.Device
                     },
                     new UpstreamCredentialConfiguration()
                     {

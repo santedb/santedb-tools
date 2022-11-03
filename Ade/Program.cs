@@ -25,6 +25,7 @@ using SanteDB.Core;
 using SanteDB.Core.Services;
 using SanteDB.Core.Services.Impl;
 using SanteDB.DevTools.Configuration;
+using SanteDB.Security.Certs.BouncyCastle;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -137,6 +138,11 @@ namespace SanteDB.SDK.AppletDebugger
                     }
 
                     var context = new DebuggerApplicationContext(consoleArgs, configurationManager);
+
+                    if(consoleArgs.AutoBindCertificate)
+                    {
+                        RestDebugCertificateInstallation.InstallDebuggerCertificate(new Uri(consoleArgs.BaseUrl), new BouncyCastleCertificateGenerator());
+                    }
                     ServiceUtil.Start(Guid.NewGuid(), context);
 
                     if (!consoleArgs.NoBrowser)
