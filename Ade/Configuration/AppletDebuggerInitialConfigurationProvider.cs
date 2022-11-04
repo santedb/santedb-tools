@@ -62,7 +62,6 @@ namespace SanteDB.SDK.AppletDebugger.Configuration
         public SanteDBConfiguration Provide(SanteDBHostType hostContext, SanteDBConfiguration configuration)
         {
 
-
             var appServiceSection = configuration.GetSection<ApplicationServiceContextConfigurationSection>();
             var instanceName = appServiceSection.InstanceName;
             var localDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "santedb", "sdk", "ade", instanceName);
@@ -145,6 +144,24 @@ namespace SanteDB.SDK.AppletDebugger.Configuration
                 RestClientType = new TypeReferenceConfiguration(typeof(RestClient))
             };
 
+            configuration.AddSection(new SecurityConfigurationSection()
+            {
+                PasswordRegex = @"^(?=.*\d){1,}(?=.*[a-z]){1,}(?=.*[A-Z]){1,}(?=.*[^\w\d]){1,}.{6,}$",
+                SecurityPolicy = new List<SecurityPolicyConfiguration>()
+                {
+                    new SecurityPolicyConfiguration(SecurityPolicyIdentification.SessionLength, new TimeSpan(0,30,0)),
+                    new SecurityPolicyConfiguration(SecurityPolicyIdentification.RefreshLength, new TimeSpan(0,35,0))
+                },
+                Signatures = new List<SanteDB.Core.Security.Configuration.SecuritySignatureConfiguration>()
+                {
+                    new SanteDB.Core.Security.Configuration.SecuritySignatureConfiguration()
+                    {
+                        KeyName ="default",
+                        Algorithm = SanteDB.Core.Security.Configuration.SignatureAlgorithm.HS256,
+                        HmacSecret = "@SanteDBDefault$$$2021"
+                    }
+                }
+            });
             // Trace writer
 #if DEBUG
             DiagnosticsConfigurationSection diagSection = new DiagnosticsConfigurationSection()
@@ -204,6 +221,7 @@ namespace SanteDB.SDK.AppletDebugger.Configuration
             });
             configuration.Sections.Add(new OAuthConfigurationSection()
             {
+                IssuerName = upstreamConfiguration.Credentials[0].CredentialName,
                 AllowClientOnlyGrant = false,
                 JwtSigningKey = "jwsdefault",
                 TokenType = "bearer"

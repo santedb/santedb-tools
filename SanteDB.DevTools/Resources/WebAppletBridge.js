@@ -23,15 +23,30 @@
 var guidSeed = null;
 
 // SanteDB Self-Hosted SHIM
-setInterval(function () {
-    $.getJSON({
-        url: "/app/Online",
-        success: function (data) { __SanteDBAppService.state = data; }
-    });
-}, 10000);
+setInterval(__SanteDBAppService.GetStatus, 10000);
 
 __SanteDBAppService.GetStatus = function () {
-    return '[ "Dummy Status", 0 ]';
+    return new Promise(function (fulfill, reject) {
+        $.getJSON({
+            url: "/app/State",
+            success: function (data) { __SanteDBAppService.state = data; fulfill(data); }
+        });
+    });
+}
+
+__SanteDBAppService.GetClientId = function () {
+    if (__SanteDBAppService.state)
+        return __SanteDBAppService.state.client_id;
+}
+
+__SanteDBAppService.GetRealm = function () {
+    if (__SanteDBAppService.state)
+        return __SanteDBAppService.state.realm_name;
+}
+
+__SanteDBAppService.GetDeviceId = function () {
+    if (__SanteDBAppService.state)
+        return __SanteDBAppService.state.device_id;
 }
 
 __SanteDBAppService.ShowToast = function (string) {

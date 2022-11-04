@@ -18,12 +18,14 @@ namespace SanteDB.DevTools.Services
     public class WebAppletHostBridgeProvider : IAppletHostBridgeProvider
     {
         private string m_shim;
-
+      
         /// <summary>
         /// DI constructor
         /// </summary>
         public WebAppletHostBridgeProvider()
         {
+
+
         }
 
         /// <summary>
