@@ -206,7 +206,7 @@ namespace SanteDB.AdminConsole.Shell
 
                     if (itm.Capabilities.HasFlag(ServiceEndpointCapabilities.Compression))
                     {
-                        config.Binding.Optimize = true;
+                        config.Binding.CompressRequests = true;
                     }
 
                     if (itm.Capabilities.HasFlag(ServiceEndpointCapabilities.BearerAuth))

@@ -41,7 +41,7 @@ __SanteDBAppService.GetClientId = function () {
 
 __SanteDBAppService.GetRealm = function () {
     if (__SanteDBAppService.state)
-        return __SanteDBAppService.state.realm_name;
+        return __SanteDBAppService.state.realm;
 }
 
 __SanteDBAppService.GetDeviceId = function () {

@@ -42,7 +42,7 @@ namespace SanteDB.AdminConsole.Security
         private readonly Dictionary<String, String> claimMap = new Dictionary<string, string>() {
             { "unique_name", SanteDBClaimTypes.DefaultNameClaimType },
             { "role", SanteDBClaimTypes.DefaultRoleClaimType },
-            { "sub", SanteDBClaimTypes.Sid },
+            { "sub", SanteDBClaimTypes.SecurityId },
             { "authmethod", SanteDBClaimTypes.AuthenticationMethod },
             { "exp", SanteDBClaimTypes.Expiration },
             { "nbf", SanteDBClaimTypes.AuthenticationInstant },

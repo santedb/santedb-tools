@@ -51,8 +51,9 @@ namespace SanteDB.SDK.AppletDebugger
             consoleArgs.InstanceName = consoleArgs.InstanceName ?? "default";
 
             // Setup basic parameters
-            string appDataDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "santedb", "sdk", "ade", consoleArgs.InstanceName);
-            string appConfigDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "santedb", "sdk", "ade", consoleArgs.InstanceName);
+            string appDataDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "santedb", "sdk", "ade", consoleArgs.InstanceName);
+            string appConfigDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "santedb", "sdk", "ade", consoleArgs.InstanceName);
+            AppDomain.CurrentDomain.SetData(DebuggerApplicationContext.AppDataDirectorySetting, appDataDirectory);
 
             // Create dependent directories
             if (!Directory.Exists(appDataDirectory))

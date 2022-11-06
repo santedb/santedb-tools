@@ -64,7 +64,7 @@ namespace SanteDB.SDK.AppletDebugger.Configuration
 
             var appServiceSection = configuration.GetSection<ApplicationServiceContextConfigurationSection>();
             var instanceName = appServiceSection.InstanceName;
-            var localDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "santedb", "sdk", "ade", instanceName);
+            var localDataPath = AppDomain.CurrentDomain.GetData("DataDirectory").ToString();
 
             appServiceSection.ServiceProviders.AddRange(new List<TypeReferenceConfiguration>() {
                     new TypeReferenceConfiguration(typeof(AesSymmetricCrypographicProvider)),
@@ -138,11 +138,7 @@ namespace SanteDB.SDK.AppletDebugger.Configuration
                 }
             };
 
-            // Rest Client Configuration
-            RestClientConfigurationSection serviceSection = new RestClientConfigurationSection()
-            {
-                RestClientType = new TypeReferenceConfiguration(typeof(RestClient))
-            };
+          
 
             configuration.AddSection(new SecurityConfigurationSection()
             {
@@ -163,6 +159,13 @@ namespace SanteDB.SDK.AppletDebugger.Configuration
                 }
             });
             // Trace writer
+            
+            var logDirectory = Path.Combine(localDataPath, "log");
+            if(!Directory.Exists(logDirectory))
+            {
+                Directory.CreateDirectory(logDirectory);
+            }
+
 #if DEBUG
             DiagnosticsConfigurationSection diagSection = new DiagnosticsConfigurationSection()
             {
@@ -174,7 +177,7 @@ namespace SanteDB.SDK.AppletDebugger.Configuration
                     },
                     new TraceWriterConfiguration() {
                         Filter = System.Diagnostics.Tracing.EventLevel.Warning,
-                        InitializationData = Path.Combine(localDataPath, "log", "santedb.log"),
+                        InitializationData = Path.Combine(logDirectory, "santedb.log"),
                         TraceWriter = typeof(RolloverTextWriterTraceWriter)
                     },
                     new TraceWriterConfiguration() {
@@ -190,7 +193,7 @@ namespace SanteDB.SDK.AppletDebugger.Configuration
                 TraceWriter = new List<TraceWriterConfiguration>() {
                     new TraceWriterConfiguration () {
                         Filter = System.Diagnostics.Tracing.EventLevel.Informational,
-                        InitializationData = "SanteDB",
+                        InitializationData = Path.Combine(logDirectory, "santedb.log"),
                         TraceWriter = typeof(RolloverTextWriterTraceWriter)
                     },
                     new TraceWriterConfiguration() {
@@ -226,9 +229,12 @@ namespace SanteDB.SDK.AppletDebugger.Configuration
                 JwtSigningKey = "jwsdefault",
                 TokenType = "bearer"
             });
+            configuration.Sections.Add(new ClientConfigurationSection()
+            {
+                AutoUpdateApplets = true
+            });
             configuration.Sections.Add(diagSection);
             configuration.Sections.Add(upstreamConfiguration);
-            configuration.Sections.Add(serviceSection);
             configuration.Sections.Add(new AuditAccountabilityConfigurationSection()
             {
                 AuditFilters = new List<AuditFilterConfiguration>()
