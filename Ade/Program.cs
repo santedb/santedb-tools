@@ -135,7 +135,7 @@ namespace SanteDB.SDK.AppletDebugger
                     }
                     else
                     {
-                        configurationManager = new InitialConfigurationManager(SanteDBHostType.Gateway, consoleArgs.InstanceName);
+                        configurationManager = new InitialConfigurationManager(SanteDBHostType.Gateway, consoleArgs.InstanceName, configurationFile);
                     }
 
                     var context = new DebuggerApplicationContext(consoleArgs, configurationManager);
@@ -158,8 +158,11 @@ namespace SanteDB.SDK.AppletDebugger
                         }
                     }
                     ManualResetEvent stopEvent = new ManualResetEvent(false);
+
+                    bool isUserInitiatedShutdown = false;
                     Console.CancelKeyPress += (o, e) =>
                     {
+                        isUserInitiatedShutdown = true;
                         ServiceUtil.Stop();
                         stopEvent.Set();
                     };
@@ -171,7 +174,11 @@ namespace SanteDB.SDK.AppletDebugger
 
                     Console.WriteLine("Press CTRL+C key to close...");
                     stopEvent.WaitOne();
-
+                    if (!isUserInitiatedShutdown)
+                    {
+                        Console.WriteLine("Exiting in 5 seconds");
+                        Thread.Sleep(1000);
+                    }
                 }
                 catch (Exception e)
                 {
@@ -182,6 +189,7 @@ namespace SanteDB.SDK.AppletDebugger
                 {
                     Console.ResetColor();
                 }
+
             }
         }
     }

@@ -57,13 +57,12 @@ namespace SanteDB.SDK.AppletDebugger
         /// <inheritdoc/>
         protected override void OnRestartRequested(object sender)
         {
+            // Delay fire - allow other objects to finish up on the restart request event
+            Thread.Sleep(1000);
             ServiceUtil.Stop();
             Console.WriteLine("Will restart context, waiting for main teardown in 5 seconds...");
-            // Service stopped the context so we want to restart
-            Thread.Sleep(5000);
             var pi = new ProcessStartInfo(typeof(Program).Assembly.Location, string.Join(" ", this.m_consoleParameters.ToArgumentList())) ;
-            Process.Start(pi);
-            Environment.Exit(0);
+            var process = Process.Start(pi);
         }
     }
 }

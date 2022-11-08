@@ -18,7 +18,8 @@ namespace SanteDB.DevTools.Services
     public class WebAppletHostBridgeProvider : IAppletHostBridgeProvider
     {
         private string m_shim;
-      
+        private IAppletManagerService m_appletService;
+
         /// <summary>
         /// DI constructor
         /// </summary>
@@ -36,7 +37,12 @@ namespace SanteDB.DevTools.Services
 
             if (this.m_shim == null)
             {
-                var appletManagerService = ApplicationServiceContext.Current.GetService<IAppletManagerService>();
+                // Prevent against circular dependency
+                if (this.m_appletService == null)
+                {
+                    this.m_appletService = ApplicationServiceContext.Current.GetService<IAppletManagerService>();
+                    this.m_appletService.Changed += (o, e) => this.m_shim = null;
+                }
                 var localizationService = ApplicationServiceContext.Current.GetService<ILocalizationService>();
 
                 using (var sw = new StringWriter())
@@ -65,7 +71,7 @@ namespace SanteDB.DevTools.Services
 
                     sw.WriteLine("__SanteDBAppService.GetTemplateForm = function(templateId) {");
                     sw.WriteLine("\tswitch(templateId) {");
-                    foreach (var itm in appletManagerService.Applets.SelectMany(o => o.Templates))
+                    foreach (var itm in m_appletService.Applets.SelectMany(o => o.Templates))
                     {
                         sw.WriteLine("\t\tcase '{0}': return '{1}'; break;", itm.Mnemonic.ToLowerInvariant(), itm.Form);
                     }
@@ -74,7 +80,7 @@ namespace SanteDB.DevTools.Services
 
                     sw.WriteLine("__SanteDBAppService.GetTemplateView = function(templateId) {");
                     sw.WriteLine("\tswitch(templateId) {");
-                    foreach (var itm in appletManagerService.Applets.SelectMany(o => o.Templates))
+                    foreach (var itm in m_appletService.Applets.SelectMany(o => o.Templates))
                     {
                         sw.WriteLine("\t\tcase '{0}': return '{1}'; break;", itm.Mnemonic.ToLowerInvariant(), itm.View);
                     }
@@ -82,12 +88,12 @@ namespace SanteDB.DevTools.Services
                     sw.WriteLine("}");
 
                     sw.WriteLine("__SanteDBAppService.GetTemplates = function() {");
-                    sw.WriteLine("return '[{0}]'", String.Join(",", appletManagerService.Applets.SelectMany(o => o.Templates).Where(o => o.Public).Select(o => $"\"{o.Mnemonic}\"")));
+                    sw.WriteLine("return '[{0}]'", String.Join(",", m_appletService.Applets.SelectMany(o => o.Templates).Where(o => o.Public).Select(o => $"\"{o.Mnemonic}\"")));
                     sw.WriteLine("}");
                     sw.WriteLine("__SanteDBAppService.GetDataAsset = function(assetId) {");
                     sw.WriteLine("\tswitch(assetId) {");
-                    foreach (var itm in appletManagerService.Applets.SelectMany(o => o.Assets).Where(o => o.Name.StartsWith("data/")))
-                        sw.WriteLine("\t\tcase '{0}': return '{1}'; break;", itm.Name.Replace("data/", ""), Convert.ToBase64String(appletManagerService.Applets.RenderAssetContent(itm)).Replace("'", "\\'"));
+                    foreach (var itm in m_appletService.Applets.SelectMany(o => o.Assets).Where(o => o.Name.StartsWith("data/")))
+                        sw.WriteLine("\t\tcase '{0}': return '{1}'; break;", itm.Name.Replace("data/", ""), Convert.ToBase64String(m_appletService.Applets.RenderAssetContent(itm)).Replace("'", "\\'"));
                     sw.WriteLine("\t}");
                     sw.WriteLine("}");
                     using (var streamReader = new StreamReader(typeof(WebAppletHostBridgeProvider).Assembly.GetManifestResourceStream("SanteDB.DevTools.Resources.WebAppletBridge.js")))

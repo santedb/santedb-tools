@@ -108,6 +108,26 @@ namespace SanteDB.SDK.AppletDebugger.Configuration
                     new TypeReferenceConfiguration(typeof(BouncyCastleCertificateGenerator))
             });
 
+            appServiceSection.AppSettings.Add(new AppSettingKeyValuePair("input.name", "simple"));
+            appServiceSection.AppSettings.Add(new AppSettingKeyValuePair("input.address", "text"));
+            appServiceSection.AppSettings.Add(new AppSettingKeyValuePair("optional.patient.address.city", "true"));
+            appServiceSection.AppSettings.Add(new AppSettingKeyValuePair("optional.patient.address.county", "true"));
+            appServiceSection.AppSettings.Add(new AppSettingKeyValuePair("optional.patient.address.state", "false"));
+            appServiceSection.AppSettings.Add(new AppSettingKeyValuePair("optional.patient.name.family", "false"));
+            appServiceSection.AppSettings.Add(new AppSettingKeyValuePair("optional.patient.address.given", "false"));
+            appServiceSection.AppSettings.Add(new AppSettingKeyValuePair("forbid.patient.address.state", "false"));
+            appServiceSection.AppSettings.Add(new AppSettingKeyValuePair("forbid.patient.address.county", "true"));
+            appServiceSection.AppSettings.Add(new AppSettingKeyValuePair("forbid.patient.address.city", "false"));
+            appServiceSection.AppSettings.Add(new AppSettingKeyValuePair("forbid.patient.address.precinct", "true"));
+            appServiceSection.AppSettings.Add(new AppSettingKeyValuePair("forbid.patient.name.prefix", "true"));
+            appServiceSection.AppSettings.Add(new AppSettingKeyValuePair("forbid.patient.name.suffix", "true"));
+            appServiceSection.AppSettings.Add(new AppSettingKeyValuePair("forbid.patient.name.family", "false"));
+            appServiceSection.AppSettings.Add(new AppSettingKeyValuePair("forbid.patient.name.given", "false"));
+            appServiceSection.AppSettings.Add(new AppSettingKeyValuePair("allow.patient.religion", "false"));
+            appServiceSection.AppSettings.Add(new AppSettingKeyValuePair("allow.patient.ethnicity", "false"));
+            appServiceSection.AppSettings = appServiceSection.AppSettings.OrderBy(o => o.Key).ToList();
+
+
             // Security configuration
             var wlan = NetworkInterface.GetAllNetworkInterfaces().FirstOrDefault(o => o.NetworkInterfaceType == NetworkInterfaceType.Ethernet || o.Description.StartsWith("wlan"));
             String macAddress = Guid.NewGuid().ToString();
@@ -247,6 +267,7 @@ namespace SanteDB.SDK.AppletDebugger.Configuration
             });
             configuration.Sections.Add(new SynchronizationConfigurationSection()
             {
+                Mode = SynchronizationMode.Online,
                 PollInterval = new TimeSpan(0, 15, 0),
                 ForbidSending = new List<ResourceTypeReferenceConfiguration>()
                 {
