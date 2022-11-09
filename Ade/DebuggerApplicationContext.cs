@@ -60,7 +60,6 @@ namespace SanteDB.SDK.AppletDebugger
             // Delay fire - allow other objects to finish up on the restart request event
             Thread.Sleep(1000);
             ServiceUtil.Stop();
-            Console.WriteLine("Will restart context, waiting for main teardown in 5 seconds...");
             var pi = new ProcessStartInfo(typeof(Program).Assembly.Location, string.Join(" ", this.m_consoleParameters.ToArgumentList())) ;
             var process = Process.Start(pi);
         }
