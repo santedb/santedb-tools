@@ -23,7 +23,7 @@
 var guidSeed = null;
 
 // SanteDB Self-Hosted SHIM
-setInterval(__SanteDBAppService.GetStatus, 10000);
+setInterval(() => __SanteDBAppService.GetStatus(), 10000);
 
 __SanteDBAppService.GetStatus = function () {
     return new Promise(function (fulfill, reject) {

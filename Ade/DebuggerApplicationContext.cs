@@ -50,6 +50,7 @@ namespace SanteDB.SDK.AppletDebugger
             {
                 appletConfiguration.AppletsToDebug.AddRange(debugParameters.AppletDirectories.OfType<String>());
             }
+            configurationManager.Configuration.RemoveSection<DebugAppletConfigurationSection>();
             configurationManager.Configuration.AddSection(appletConfiguration);
             this.ServiceManager.AddServiceProvider(typeof(DebugAppletManagerService));
         }

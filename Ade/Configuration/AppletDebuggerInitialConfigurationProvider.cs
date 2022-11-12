@@ -48,6 +48,7 @@ using SanteDB.Client.Upstream.Management;
 using SanteDB.Client.Upstream.Repositories;
 using SanteDB.Client.Repositories;
 using SanteDB.Security.Certs.BouncyCastle;
+using SanteDB.Core.Data;
 
 namespace SanteDB.SDK.AppletDebugger.Configuration
 {
@@ -105,7 +106,8 @@ namespace SanteDB.SDK.AppletDebugger.Configuration
                     new TypeReferenceConfiguration(typeof(DefaultDataSigningService)),
                     new TypeReferenceConfiguration(typeof(DefaultBarcodeProviderService)),
                     new TypeReferenceConfiguration(typeof(FileSystemDispatcherQueueService)),
-                    new TypeReferenceConfiguration(typeof(BouncyCastleCertificateGenerator))
+                    new TypeReferenceConfiguration(typeof(BouncyCastleCertificateGenerator)),
+                    new TypeReferenceConfiguration(typeof(RepositoryEntitySource))
             });
 
             appServiceSection.AppSettings.Add(new AppSettingKeyValuePair("input.name", "simple"));

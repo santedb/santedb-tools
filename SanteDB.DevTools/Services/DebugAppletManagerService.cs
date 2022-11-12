@@ -23,7 +23,7 @@ namespace SanteDB.Tools.Debug.Services
     /// <summary>
     /// The applet manager service which manages applets using files
     /// </summary>
-    public class DebugAppletManagerService : IAppletManagerService, IDaemonService
+    public class DebugAppletManagerService : IAppletManagerService, IAppletSolutionManagerService
     {
 
         // XSD SanteDB
@@ -45,6 +45,7 @@ namespace SanteDB.Tools.Debug.Services
 
         // RO applet collection
         private ReadonlyAppletCollection m_readonlyAppletCollection;
+        private AppletManifest m_solution;
 
         // Configuration 
         private readonly DebugAppletConfigurationSection m_configuration;
@@ -68,6 +69,7 @@ namespace SanteDB.Tools.Debug.Services
             this.m_threadPoolService = threadPoolService;
             this.m_appletCollection.Resolver = this.ResolveAppletAsset;
             this.m_appletCollection.CachePages = false;
+            this.Initialize();
         }
 
         /// <summary>
@@ -76,23 +78,29 @@ namespace SanteDB.Tools.Debug.Services
         public ReadonlyAppletCollection Applets => this.m_readonlyAppletCollection;
 
         /// <inheritdoc/>
-        public bool IsRunning => true;
+        public string ServiceName => "Debug Applet Manager";
 
         /// <inheritdoc/>
-        public string ServiceName => "Debug Applet Manager";
+        public IEnumerable<AppletSolution> Solutions
+        {
+            get
+            {
+                if (this.m_solution != null)
+                {
+                    yield return new AppletSolution()
+                    {
+                        Meta = this.m_solution?.Info,
+                        Include = this.Applets.Select(o => o.CreatePackage()).ToList()
+                    };
+                }
+            }
+        }
 
         /// <summary>
         /// Fired when the applet contents have changed
         /// </summary>
         public event EventHandler Changed;
-        /// <inheritdoc/>
-        public event EventHandler Starting;
-        /// <inheritdoc/>
-        public event EventHandler Started;
-        /// <inheritdoc/>
-        public event EventHandler Stopping;
-        /// <inheritdoc/>
-        public event EventHandler Stopped;
+  
 
         /// <inheritdoc/>
         public AppletManifest GetApplet(string appletId)
@@ -548,10 +556,8 @@ namespace SanteDB.Tools.Debug.Services
         }
 
         /// <inheritdoc/>
-        public bool Start()
+        public void Initialize()
         {
-            this.Starting?.Invoke(this, EventArgs.Empty);
-
             try
             {
                 this.LoadReferences();
@@ -562,8 +568,6 @@ namespace SanteDB.Tools.Debug.Services
             {
                 throw new InvalidOperationException("Could not start the debug application context", e);
             }
-            this.Started?.Invoke(this, EventArgs.Empty);
-            return true;
         }
 
         /// <summary>
@@ -633,8 +637,9 @@ namespace SanteDB.Tools.Debug.Services
             {
                 using (var fs = File.OpenRead(this.m_configuration.SolutionToDebug))
                 {
-                    var solution = AppletManifest.Load(fs);
+                    var solution = AppletManifest.Load(fs) ;
 
+                    this.m_solution = solution;
                     // Load include elements
                     var solnDir = Path.GetDirectoryName(this.m_configuration.SolutionToDebug);
 
@@ -720,12 +725,27 @@ namespace SanteDB.Tools.Debug.Services
         }
 
         /// <inheritdoc/>
-        public bool Stop()
+        public ReadonlyAppletCollection GetApplets(string solutionId)
         {
-            this.Stopping?.Invoke(this, EventArgs.Empty);
+            return this.Applets; // There is only one "solution" here
+        }
 
-            this.Stopped?.Invoke(this, EventArgs.Empty);
+        /// <inheritdoc/>
+        public bool Install(AppletSolution solution, bool isUpgrade = false)
+        {
             return true;
+        }
+
+        /// <inheritdoc/>
+        public AppletManifest GetApplet(string solutionId, string appletId)
+        {
+            return this.GetApplet(appletId);
+        }
+
+        /// <inheritdoc/>
+        public byte[] GetPackage(string solutionId, string appletId)
+        {
+            return this.GetPackage(appletId);
         }
     }
 }
