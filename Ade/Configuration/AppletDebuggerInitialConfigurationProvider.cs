@@ -57,6 +57,10 @@ namespace SanteDB.SDK.AppletDebugger.Configuration
     /// </summary>
     public class AppletDebuggerInitialConfigurationProvider : IInitialConfigurationProvider
     {
+
+        /// <inheritdoc/>
+        public int Order => Int32.MinValue;
+
         /// <summary>
         /// Provide the default configuration
         /// </summary>
@@ -269,7 +273,7 @@ namespace SanteDB.SDK.AppletDebugger.Configuration
             });
             configuration.Sections.Add(new SynchronizationConfigurationSection()
             {
-                Mode = SynchronizationMode.Online,
+                Mode = SynchronizationMode.Partial,
                 PollInterval = new TimeSpan(0, 15, 0),
                 ForbidSending = new List<ResourceTypeReferenceConfiguration>()
                 {

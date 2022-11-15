@@ -37,6 +37,10 @@ namespace SanteDB.SDK.AppletDebugger.Configuration
     /// </summary>
     public class MetadataInitialConfigurationProvider : IInitialConfigurationProvider
     {
+
+        /// <inheritdoc/>
+        public int Order => 0;
+
         /// <summary>
         /// Get the default configuration for this service
         /// </summary>
