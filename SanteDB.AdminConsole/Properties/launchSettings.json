@@ -1,0 +1,7 @@
+{
+  "profiles": {
+    "SanteDB.AdminConsole": {
+      "commandName": "Project"
+    }
+  }
+}
