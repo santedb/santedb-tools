@@ -54,15 +54,12 @@ namespace SanteDB.AdminConsole
             {
                 try
                 {
-                    // Add a console trace output
-                    if (!String.IsNullOrEmpty(options.Verbosity))
+                    if (string.IsNullOrEmpty(options.Verbosity))
                     {
-                        Tracer.AddWriter(new Shell.ConsoleTraceWriter(options.Verbosity, new Dictionary<String, EventLevel>()), (EventLevel)Enum.Parse(typeof(EventLevel), options.Verbosity));
+                        options.Verbosity = "Error";
                     }
-                    else
-                    {
-                        Tracer.AddWriter(new Shell.ConsoleTraceWriter("Error", new Dictionary<String, EventLevel>()), EventLevel.Error);
-                    }
+
+                    Tracer.AddWriter(new Shell.ConsoleTraceWriter(options.Verbosity, new Dictionary<String, EventLevel>()), (EventLevel)Enum.Parse(typeof(EventLevel), options.Verbosity));
 
                     ApplicationContext.Initialize(options);
                     ApplicationContext.Current.Start();

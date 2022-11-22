@@ -78,6 +78,9 @@
           <Project>{450e9519-c573-4f07-addd-8d0c74b975ff}</Project>
           <Name>SanteDB.AdminConsole.Api</Name>
         </ProjectReference>
+        <ProjectReference Include="..\..\santedb-dc-core\SanteDB.Client\SanteDB.Client.csproj">
+          <Name>SanteDB.Client</Name>
+        </ProjectReference>
       </ItemGroup>
     </When>
     <Otherwise>
@@ -91,7 +94,14 @@
         <PackageReference Include="SanteDB.Messaging.HDSI.Client" Version="$(VersionNumber)" />
         <PackageReference Include="SanteDB.Core.Model.AMI" Version="$(VersionNumber)" />
         <PackageReference Include="SanteDB.AdminConsole.Api" Version="$(VersionNumber)" />
+        <PackageReference Include="SanteDB.Client" Version="$(VersionNumber)" />
       </ItemGroup>
     </Otherwise>
   </Choose>
+  <ItemGroup>
+    <ProjectReference Include="..\..\santedb-i18n\SanteDB.Core.i18n\SanteDB.Core.i18n.csproj">
+      <Project>{CA7B81DC-B789-4AF6-A079-EC84259C101A}</Project>
+      <Name>SanteDB.Core.i18n</Name>
+    </ProjectReference>
+  </ItemGroup>
 </Project>

@@ -1,7 +1,8 @@
 {
   "profiles": {
     "SanteDB.AdminConsole": {
-      "commandName": "Project"
+      "commandName": "Project",
+      "commandLineArgs": "-v Verbose"
     }
   }
 }
