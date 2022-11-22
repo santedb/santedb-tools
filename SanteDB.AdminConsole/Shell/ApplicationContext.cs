@@ -167,17 +167,18 @@ namespace SanteDB.AdminConsole.Shell
         /// </summary>
         public void Start()
         {
-            Tracer.TraceInfo("Initializing Services");
-            AddServices();
-
-            this.Tracer.TraceInfo("Starting mini-context");
-
-            String scheme = this.Configuration.UseTls ? "https" : "http",
-                host = $"{scheme}://{this.Configuration.RealmId}:{this.Configuration.Port}/";
-
-            this.Tracer.TraceInfo("Contacting {0}", host);
             try
             {
+                Tracer.TraceInfo("Initializing Services");
+                AddServices();
+
+                this.Tracer.TraceInfo("Starting mini-context");
+
+                String scheme = this.Configuration.UseTls ? "https" : "http",
+                    host = $"{scheme}://{this.Configuration.RealmId}:{this.Configuration.Port}/";
+
+                this.Tracer.TraceInfo("Contacting {0}", host);
+
                 // Options on AMI
                 var optionDescription = new RestClientDescriptionConfiguration()
                 {
@@ -198,9 +199,9 @@ namespace SanteDB.AdminConsole.Shell
                     WebRequest.DefaultWebProxy = new WebProxy(this.Configuration.Proxy);
                 }
 
-                this.Tracer.TraceVerbose("Setting up endpoint : {0}/ami", host);
+                this.Tracer.TraceVerbose("Setting up endpoint : {0}ami", host);
 
-                optionDescription.Endpoint.Add(new RestClientEndpointConfiguration($"{host}/ami"));
+                optionDescription.Endpoint.Add(new RestClientEndpointConfiguration($"{host}ami"));
                 var boostrapamiclient = new AmiServiceClient(new RestClient(optionDescription));
 
                 // get options
@@ -301,7 +302,8 @@ namespace SanteDB.AdminConsole.Shell
         public IRestClient GetRestClient(string clientName)
         {
             IRestClient retVal = null;
-            if (!TryGetRestClient(clientName, out retVal)) {
+            if (!TryGetRestClient(clientName, out retVal))
+            {
                 throw new KeyNotFoundException(clientName);
             }
             return retVal;

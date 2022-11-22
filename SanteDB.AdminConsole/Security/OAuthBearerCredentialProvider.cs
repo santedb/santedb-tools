@@ -32,6 +32,12 @@ namespace SanteDB.AdminConsole.Security
         {
             var app = Shell.ApplicationContext.Current;
 
+            if (AuthenticationContext.Current.Principal is OAuthClaimsPrincipal oacp)
+            {
+                //TODO: Validate that the token isn't expired.
+                return new OAuthBearerTokenCredentials(oacp);
+            }
+
             while (true)
             {
                 Console.WriteLine("Access denied, authentication required.");
