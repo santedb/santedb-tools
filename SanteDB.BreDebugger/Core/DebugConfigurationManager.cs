@@ -190,7 +190,7 @@ namespace SanteDB.SDL.BreDebugger.Core
                         new TypeReferenceConfiguration(typeof(SanteDB.Core.Services.Impl.DefaultThreadPoolService)),
                         new TypeReferenceConfiguration(typeof(MemorySessionManagerService)),
                         new TypeReferenceConfiguration(typeof(AmiUpdateManager)),
-                        new TypeReferenceConfiguration(typeof(AppletClinicalProtocolRepository)),
+                        new TypeReferenceConfiguration(typeof(AppletClinicalProtocolInstaller)),
                         new TypeReferenceConfiguration(typeof(MemoryQueryPersistenceService)),
                         new TypeReferenceConfiguration(typeof(SimpleQueueFileProvider)),
                         new TypeReferenceConfiguration(typeof(SimpleCarePlanService)),

@@ -18,6 +18,7 @@
  * Date: 2021-8-27
  */
 using MohawkCollege.Util.Console.Parameters;
+using SanteDB.Core.Configuration.Http;
 using SanteDB.Core.Http;
 using SanteDB.Core.Model.Collection;
 using SanteDB.Core.Model.Constants;
@@ -25,8 +26,6 @@ using SanteDB.Core.Model.DataTypes;
 using SanteDB.Core.Model.Entities;
 using SanteDB.Core.Model.Roles;
 using SanteDB.Core.Security;
-using SanteDB.DisconnectedClient.Http;
-using SanteDB.DisconnectedClient.Security;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -92,13 +91,13 @@ namespace SanteDB.PatientImporter
                     {
                         // Authority key?
                         if (!string.IsNullOrEmpty(parms.EnterpriseIdDomain))
-                            enterpriseDomain = client.Get<Bundle>("AssigningAuthority", new KeyValuePair<string, object>("domainName", parms.EnterpriseIdDomain)).Item.First().Key.Value;
+                            enterpriseDomain = client.Get<Bundle>("AssigningAuthority", $"domainName={parms.EnterpriseIdDomain}".ParseQueryString()).Item.First().Key.Value;
                         if (!string.IsNullOrEmpty(parms.MrnDomain))
-                            mrnDomain = client.Get<Bundle>("AssigningAuthority", new KeyValuePair<string, object>("domainName", parms.MrnDomain)).Item.First().Key.Value;
+                            mrnDomain = client.Get<Bundle>("AssigningAuthority", $"domainName={parms.MrnDomain}".ParseQueryString()).Item.First().Key.Value;
                         if (!string.IsNullOrEmpty(parms.SsnDomain))
-                            ssnDomain = client.Get<Bundle>("AssigningAuthority", new KeyValuePair<string, object>("domainName", parms.SsnDomain)).Item.First().Key.Value;
+                            ssnDomain = client.Get<Bundle>("AssigningAuthority", $"domainName={parms.SsnDomain}".ParseQueryString()).Item.First().Key.Value;
                         if (!string.IsNullOrEmpty(parms.FebrlDomain))
-                            febrlDomain = client.Get<Bundle>("AssigningAuthority", new KeyValuePair<string, object>("domainName", parms.FebrlDomain)).Item.First().Key.Value;
+                            febrlDomain = client.Get<Bundle>("AssigningAuthority", $"domainName={parms.FebrlDomain}".ParseQueryString()).Item.First().Key.Value;
                     }
                 }
 
@@ -137,9 +136,9 @@ namespace SanteDB.PatientImporter
         /// <param name="secured">If the client should be secured.</param>
         private static IRestClient CreateClient(String baseUri, bool secured)
         {
-            return new RestClient(new SanteDB.DisconnectedClient.Configuration.ServiceClientDescriptionConfiguration()
+            return new RestClient(new RestClientDescriptionConfiguration()
             {
-                Binding = new SanteDB.DisconnectedClient.Configuration.ServiceClientBinding()
+                Binding = new RestClientBindingConfiguration()
                 {
                     ContentTypeMapper = new DefaultContentTypeMapper(),
                     Security = secured ? new SanteDB.DisconnectedClient.Configuration.ServiceClientSecurity()

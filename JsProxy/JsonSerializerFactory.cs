@@ -438,7 +438,7 @@ namespace SanteDB.SDK.JsProxy
                     // Method expression to call WritePropertyUtil
 
                     // Should we delay load?
-                    if (typeof(IIdentifiedData).IsAssignableFrom(pi.PropertyType.StripGeneric()))
+                    if (typeof(IAnnotatedResource).IsAssignableFrom(pi.PropertyType.StripGeneric()))
                     {
                         CodeExpression wasLoadedExpression = null;
                         CodeConditionStatement shouldForceLoad = null;
