@@ -130,5 +130,7 @@ namespace SanteDB.AdminConsole.Parameters
         [Parameter("oauth_basic")]
         [Description("Instructs the console to use basic authentication against the oauth token service")]
         public bool OAuthBasic { get; internal set; }
+
+
     }
 }

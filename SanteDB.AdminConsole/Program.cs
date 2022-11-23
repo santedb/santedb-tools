@@ -38,9 +38,10 @@ namespace SanteDB.AdminConsole
         /// </summary>
         static void Main(string[] args)
         {
+            var assembly = typeof(Program).Assembly;
 
-            Console.WriteLine("SanteDB Administration & Security Console v{0} ({1})", typeof(Program).Assembly.GetName().Version, typeof(Program).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion);
-            Console.WriteLine("Copyright (C) 2015 - 2020, SanteSuite Community Partners (see NOTICES)");
+            Console.WriteLine("{0} v{1} ({2})", assembly.GetCustomAttribute<AssemblyDescriptionAttribute>()?.Description, assembly.GetName().Version, assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion);
+            Console.WriteLine(assembly.GetCustomAttribute<AssemblyCopyrightAttribute>()?.Copyright);
 
             var pp = new ParameterParser<ConsoleParameters>();
             var options = pp.Parse(args);
@@ -53,15 +54,12 @@ namespace SanteDB.AdminConsole
             {
                 try
                 {
-                    // Add a console trace output
-                    if (!String.IsNullOrEmpty(options.Verbosity))
+                    if (string.IsNullOrEmpty(options.Verbosity))
                     {
-                        Tracer.AddWriter(new Shell.ConsoleTraceWriter(options.Verbosity, new Dictionary<String, EventLevel>()), (EventLevel)Enum.Parse(typeof(EventLevel), options.Verbosity));
+                        options.Verbosity = "Error";
                     }
-                    else
-                    {
-                        Tracer.AddWriter(new Shell.ConsoleTraceWriter("Error", new Dictionary<String, EventLevel>()), EventLevel.Error);
-                    }
+
+                    Tracer.AddWriter(new Shell.ConsoleTraceWriter(options.Verbosity, new Dictionary<String, EventLevel>()), (EventLevel)Enum.Parse(typeof(EventLevel), options.Verbosity));
 
                     ApplicationContext.Initialize(options);
                     ApplicationContext.Current.Start();

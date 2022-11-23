@@ -45,12 +45,12 @@ namespace SanteDB.AdminConsole.Shell
     public class ApplicationContext : IServiceProvider, IApplicationServiceContext
     {
         // Tracer
-        private readonly Tracer m_tracer = Tracer.GetTracer(typeof(ApplicationServiceContext));
+        internal readonly Tracer Tracer = Tracer.GetTracer(typeof(ApplicationServiceContext));
 
         /// <summary>
         /// The configuration
         /// </summary>
-        private Parameters.ConsoleParameters m_configuration;
+        internal Parameters.ConsoleParameters Configuration { get; private set; }
 
         /// <summary>
         /// Services
@@ -58,14 +58,14 @@ namespace SanteDB.AdminConsole.Shell
         private List<Object> m_services = new List<object>();
 
         // Token auth
-        private IDisposable m_tokenAuth = null;
+        internal IDisposable TokenAuthContext { get; set; }
 
         public Guid ActivityUuid => Guid.NewGuid();
 
         /// <summary>
         /// Rest clients
         /// </summary>
-        private Dictionary<ServiceEndpointType, IRestClient> m_restClients = new Dictionary<ServiceEndpointType, IRestClient>();
+        private Dictionary<string, IRestClient> m_restClients = new Dictionary<string, IRestClient>();
 
         public event EventHandler Starting;
 
@@ -98,14 +98,26 @@ namespace SanteDB.AdminConsole.Shell
             return this.m_services.FirstOrDefault(o => serviceType.IsAssignableFrom(o.GetType()));
         }
 
+        public T GetService<T>() => (T)GetService(typeof(T));
+
         /// <summary>
         /// Creates a new application context
         /// </summary>
         private ApplicationContext(Parameters.ConsoleParameters configuration)
         {
-            this.ApplicationName = configuration.AppId ?? "org.santedb.sdbac";
-            this.ApplicationSecret = configuration.AppSecret ?? "sdbac-default-secret";
-            this.m_configuration = configuration;
+            if (string.IsNullOrEmpty(configuration?.AppId))
+            {
+                throw new ArgumentNullException(nameof(configuration.AppId), "AppId is missing.");
+            }
+
+            if (string.IsNullOrEmpty(configuration?.AppSecret))
+            {
+                throw new ArgumentNullException(nameof(configuration.AppSecret), "App Secret is missing.");
+            }
+
+            this.ApplicationName = configuration.AppId;
+            this.ApplicationSecret = configuration.AppSecret;
+            this.Configuration = configuration;
             //this.m_services.Add(new FileConfigurationService(String.Empty));
         }
 
@@ -130,15 +142,20 @@ namespace SanteDB.AdminConsole.Shell
         /// <summary>
         /// Get realm identifier
         /// </summary>
-        public string RealmId
-        { get { return this.m_configuration.RealmId; } }
+        public string RealmId => Configuration.RealmId;
 
-        public bool IsRunning => true;
+        public bool IsRunning { get; private set; }
 
-        /// <summary>
-        /// Get the operating system
-        /// </summary>
-        public OperatingSystemID OperatingSystem => OperatingSystemID.Other;
+
+        private void AddServices()
+        {
+            m_services.Add(this);
+            m_services.Add(new AdminConsoleRestClientFactory());
+            m_services.Add(new ApplicationCredentialProvider());
+            m_services.Add(new OAuthBearerCredentialProvider());
+            m_services.Add(new HttpBasicCredentialProvider());
+            m_services.Add(new Client.OAuth.OAuthClientCore(GetService<IRestClientFactory>()) { ClientId = Configuration.AppId });
+        }
 
         /// <summary>
         /// Represents the client host
@@ -150,14 +167,18 @@ namespace SanteDB.AdminConsole.Shell
         /// </summary>
         public void Start()
         {
-            this.m_tracer.TraceInfo("Starting mini-context");
-
-            String scheme = this.m_configuration.UseTls ? "https" : "http",
-                host = $"{scheme}://{this.m_configuration.RealmId}:{this.m_configuration.Port}/";
-
-            this.m_tracer.TraceInfo("Contacting {0}", host);
             try
             {
+                Tracer.TraceInfo("Initializing Services");
+                AddServices();
+
+                this.Tracer.TraceInfo("Starting mini-context");
+
+                String scheme = this.Configuration.UseTls ? "https" : "http",
+                    host = $"{scheme}://{this.Configuration.RealmId}:{this.Configuration.Port}/";
+
+                this.Tracer.TraceInfo("Contacting {0}", host);
+
                 // Options on AMI
                 var optionDescription = new RestClientDescriptionConfiguration()
                 {
@@ -168,22 +189,23 @@ namespace SanteDB.AdminConsole.Shell
                             CertificateValidatorXml = new SanteDB.Core.Configuration.TypeReferenceConfiguration(typeof(ConsoleCertificateValidator)),
                         }
                     },
-                    Accept = "application/xml"
+                    Accept = "application/xml",
+                    ProxyAddress = Configuration.Proxy
                 };
 
-                if (!String.IsNullOrEmpty(this.m_configuration.Proxy))
+                if (!String.IsNullOrEmpty(this.Configuration.Proxy))
                 {
-                    this.m_tracer.TraceVerbose("Setting proxy to : {0}", this.m_configuration.Proxy);
-                    WebRequest.DefaultWebProxy = new WebProxy(this.m_configuration.Proxy);
+                    this.Tracer.TraceVerbose("Setting proxy to : {0}", this.Configuration.Proxy);
+                    WebRequest.DefaultWebProxy = new WebProxy(this.Configuration.Proxy);
                 }
 
-                this.m_tracer.TraceVerbose("Setting up endpoint : {0}/ami", host);
+                this.Tracer.TraceVerbose("Setting up endpoint : {0}ami", host);
 
-                optionDescription.Endpoint.Add(new RestClientEndpointConfiguration($"{host}/ami"));
-                var amiServiceClient = new AmiServiceClient(new RestClient(optionDescription));
+                optionDescription.Endpoint.Add(new RestClientEndpointConfiguration($"{host}ami"));
+                var boostrapamiclient = new AmiServiceClient(new RestClient(optionDescription));
 
                 // get options
-                var amiOptions = amiServiceClient.Options();
+                var amiOptions = boostrapamiclient.Options();
 
                 // Server version
                 if (new Version(amiOptions.InterfaceVersion.Substring(0, amiOptions.InterfaceVersion.LastIndexOf(".")) + ".0") > typeof(AmiServiceClient).Assembly.GetName().Version)
@@ -191,65 +213,15 @@ namespace SanteDB.AdminConsole.Shell
                     throw new InvalidOperationException($"Server version of AMI is too new for this version of console. Expected {typeof(AmiServiceClient).Assembly.GetName().Version} got {amiOptions.InterfaceVersion}");
                 }
 
-                foreach (var itm in amiOptions.Endpoints)
+                foreach (var endpoint in amiOptions.Endpoints)
                 {
-                    this.m_tracer.TraceInfo("Server supports {0} at {1}", itm.ServiceType, String.Join(",", itm.BaseUrl).Replace("0.0.0.0", this.m_configuration.RealmId));
-
-                    var config = new RestClientDescriptionConfiguration()
-                    {
-                        Accept = "application/xml",
-                        Binding = new RestClientBindingConfiguration()
-                        {
-
-                        }
-                    };
-
-                    if (itm.Capabilities.HasFlag(ServiceEndpointCapabilities.Compression))
-                    {
-                        config.Binding.CompressRequests = true;
-                    }
-
-                    if (itm.Capabilities.HasFlag(ServiceEndpointCapabilities.BearerAuth))
-                    {
-                        config.Binding.Security = new RestClientSecurityConfiguration()
-                        {
-                            CredentialProvider = new TokenCredentialProvider(),
-                            Mode = SecurityScheme.Bearer,
-                            PreemptiveAuthentication = true,
-                            CertificateValidatorXml = new SanteDB.Core.Configuration.TypeReferenceConfiguration(typeof(ConsoleCertificateValidator))
-
-                        };
-                    }
-                    else if (itm.Capabilities.HasFlag(ServiceEndpointCapabilities.BasicAuth))
-                    {
-                        if (itm.ServiceType == ServiceEndpointType.AuthenticationService)
-                        {
-                            config.Binding.Security = new RestClientSecurityConfiguration()
-                            {
-                                CredentialProvider = new OAuth2CredentialProvider(),
-                                Mode = this.m_configuration.OAuthBasic ? SecurityScheme.Basic : SecurityScheme.None,
-                                PreemptiveAuthentication = true,
-                                CertificateValidatorXml = new SanteDB.Core.Configuration.TypeReferenceConfiguration(typeof(ConsoleCertificateValidator))
-                            };
-                        }
-                        else
-                        {
-                            config.Binding.Security = new RestClientSecurityConfiguration()
-                            {
-                                CredentialProvider = new HttpBasicTokenCredentialProvider(),
-                                Mode = SecurityScheme.Basic,
-                                PreemptiveAuthentication = true,
-                                CertificateValidatorXml = new SanteDB.Core.Configuration.TypeReferenceConfiguration(typeof(ConsoleCertificateValidator))
-                            };
-                        }
-                    }
-
-                    config.Endpoint.AddRange(itm.BaseUrl.Select(o => new RestClientEndpointConfiguration(o.Replace("0.0.0.0", this.m_configuration.RealmId)))); //  new   new AdminClientEndpointDescription(o.Replace("0.0.0.0", this.m_configuration.RealmId))));
+                    this.Tracer.TraceInfo("Server supports {0} at {1}", endpoint.ServiceType, String.Join(",", endpoint.BaseUrl).Replace("0.0.0.0", this.Configuration.RealmId));
+                    RestClientDescriptionConfiguration config = BuildRestClientEndpointDescription(endpoint);
 
                     // Add client
-                    if (!this.m_restClients.ContainsKey(itm.ServiceType))
+                    if (!this.m_restClients.ContainsKey(endpoint.ServiceType.ToString()))
                     {
-                        this.m_restClients.Add(itm.ServiceType, new RestClient(
+                        this.m_restClients.Add(endpoint.ServiceType.ToString(), new RestClient(
                             config
                         ));
                     }
@@ -258,84 +230,90 @@ namespace SanteDB.AdminConsole.Shell
                 // Attempt to get server time from clinical interface which should challenge
                 var data = this.GetRestClient(ServiceEndpointType.HealthDataService)?.Get("/time");
 
+                IsRunning = true;
+
             }
-            catch (Exception ex)
+            catch (Exception ex) when (!(ex is StackOverflowException || ex is OutOfMemoryException))
             {
-#if DEBUG
-                this.m_tracer.TraceError("Cannot start services: {0}", ex);
-#else
-                this.m_tracer.TraceError("Cannot start services: {0}", ex);
-#endif
+                this.Tracer.TraceError("Cannot start services: {0}", ex);
                 throw;
             }
         }
 
-        /// <summary>
-        /// Authenticate using the authentication provider
-        /// </summary>
-        internal bool Authenticate(IIdentityProviderService authenticationProvider, IRestClient context)
+        private RestClientDescriptionConfiguration BuildRestClientEndpointDescription(ServiceEndpointOptions endpoint)
         {
-            bool retVal = false;
-            while (!retVal)
+            var config = new RestClientDescriptionConfiguration()
             {
-                Console.WriteLine("Access denied, authentication required.");
-                if (String.IsNullOrEmpty(this.m_configuration.User))
+                Accept = "application/xml",
+                Binding = new RestClientBindingConfiguration()
                 {
-                    Console.Write("Username:");
-                    this.m_configuration.User = Console.ReadLine();
+
+                }
+            };
+
+            if (endpoint.Capabilities.HasFlag(ServiceEndpointCapabilities.Compression))
+            {
+                config.Binding.CompressRequests = true;
+            }
+
+            if (endpoint.Capabilities.HasFlag(ServiceEndpointCapabilities.BearerAuth))
+            {
+                config.Binding.Security = new RestClientSecurityConfiguration()
+                {
+                    CredentialProvider = GetService<OAuthBearerCredentialProvider>(),
+                    Mode = SecurityScheme.Bearer,
+                    PreemptiveAuthentication = true,
+                    CertificateValidatorXml = new SanteDB.Core.Configuration.TypeReferenceConfiguration(typeof(ConsoleCertificateValidator))
+
+                };
+            }
+            else if (endpoint.Capabilities.HasFlag(ServiceEndpointCapabilities.BasicAuth))
+            {
+                if (endpoint.ServiceType == ServiceEndpointType.AuthenticationService)
+                {
+                    config.Binding.Security = new RestClientSecurityConfiguration()
+                    {
+                        CredentialProvider = GetService<ApplicationCredentialProvider>(),
+                        Mode = this.Configuration.OAuthBasic ? SecurityScheme.Basic : SecurityScheme.None,
+                        PreemptiveAuthentication = true,
+                        CertificateValidatorXml = new SanteDB.Core.Configuration.TypeReferenceConfiguration(typeof(ConsoleCertificateValidator))
+                    };
                 }
                 else
                 {
-                    Console.WriteLine("Username:{0}", this.m_configuration.User);
-                }
-
-                if (String.IsNullOrEmpty(this.m_configuration.Password))
-                {
-                    this.m_configuration.Password = DisplayUtil.PasswordPrompt("Password:");
-                    if (String.IsNullOrEmpty(this.m_configuration.Password))
+                    config.Binding.Security = new RestClientSecurityConfiguration()
                     {
-                        return false;
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("Password:{0}", new String('*', this.m_configuration.Password.Length * 2));
-                }
-
-                // Now authenticate
-                try
-                {
-                    var principal = (authenticationProvider as AdminConsole.Security.OAuthIdentityProvider)?.Authenticate(
-                        new SanteDBClaimsPrincipal(new SanteDBClaimsIdentity(this.m_configuration.User, false, "OAUTH2")), this.m_configuration.Password) ??
-                        authenticationProvider.Authenticate(this.m_configuration.User, this.m_configuration.Password);
-                    if (principal != null)
-                    {
-                        retVal = true;
-                        this.m_tokenAuth = AuthenticationContext.EnterContext(principal);
-                    }
-                    else
-                    {
-                        this.m_configuration.Password = null;
-                    }
-                }
-                catch (Exception e)
-                {
-                    this.m_tracer.TraceError("Authentication error: {0}", e.Message);
-                    this.m_configuration.Password = null;
+                        CredentialProvider = GetService<HttpBasicCredentialProvider>(),
+                        Mode = SecurityScheme.Basic,
+                        PreemptiveAuthentication = true,
+                        CertificateValidatorXml = new SanteDB.Core.Configuration.TypeReferenceConfiguration(typeof(ConsoleCertificateValidator))
+                    };
                 }
             }
 
-            return retVal;
+            config.Endpoint.AddRange(endpoint.BaseUrl.Select(o => new RestClientEndpointConfiguration(o.Replace("0.0.0.0", this.Configuration.RealmId)))); //  new   new AdminClientEndpointDescription(o.Replace("0.0.0.0", this.m_configuration.RealmId))));
+            return config;
         }
+
 
         /// <summary>
         /// Get the named REST client
         /// </summary>
-        public IRestClient GetRestClient(ServiceEndpointType type)
+        public IRestClient GetRestClient(string clientName)
         {
             IRestClient retVal = null;
-            this.m_restClients.TryGetValue(type, out retVal);
+            if (!TryGetRestClient(clientName, out retVal))
+            {
+                throw new KeyNotFoundException(clientName);
+            }
             return retVal;
+        }
+
+        public IRestClient GetRestClient(ServiceEndpointType type) => GetRestClient(type.ToString());
+
+        public bool TryGetRestClient(string clientName, out IRestClient restClient)
+        {
+            return m_restClients.TryGetValue(clientName, out restClient);
         }
 
         /// <summary>
@@ -343,6 +321,7 @@ namespace SanteDB.AdminConsole.Shell
         /// </summary>
         public void Stop()
         {
+            IsRunning = false;
         }
     }
 }
