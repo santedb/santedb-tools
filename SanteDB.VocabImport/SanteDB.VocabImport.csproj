@@ -40,7 +40,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\bin\Debug\</OutputPath>
+    <OutputPath>..\..\bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -87,7 +87,7 @@
     </PackageReference>
   </ItemGroup>
   <Choose>
-    <When Condition="$(SolutionName.Contains('-ext'))" >
+    <When Condition="$(SolutionName.Contains('-ext'))">
       <ItemGroup>
         <ProjectReference Include="..\..\santedb-model\SanteDB.Core.Model\SanteDB.Core.Model.csproj">
           <Project>{F1A82A4F-4A57-47D7-AE76-444C8A4FF54A}</Project>
@@ -100,8 +100,8 @@
     </When>
     <Otherwise>
       <ItemGroup>
-        <PackageReference Include="SanteDB.Core.Model" Version="$(VersionNumber) "/>
-        <PackageReference Include="SanteDB.Core.Api" Version="$(VersionNumber) "/>
+        <PackageReference Include="SanteDB.Core.Model" Version="$(VersionNumber) " />
+        <PackageReference Include="SanteDB.Core.Api" Version="$(VersionNumber) " />
       </ItemGroup>
     </Otherwise>
   </Choose>

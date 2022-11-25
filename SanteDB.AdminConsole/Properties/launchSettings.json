@@ -2,7 +2,7 @@
   "profiles": {
     "SanteDB.AdminConsole": {
       "commandName": "Project",
-      "commandLineArgs": "-v Verbose"
+      "commandLineArgs": "-v Verbose -x localhost:5555"
     }
   }
 }

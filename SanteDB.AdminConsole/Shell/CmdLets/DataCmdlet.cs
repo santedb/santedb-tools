@@ -165,8 +165,8 @@ namespace SanteDB.AdminConsole.Shell.CmdLets
 
             // Fetch results
 
-            var queryMethod = m_client.GetType().GetGenericMethod(nameof(HdsiServiceClient.Query), new Type[] { type }, new Type[] { linqExpression.GetType(), typeof(int), typeof(int?), typeof(String[]), typeof(Guid?), typeof(ModelSort<>).MakeGenericType(type).MakeArrayType() });
-            var result = queryMethod.Invoke(m_client, new object[] { linqExpression, offset, count, parms.Expand?.OfType<String>().ToArray(), null, null }) as Bundle;
+            var queryMethod = m_client.GetType().GetGenericMethod(nameof(HdsiServiceClient.Query), new Type[] { type }, new Type[] { linqExpression.GetType(), typeof(int), typeof(int?), typeof(Guid?), typeof(ModelSort<>).MakeGenericType(type).MakeArrayType() });
+            var result = queryMethod.Invoke(m_client, new object[] { linqExpression, offset, parms.Count != null ? count : (int?)null, null, null }) as Bundle;
 
 
             if (!parms.AsDataSet)

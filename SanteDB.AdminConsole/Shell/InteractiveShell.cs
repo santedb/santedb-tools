@@ -283,8 +283,7 @@ namespace SanteDB.AdminConsole.Shell
         [AdminCommand("ver", "Shows current Admin Console Version")]
         public void Version()
         {
-            Console.WriteLine("Open Immunize Administration & Security Console v{0} ({1})", typeof(Program).Assembly.GetName().Version, typeof(Program).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion);
-            Console.WriteLine("Copyright (C) 2015 - 2017, Mohawk College of Applied Arts and Technology");
+            Program.PrintHeader();
         }
 
         /// <summary>

@@ -288,7 +288,7 @@ namespace SanteDB.AdminConsole.Shell.CmdLets
         [AdminCommand("device.del", "De-activates a device in the SanteDB instance")]
         [Description("This command change the obsoletion time of the device effectively de-activating it")]
         // // [PolicyPermission(System.Security.Permissions.SecurityAction.Demand, PolicyId = PermissionPolicyIdentifiers.AlterIdentity)]
-        internal static void Lock(GenericDeviceParms parms)
+        internal static void Delete(GenericDeviceParms parms)
         {
             if (parms.DeviceId == null)
             {

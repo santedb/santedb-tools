@@ -38,10 +38,7 @@ namespace SanteDB.AdminConsole
         /// </summary>
         static void Main(string[] args)
         {
-            var assembly = typeof(Program).Assembly;
-
-            Console.WriteLine("{0} v{1} ({2})", assembly.GetCustomAttribute<AssemblyDescriptionAttribute>()?.Description, assembly.GetName().Version, assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion);
-            Console.WriteLine(assembly.GetCustomAttribute<AssemblyCopyrightAttribute>()?.Copyright);
+            PrintHeader();
 
             var pp = new ParameterParser<ConsoleParameters>();
             var options = pp.Parse(args);
@@ -78,6 +75,13 @@ namespace SanteDB.AdminConsole
 #if DEBUG
             Console.ReadKey();
 #endif
+        }
+
+        public static void PrintHeader()
+        {
+            var assembly = typeof(Program).Assembly;
+            Console.WriteLine("{0} v{1} ({2})", assembly.GetCustomAttribute<AssemblyDescriptionAttribute>()?.Description, assembly.GetName().Version, assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion);
+            Console.WriteLine(assembly.GetCustomAttribute<AssemblyCopyrightAttribute>()?.Copyright);
         }
     }
 }
