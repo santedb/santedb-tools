@@ -322,7 +322,8 @@
       copy "$(SolutionDir)\Solution Items\SqlCipher.dll" "$(TargetDir)"
       copy "$(SolutionDir)\Solution Items\SqlCipher.dll" "$(TargetDir)\sqlite3.dll"
     </PreBuildEvent>-->
-    <OutputPath>..\..\bin\Debug\</OutputPath>
+    <OutputPath>..\bin\Debug\</OutputPath>
+    <DocumentationFile>..\bin\Debug\sdb-ade.xml</DocumentationFile>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
