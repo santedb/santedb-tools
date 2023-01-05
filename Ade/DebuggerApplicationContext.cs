@@ -62,7 +62,7 @@ namespace SanteDB.SDK.AppletDebugger
             Thread.Sleep(1000);
             ServiceUtil.Stop();
             var pi = new ProcessStartInfo(typeof(Program).Assembly.Location, string.Join(" ", this.m_consoleParameters.ToArgumentList())) ;
-            var process = Process.Start(pi);
+            Process.Start(pi).WaitForExit(5000);
         }
     }
 }

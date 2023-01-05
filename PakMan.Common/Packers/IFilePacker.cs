@@ -25,7 +25,7 @@ namespace SanteDB.PakMan.Packers
     /// <summary>
     /// File packager
     /// </summary>
-    internal interface IFilePacker
+    public interface IFilePacker
     {
 
         /// <summary>

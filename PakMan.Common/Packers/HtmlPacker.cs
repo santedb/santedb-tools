@@ -57,51 +57,59 @@ namespace SanteDB.PakMan.Packers
 
                 // Now we have to iterate throuh and add the asset\
                 AppletAssetHtml htmlAsset = null;
+                XElement viewElement = null;
 
                 if (xe.Elements().OfType<XElement>().Any(o => o.Name == (XNamespace)PakManTool.XS_APPLET + "widget"))
                 {
-                    var widgetEle = xe.Elements().OfType<XElement>().FirstOrDefault(o => o.Name == (XNamespace)PakManTool.XS_APPLET + "widget");
+                    viewElement = xe.Elements().OfType<XElement>().FirstOrDefault(o => o.Name == (XNamespace)PakManTool.XS_APPLET + "widget"); ;
                     htmlAsset = new AppletWidget()
                     {
-                        Icon = widgetEle.Element((XNamespace)PakManTool.XS_APPLET + "icon")?.Value,
-                        Type = (AppletWidgetType)Enum.Parse(typeof(AppletWidgetType), widgetEle.Attribute("type")?.Value),
-                        Size = (AppletWidgetSize)Enum.Parse(typeof(AppletWidgetSize), widgetEle.Attribute("size")?.Value ?? "Medium"),
-                        View = (AppletWidgetView)Enum.Parse(typeof(AppletWidgetView), widgetEle.Attribute("altViews")?.Value ?? "None"),
-                        ColorClass = widgetEle.Attribute("headerClass")?.Value ?? "bg-light",
-                        Priority = Int32.Parse(widgetEle.Attribute("priority")?.Value ?? "0"),
-                        MaxStack = Int32.Parse(widgetEle.Attribute("maxStack")?.Value ?? "2"),
-                        Order = Int32.Parse(widgetEle.Attribute("order")?.Value ?? "0"),
-                        Context = widgetEle.Attribute("context")?.Value,
-                        Description = widgetEle.Elements().Where(o => o.Name == (XNamespace)PakManTool.XS_APPLET + "description").Select(o => new LocaleString() { Value = o.Value, Language = o.Attribute("lang")?.Value }).ToList(),
-                        Name = widgetEle.Attribute("name")?.Value,
-                        Controller = widgetEle.Element((XNamespace)PakManTool.XS_APPLET + "controller")?.Value,
-                        Guard = widgetEle.Elements().Where(o => o.Name == (XNamespace)PakManTool.XS_APPLET + "guard").Select(o => o.Value).ToList()
+                        Icon = viewElement.Element((XNamespace)PakManTool.XS_APPLET + "icon")?.Value,
+                        Type = (AppletWidgetType)Enum.Parse(typeof(AppletWidgetType), viewElement.Attribute("type")?.Value),
+                        Size = (AppletWidgetSize)Enum.Parse(typeof(AppletWidgetSize), viewElement.Attribute("size")?.Value ?? "Medium"),
+                        AlternateViews = viewElement.Element((XNamespace)PakManTool.XS_APPLET + "views")?.Elements().Where(o => o.Name == (XNamespace)PakManTool.XS_APPLET + "view").Select(o => new AppletWidgetView()
+                        {
+                            ViewType = (AppletWidgetViewType)Enum.Parse(typeof(AppletWidgetViewType), o.Attribute("type")?.Value ?? "None"),
+                            Policies = o.Elements().Where(d => d.Name == (XNamespace)PakManTool.XS_APPLET + "demand")?.Select(d => d?.Value).ToList()
+                        }).ToList(),
+                        ColorClass = viewElement.Attribute("headerClass")?.Value ?? "bg-light",
+                        Priority = Int32.Parse(viewElement.Attribute("priority")?.Value ?? "0"),
+                        MaxStack = Int32.Parse(viewElement.Attribute("maxStack")?.Value ?? "2"),
+                        Order = Int32.Parse(viewElement.Attribute("order")?.Value ?? "0"),
+                        Context = viewElement.Attribute("context")?.Value,
+                        Description = viewElement.Elements().Where(o => o.Name == (XNamespace)PakManTool.XS_APPLET + "description").Select(o => new LocaleString() { Value = o.Value, Language = o.Attribute("lang")?.Value }).ToList(),
+                        Name = viewElement.Attribute("name")?.Value,
+                        Controller = viewElement.Element((XNamespace)PakManTool.XS_APPLET + "controller")?.Value,
+                        Guard = viewElement.Elements().Where(o => o.Name == (XNamespace)PakManTool.XS_APPLET + "guard").Select(o => o.Value).ToList()
                     };
                 }
                 else
                 {
                     htmlAsset = new AppletAssetHtml();
+                    viewElement = xe.Elements().OfType<XElement>().Where(o => o.Name == (XNamespace)PakManTool.XS_APPLET + "state").FirstOrDefault();
                     // View state data
-                    htmlAsset.ViewState = xe.Elements().OfType<XElement>().Where(o => o.Name == (XNamespace)PakManTool.XS_APPLET + "state").Select(o => new AppletViewState()
+                    if (viewElement != null)
                     {
-                        Priority = Int32.Parse(o.Attribute("priority")?.Value ?? "0"),
-                        Name = o.Attribute("name")?.Value,
-                        Route = o.Elements().OfType<XElement>().FirstOrDefault(r => r.Name == (XNamespace)PakManTool.XS_APPLET + "url" || r.Name == (XNamespace)PakManTool.XS_APPLET + "route")?.Value,
-                        IsAbstract = Boolean.Parse(o.Attribute("abstract")?.Value ?? "False"),
-                        View = o.Elements().OfType<XElement>().Where(v => v.Name == (XNamespace)PakManTool.XS_APPLET + "view")?.Select(v => new AppletView()
+                        htmlAsset.ViewState = new AppletViewState()
                         {
-                            Priority = Int32.Parse(o.Attribute("priority")?.Value ?? "0"),
+                            Priority = Int32.Parse(viewElement.Attribute("priority")?.Value ?? "0"),
+                            Name = viewElement.Attribute("name")?.Value,
+                            Route = viewElement.Elements().OfType<XElement>().FirstOrDefault(r => r.Name == (XNamespace)PakManTool.XS_APPLET + "url" || r.Name == (XNamespace)PakManTool.XS_APPLET + "route")?.Value,
+                            IsAbstract = Boolean.Parse(viewElement.Attribute("abstract")?.Value ?? "False"),
+                            View = viewElement.Elements().OfType<XElement>().Where(v => v.Name == (XNamespace)PakManTool.XS_APPLET + "view")?.Select(v => new AppletView()
+                            {
+                                Priority = Int32.Parse(viewElement.Attribute("priority")?.Value ?? "0"),
 
-                            Name = v.Attribute("name")?.Value,
-                            Controller = v.Element((XNamespace)PakManTool.XS_APPLET + "controller")?.Value
-                        }).ToList()
-                    }).FirstOrDefault();
-                    htmlAsset.Titles = xe.Elements().OfType<XElement>().Where(t => t.Name == (XNamespace)PakManTool.XS_APPLET + "title")?.Select(t => new LocaleString()
-                    {
-                        Language = t.Attribute("lang")?.Value,
-                        Value = t?.Value
-                    }).ToList();
-
+                                Name = v.Attribute("name")?.Value,
+                                Controller = v.Element((XNamespace)PakManTool.XS_APPLET + "controller")?.Value
+                            }).ToList()
+                        };
+                        htmlAsset.Titles = xe.Elements().OfType<XElement>().Where(t => t.Name == (XNamespace)PakManTool.XS_APPLET + "title")?.Select(t => new LocaleString()
+                        {
+                            Language = t.Attribute("lang")?.Value,
+                            Value = t?.Value
+                        }).ToList();
+                    }
                     htmlAsset.Layout = PakManTool.TranslatePath(xe.Attribute((XNamespace)PakManTool.XS_APPLET + "layout")?.Value);
                     htmlAsset.Static = xe.Attribute((XNamespace)PakManTool.XS_APPLET + "static")?.Value == "true";
                 }
@@ -115,7 +123,7 @@ namespace SanteDB.PakMan.Packers
                 }));
                 htmlAsset.Style = new List<string>(xe.Descendants().OfType<XElement>().Where(o => o.Name == (XNamespace)PakManTool.XS_APPLET + "style").Select(o => PakManTool.TranslatePath(o.Value)));
 
-                var demand = xe.DescendantNodes().OfType<XElement>().Where(o => o.Name == (XNamespace)PakManTool.XS_APPLET + "demand").Select(o => o.Value).ToList();
+                var demand = viewElement?.Elements().OfType<XElement>().Where(o => o.Name == (XNamespace)PakManTool.XS_APPLET + "demand").Select(o => o.Value).ToList();
 
                 var includes = xe.DescendantNodes().OfType<XComment>().Where(o => o?.Value?.Trim().StartsWith("#include virtual=\"") == true).ToList();
                 foreach (var inc in includes)

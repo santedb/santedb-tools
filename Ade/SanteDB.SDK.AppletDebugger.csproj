@@ -130,12 +130,9 @@
     <Compile Include="Configuration\MetadataInitialConfigurationProvider.cs" />
     <Compile Include="Configuration\AppletDebuggerInitialConfigurationProvider.cs" />
     <Compile Include="ConsoleParameters.cs" />
-    <Content Include="MiniAppletManagerService.cs" />
-    <Content Include="MiniConfigurationManager.cs" />
     <Compile Include="DebuggerApplicationContext.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Content Include="MiniApplicationContext.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\SanteDB.licenseheader">

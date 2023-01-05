@@ -28,7 +28,7 @@ namespace SanteDB.PakMan
     /// <summary>
     /// Package manager constants
     /// </summary>
-    internal static class PakManTool
+    public static class PakManTool
     {
 
         // File packers
@@ -47,7 +47,7 @@ namespace SanteDB.PakMan
         /// <summary>
         /// Resolve the specified applet name
         /// </summary>
-        internal static String TranslatePath(string value)
+        public static String TranslatePath(string value)
         {
 
             return value?.ToLower().Replace("\\", "/");
@@ -58,7 +58,7 @@ namespace SanteDB.PakMan
         /// </summary>
         /// <param name="file"></param>
         /// <returns></returns>
-        internal static IFilePacker GetPacker(String file)
+        public static IFilePacker GetPacker(String file)
         {
             var ext = Path.GetExtension(file);
             if (m_packers == null)

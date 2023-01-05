@@ -58,7 +58,7 @@ namespace SanteDB.Tools.Debug.Services
         public DebugAppletManagerService(IConfigurationManager configurationManager,
             IThreadPoolService threadPoolService,
             IServiceManager serviceManager,
-            IAppletHostBridgeProvider hostBridgeProvider = null 
+            IAppletHostBridgeProvider hostBridgeProvider = null
             )
         {
             this.m_appletCollection = new AppletCollection();
@@ -100,7 +100,7 @@ namespace SanteDB.Tools.Debug.Services
         /// Fired when the applet contents have changed
         /// </summary>
         public event EventHandler Changed;
-  
+
 
         /// <inheritdoc/>
         public AppletManifest GetApplet(string appletId)
@@ -237,62 +237,13 @@ namespace SanteDB.Tools.Debug.Services
         {
             Console.WriteLine("\t Processing {0}...", source);
 
+
             try
             {
-
-                if (Path.GetFileName(source).ToLower() == "manifest.xml")
-                    return null;
-                else
-                    switch (Path.GetExtension(source))
-                    {
-                        case ".html":
-                        case ".htm":
-                        case ".xhtml":
-                            XElement xe = XElement.Load(source);
-                            // Now we have to iterate throuh and add the asset\
-
-                            var demand = xe.DescendantNodes().OfType<XElement>().Where(o => o.Name == xs_santedb + "demand").Select(o => o.Value).ToList();
-
-
-                            return new AppletAsset()
-                            {
-                                Name = CorrectAppletName(source.Replace(path, "")),
-                                MimeType = "text/html",
-                                Content = null,
-                                Policies = demand
-
-                            };
-                        case ".css":
-                            return new AppletAsset()
-                            {
-                                Name = CorrectAppletName(source.Replace(path, "")),
-                                MimeType = "text/css",
-                                Content = null
-                            };
-                        case ".js":
-                            return new AppletAsset()
-                            {
-                                Name = CorrectAppletName(source.Replace(path, "")),
-                                MimeType = "text/javascript",
-                                Content = null
-                            };
-                        case ".json":
-                            return new AppletAsset()
-                            {
-                                Name = CorrectAppletName(source.Replace(path, "")),
-                                MimeType = "application/json",
-                                Content = null
-                            };
-
-                        default:
-                            string mt = null;
-                            return new AppletAsset()
-                            {
-                                Name = CorrectAppletName(source.Replace(path, "")),
-                                MimeType = MimeMapping.MimeUtility.GetMimeMapping(source) ?? "application/octet-stream",
-                                Content = null
-                            };
-                    }
+                var asset = PakManTool.GetPacker(source).Process(source, false);
+                asset.Name = PakManTool.TranslatePath(source.Replace(path, ""));
+                asset.Content = null;
+                return asset;
             }
             catch (IOException) // Timer the load
             {
@@ -341,7 +292,7 @@ namespace SanteDB.Tools.Debug.Services
                                     using (var fs = File.OpenRead(e.FullPath))
                                     {
                                         var newManifest = AppletManifest.Load(fs);
-                                        applet.Settings = newManifest.Settings;
+                                        applet.Settings = newManifest.Settings.Union(applet.Settings).ToList();
                                         applet.Info = newManifest.Info;
                                         applet.Menus = newManifest.Menus;
                                         applet.StartAsset = newManifest.StartAsset;
@@ -391,7 +342,7 @@ namespace SanteDB.Tools.Debug.Services
                 {
                     this.m_threadPoolService.QueueUserWorkItem(_ =>
                     {
-                        // HACK: Wait the thread and attempt reload
+                    // HACK: Wait the thread and attempt reload
                         Thread.Sleep(500);
                         fsw_Changed(sender, e);
                     });
@@ -430,7 +381,6 @@ namespace SanteDB.Tools.Debug.Services
                         Icon = widgetEle.Element(xs_santedb + "icon")?.Value,
                         Type = (AppletWidgetType)Enum.Parse(typeof(AppletWidgetType), widgetEle.Attribute("type")?.Value),
                         Size = (AppletWidgetSize)Enum.Parse(typeof(AppletWidgetSize), widgetEle.Attribute("size")?.Value ?? "Medium"),
-                        View = (AppletWidgetView)Enum.Parse(typeof(AppletWidgetView), widgetEle.Attribute("altViews")?.Value ?? "None"),
                         ColorClass = widgetEle.Attribute("headerClass")?.Value ?? "bg-light",
                         Priority = Int32.Parse(widgetEle.Attribute("priority")?.Value ?? "0"),
                         MaxStack = Int32.Parse(widgetEle.Attribute("maxStack")?.Value ?? "2"),
@@ -439,7 +389,12 @@ namespace SanteDB.Tools.Debug.Services
                         Description = widgetEle.Elements().Where(o => o.Name == xs_santedb + "description").Select(o => new LocaleString() { Value = o.Value, Language = o.Attribute("lang")?.Value }).ToList(),
                         Name = widgetEle.Attribute("name")?.Value,
                         Controller = widgetEle.Element(xs_santedb + "controller")?.Value,
-                        Guard = widgetEle.Elements().Where(o => o.Name == xs_santedb + "guard").Select(o => o.Value).ToList()
+                        Guard = widgetEle.Elements().Where(o => o.Name == xs_santedb + "guard").Select(o => o.Value).ToList(),
+                        AlternateViews = widgetEle.Element(xs_santedb + "views")?.Elements().Where(o => o.Name == xs_santedb + "view").Select(o => new AppletWidgetView()
+                        {
+                            ViewType = (AppletWidgetViewType)Enum.Parse(typeof(AppletWidgetViewType), o.Attribute("type")?.Value ?? "None"),
+                            Policies = o.Elements().Where(d => d.Name == xs_santedb + "demand").Select(d => d.Value).ToList()
+                        }).ToList()
                     };
 
                     // TODO Guards
@@ -547,14 +502,6 @@ namespace SanteDB.Tools.Debug.Services
         }
 
 
-        /// <summary>
-        /// Resolve the specified applet name
-        /// </summary>
-        private String CorrectAppletName(string value)
-        {
-            return value?.ToLower().Replace("\\", "/");
-        }
-
         /// <inheritdoc/>
         public void Initialize()
         {
@@ -564,7 +511,7 @@ namespace SanteDB.Tools.Debug.Services
                 this.LoadSolution();
                 this.LoadApplets();
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 throw new InvalidOperationException("Could not start the debug application context", e);
             }
@@ -603,7 +550,7 @@ namespace SanteDB.Tools.Debug.Services
 
             if (m_configuration.AppletsToDebug?.Any() == true)
             {
-                foreach(var appletdir in m_configuration.AppletsToDebug)
+                foreach (var appletdir in m_configuration.AppletsToDebug)
                 {
                     try
                     {
@@ -629,6 +576,14 @@ namespace SanteDB.Tools.Debug.Services
         }
 
         /// <summary>
+        /// Resolve the specified applet name
+        /// </summary>
+        private String CorrectAppletName(string value)
+        {
+            return value?.ToLower().Replace("\\", "/");
+        }
+
+        /// <summary>
         /// Load the solution to debug
         /// </summary>
         private void LoadSolution()
@@ -637,7 +592,7 @@ namespace SanteDB.Tools.Debug.Services
             {
                 using (var fs = File.OpenRead(this.m_configuration.SolutionToDebug))
                 {
-                    var solution = AppletManifest.Load(fs) ;
+                    var solution = AppletManifest.Load(fs);
 
                     this.m_solution = solution;
                     // Load include elements
@@ -681,15 +636,16 @@ namespace SanteDB.Tools.Debug.Services
         {
             if (this.m_configuration.AppletReferences?.Any() == true)
             {
-                foreach(var refString in this.m_configuration.AppletReferences)
+                foreach (var refString in this.m_configuration.AppletReferences)
                 {
                     if (File.Exists(refString)) // File reference
                     {
-                        using (var fs = File.OpenRead(refString)) {
+                        using (var fs = File.OpenRead(refString))
+                        {
                             var appletPackage = AppletPackage.Load(fs);
-                            if(appletPackage is AppletSolution solution)
+                            if (appletPackage is AppletSolution solution)
                             {
-                                foreach(var itm in solution.Include)
+                                foreach (var itm in solution.Include)
                                 {
                                     this.LoadApplet(itm.Unpack());
                                 }
@@ -704,13 +660,13 @@ namespace SanteDB.Tools.Debug.Services
                     {
                         var appletName = AppletName.Parse(refString);
                         var resolvedPackage = PakMan.Repository.PackageRepositoryUtil.GetFromAny(appletName.Id, appletName.GetVersion());
-                        if(resolvedPackage == null)
+                        if (resolvedPackage == null)
                         {
                             throw new KeyNotFoundException(appletName.ToString());
                         }
                         if (resolvedPackage is AppletSolution solution)
                         {
-                            foreach(var inc in solution.Include)
+                            foreach (var inc in solution.Include)
                             {
                                 this.LoadApplet(inc.Unpack());
                             }
