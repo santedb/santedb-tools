@@ -13,5 +13,4 @@ echo	sdb-brd		-	Debugging tool for business rules and clinical protocols
 echo	sdb-vmu		-	View Model Utility for generating JavaScript or C# serializers
 echo	sdb-vocab		-	A tool for importing vocabulary into Datasets
 echo	pakman		-	A tool for packaging your applet files for distribution
-echo	sdbac			-	SanteDB Administrative Console	
 echo Successfully added to path..
