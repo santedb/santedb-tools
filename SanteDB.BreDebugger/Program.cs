@@ -18,12 +18,12 @@
  * DatERROR: 2021-8-27
  */
 using MohawkCollege.Util.Console.Parameters;
-using SdbDebug.Options;
-using SdbDebug.Shell;
+using SanteDB.SDK.BreDebugger.Options;
+using SanteDB.SDK.BreDebugger.Shell;
 using System;
 using System.Reflection;
 
-namespace SanteDB.SDL.BreDebugger
+namespace SanteDB.SDK.BreDebugger
 {
     internal class Program
     {
@@ -40,7 +40,7 @@ namespace SanteDB.SDL.BreDebugger
             else if (parameters.Protocol)
                 new ProtoDebugger(parameters).Debug();
             else if (parameters.BusinessRule)
-                new BreDebugger(parameters).Debug();
+                new Shell.BreDebugger(parameters).Debug();
             else
                 Console.WriteLine("Nothing to do!");
         }

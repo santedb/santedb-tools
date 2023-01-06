@@ -25,12 +25,12 @@ using SanteDB.Core;
 using SanteDB.Core.Diagnostics;
 using SanteDB.Core.Interfaces;
 using SanteDB.Core.Model.Acts;
+using SanteDB.Core.Model.Query;
 using SanteDB.Core.Model.Roles;
 using SanteDB.Core.Protocol;
 using SanteDB.Core.Services;
-using SanteDB.DisconnectedClient;
-using SdbDebug.Core;
-using SdbDebug.Options;
+using SanteDB.SDK.BreDebugger.Options;
+using SanteDB.SDK.BreDebugger.Services;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -40,7 +40,7 @@ using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 
-namespace SanteDB.SDL.BreDebugger.Shell
+namespace SanteDB.SDK.BreDebugger.Shell
 {
     /// <summary>
     /// Business Rules debugger
@@ -52,108 +52,20 @@ namespace SanteDB.SDL.BreDebugger.Shell
         // Loaded files
         private Dictionary<String, String> m_loadedFiles = new Dictionary<string, string>();
 
+        
 
-        public class ConsoleTraceWriter : TraceWriter
-        {
-            /// <summary>
-            /// Write
-            /// </summary>
-            public ConsoleTraceWriter(EventLevel filter, string initializationData, IDictionary<String, EventLevel> settings) : base(filter, initializationData, settings)
-            {
-            }
-
-            protected override void WriteTrace(EventLevel level, string source, string format, params object[] args)
-            {
-                if (source == typeof(JsConsoleProvider).FullName)
-                    Console.WriteLine(format, args);
-            }
-
-        }
-
-
-        /// <summary>
-        /// File system resolver
-        /// </summary>
-        private class FileSystemResolver : IDataReferenceResolver
-        {
-            public String RootDirectory { get; set; }
-
-            public FileSystemResolver()
-            {
-                this.RootDirectory = Environment.CurrentDirectory;
-            }
-
-            /// <summary>
-            /// Resolve specified reference
-            /// </summary>
-            public Stream Resolve(string reference)
-            {
-                reference = reference.Replace("~", this.RootDirectory);
-                if (File.Exists(reference))
-                    return File.OpenRead(reference);
-                else
-                {
-                    Console.Error.WriteLine("ERR: {0}", reference);
-                    return null;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Class for protocol debugging
-        /// </summary>
-        private class DebugProtocolRepository : IClinicalProtocolRepositoryService
-        {
-            /// <summary>
-            /// Get the service name
-            /// </summary>
-            public String ServiceName => "Protocol Debugging Repository";
-
-            // Protocols
-            private List<Protocol> m_protocols = new List<Protocol>();
-
-            /// <summary>
-            /// Find a protocol
-            /// </summary>
-            public IEnumerable<Protocol> FindProtocol(Expression<Func<Protocol, bool>> predicate, int offset, int? count, out int totalResults)
-            {
-                totalResults = 0;
-                return this.m_protocols.Where(predicate.Compile()).Skip(offset).Take(count ?? 100);
-            }
-
-            /// <summary>
-            /// Insert protocol into the provider
-            /// </summary>
-            public Protocol InsertProtocol(Protocol data)
-            {
-                this.m_protocols.Add(data);
-                return data;
-            }
-        }
 
         /// <summary>
         /// BRE debugger
         /// </summary>
         /// <param name="sources"></param>
-        public ProtoDebugger(DebuggerParameters parms) : base(parms.WorkingDirectory)
+        public ProtoDebugger(DebuggerParameters parms) : base(parms)
         {
             Console.WriteLine("Starting debugger...");
 
-            DebugApplicationContext.Start(parms);
-            ApplicationServiceContext.Current = ApplicationContext.Current;
-            try
-            {
-                ApplicationServiceContext.Current.GetService<IServiceManager>().RemoveServiceProvider(typeof(IClinicalProtocolRepositoryService));
-            }
-            catch { }
-
-            ApplicationServiceContext.Current.GetService<IServiceManager>().AddServiceProvider(typeof(FileSystemResolver));
-            ApplicationServiceContext.Current.GetService<IServiceManager>().AddServiceProvider(typeof(DebugProtocolRepository));
-            Tracer.AddWriter(new ConsoleTraceWriter(EventLevel.LogAlways, "dbg", null), EventLevel.LogAlways);
-
             if (!String.IsNullOrEmpty(parms.WorkingDirectory))
-                ApplicationContext.Current.GetService<FileSystemResolver>().RootDirectory = parms.WorkingDirectory;
-            var rootPath = ApplicationContext.Current.GetService<FileSystemResolver>().RootDirectory;
+                ApplicationServiceContext.Current.GetService<FileSystemResolver>().RootDirectory = parms.WorkingDirectory;
+            var rootPath = ApplicationServiceContext.Current.GetService<FileSystemResolver>().RootDirectory;
 
             // Load debug targets
             Console.WriteLine("Loading debuggees...");
@@ -185,7 +97,7 @@ namespace SanteDB.SDL.BreDebugger.Shell
             {
                 var protoSource = ProtocolDefinition.Load(fs);
                 var proto = new XmlClinicalProtocol(protoSource);
-                ApplicationContext.Current.GetService<IClinicalProtocolRepositoryService>().InsertProtocol(proto.GetProtocolData());
+                ApplicationServiceContext.Current.GetService<IClinicalProtocolRepositoryService>().InsertProtocol(proto);
             }
         }
 
@@ -224,7 +136,7 @@ namespace SanteDB.SDL.BreDebugger.Shell
                         var protoSource = ProtocolDefinition.Load(fs);
                         var proto = new XmlClinicalProtocol(protoSource);
 
-                        ApplicationContext.Current.GetService<IClinicalProtocolRepositoryService>().InsertProtocol(proto.GetProtocolData());
+                        ApplicationServiceContext.Current.GetService<IClinicalProtocolRepositoryService>().InsertProtocol(proto);
                     }
                 }
                 catch (Exception e)
@@ -242,7 +154,7 @@ namespace SanteDB.SDL.BreDebugger.Shell
         public void ListProtocols()
         {
             Console.WriteLine("ID#{0}NAME", new String(' ', 38));
-            foreach (var itm in ApplicationContext.Current.GetService<ICarePlanService>().Protocols)
+            foreach (var itm in ApplicationServiceContext.Current.GetService<IClinicalProtocolRepositoryService>().FindProtocol())
                 Console.WriteLine("{0}    {1}", itm.Id, itm.Name);
         }
 
@@ -253,7 +165,7 @@ namespace SanteDB.SDL.BreDebugger.Shell
         public object Run()
         {
 
-            var cpService = ApplicationContext.Current.GetService<ICarePlanService>();
+            var cpService = ApplicationServiceContext.Current.GetService<ICarePlanService>();
             if (cpService == null)
                 throw new InvalidOperationException("No care plan service is registered");
             else if (this.m_scopeObject is Patient)
@@ -263,7 +175,7 @@ namespace SanteDB.SDL.BreDebugger.Shell
                 sw.Start();
                 var cp = cpService.CreateCarePlan(this.m_scopeObject as Patient);
                 sw.Stop();
-                Console.WriteLine("Care plan generated in {0}", sw.Elapsed);
+                Console.WriteLine("Care plan generated in {0} and set to scope (use dj to dump)", sw.Elapsed);
                 return cp;
             }
             else
@@ -272,13 +184,26 @@ namespace SanteDB.SDL.BreDebugger.Shell
 
 
         /// <summary>
+        /// Unload all protocols
+        /// </summary>
+        [Command("u", "Unload all protocols (reset the environment)")]
+        public void Reset()
+        {
+            var protoRepo = ApplicationServiceContext.Current.GetService<IClinicalProtocolRepositoryService>();
+            foreach(var p in protoRepo.FindProtocol().ToArray())
+            {
+                protoRepo.RemoveProtocol(p.Id);
+            }
+        }
+
+        /// <summary>
         /// Set a breakpoint
         /// </summary>
         [Command("go.encounter", "Runs the clinical protocols to construct a care plan as appointments")]
         public object RunEncounter()
         {
 
-            var cpService = ApplicationContext.Current.GetService<ICarePlanService>();
+            var cpService = ApplicationServiceContext.Current.GetService<ICarePlanService>();
             if (cpService == null)
                 throw new InvalidOperationException("No care plan service is registered");
             else if (this.m_scopeObject is Patient)
@@ -288,7 +213,7 @@ namespace SanteDB.SDL.BreDebugger.Shell
                 sw.Start();
                 var cp = cpService.CreateCarePlan(this.m_scopeObject as Patient);
                 sw.Stop();
-                Console.WriteLine("Care plan generated in {0}", sw.Elapsed);
+                Console.WriteLine("Care plan generated in {0} and set to scope (use dj to dump)", sw.Elapsed);
                 return cp;
             }
             else

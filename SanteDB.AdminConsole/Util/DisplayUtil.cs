@@ -196,44 +196,23 @@ namespace SanteDB.AdminConsole.Util
             }
         }
 
+
         /// <summary>
-        /// Prompt for a masked password prompt
+        /// Read a masked line input
         /// </summary>
-        internal static string PasswordPrompt(string prompt)
+        public static String PasswordPrompt(String prompt)
         {
             Console.Write(prompt);
-
-            var c = (ConsoleKey)0;
-            StringBuilder passwd = new StringBuilder();
-            while (c != ConsoleKey.Enter)
+            StringBuilder input = new StringBuilder();
+            while (true)
             {
-                var ki = Console.ReadKey();
-                c = ki.Key;
-
-                if (c == ConsoleKey.Backspace)
-                {
-                    if (passwd.Length > 0)
-                    {
-                        passwd = passwd.Remove(passwd.Length - 1, 1);
-                        Console.Write(" \b");
-                    }
-                    else
-                    {
-                        Console.CursorLeft = Console.CursorLeft + 1;
-                    }
-                }
-                else if (c == ConsoleKey.Escape)
-                {
-                    return String.Empty;
-                }
-                else if (c != ConsoleKey.Enter)
-                {
-                    passwd.Append(ki.KeyChar);
-                    Console.Write("\b*");
-                }
+                var key = Console.ReadKey(true);
+                if (key.Key == ConsoleKey.Enter) break;
+                if (key.Key == ConsoleKey.Backspace && input.Length > 0) input.Remove(input.Length - 1, 1);
+                else if (key.Key != ConsoleKey.Backspace) input.Append(key.KeyChar);
             }
-            Console.WriteLine();
-            return passwd.ToString();
+            return input.ToString();
         }
+
     }
 }

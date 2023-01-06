@@ -19,6 +19,7 @@
  */
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using SanteDB.Client.Configuration;
 using SanteDB.Core;
 using SanteDB.Core.Applets.ViewModel.Json;
 using SanteDB.Core.Interfaces;
@@ -26,20 +27,26 @@ using SanteDB.Core.Model;
 using SanteDB.Core.Model.Map;
 using SanteDB.Core.Model.Query;
 using SanteDB.Core.Security;
+using SanteDB.Core.Security.Services;
 using SanteDB.Core.Services;
+using SanteDB.Core.Services.Impl;
+using SanteDB.SDK.BreDebugger.Core;
+using SanteDB.SDK.BreDebugger.Options;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Numerics;
 using System.Reflection;
+using System.Text;
 using System.Xml;
 using System.Xml.Serialization;
 
-namespace SanteDB.SDL.BreDebugger.Shell
+namespace SanteDB.SDK.BreDebugger.Shell
 {
     /// <summary>
     /// Debugger base
@@ -90,11 +97,58 @@ namespace SanteDB.SDL.BreDebugger.Shell
         /// <summary>
         /// Sets the root path
         /// </summary>
-        public DebuggerBase(string workingDir)
+        public DebuggerBase(DebuggerParameters parms)
         {
+
+            // Create start the context
+            // Load reference assemblies
+            Console.WriteLine("Loading reference assemblies...");
+            if (parms.Assemblies != null)
+            {
+                foreach (var itm in parms.Assemblies)
+                {
+                    try
+                    {
+                        Assembly.LoadFile(itm);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine("Error loading assembly {0}: {1}", itm, e);
+                    }
+                }
+            }
+            Directory.GetFiles(Path.GetDirectoryName(typeof(Program).Assembly.Location), "Sante*.dll").ToList().ForEach(itm =>
+            {
+                try
+                {
+                    Assembly.LoadFile(itm);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("Error loading assembly {0}: {1}", itm, e);
+                }
+            });
+
             this.m_prompt = "dbg >";
-            this.m_workingDirectory = workingDir ?? Environment.CurrentDirectory;
+            AppDomain.CurrentDomain.SetData("DataDirectory", parms.WorkingDirectory ?? Environment.CurrentDirectory);
+            AppDomain.CurrentDomain.SetData("Argv", parms);
+            this.m_workingDirectory = parms.WorkingDirectory ?? Environment.CurrentDirectory;
             this.Breakpoints = new List<int>();
+
+            // Establish a configuration environment 
+            IConfigurationManager configurationManager = null;
+            if (!string.IsNullOrEmpty(parms.ConfigurationFile) && File.Exists(parms.ConfigurationFile))
+            {
+                configurationManager = new FileConfigurationService(parms.ConfigurationFile, true);
+            }
+            else
+            {
+                configurationManager = new InitialConfigurationManager(SanteDBHostType.Test, "debug", Path.GetTempFileName());
+            }
+
+            var context = new DebuggerApplicationContext(parms, configurationManager);
+            ServiceUtil.Start(Guid.NewGuid(), context);
+;
         }
 
 
@@ -191,12 +245,11 @@ namespace SanteDB.SDL.BreDebugger.Shell
             }
 
             var idp = typeof(IDataPersistenceService<>).MakeGenericType(t);
-            var ids = ApplicationContext.Current.GetService(idp) as IDataPersistenceService;
+            var ids = ApplicationServiceContext.Current.GetService(idp) as IDataPersistenceService;
             if (ids == null)
                 throw new InvalidOperationException($"Persistence service for {type} not found");
 
-            var mi = typeof(QueryExpressionParser).GetGenericMethod("BuildLinqExpression", new Type[] { t }, new Type[] { typeof(NameValueCollection) });
-            var qd = mi.Invoke(null, new object[] { NameValueCollection.ParseQueryString(qry) }) as Expression;
+            var qd = QueryExpressionParser.BuildLinqExpression(t, qry.ParseQueryString());
 
             int? o = String.IsNullOrEmpty(skip) ? 0 : Int32.Parse(skip),
                 c = String.IsNullOrEmpty(take) ? (int?)null : Int32.Parse(take);
@@ -226,6 +279,37 @@ namespace SanteDB.SDL.BreDebugger.Shell
             }
             else
                 throw new InvalidOperationException($"Directory {dir} not found");
+        }
+
+        /// <summary>
+        /// Authenticate
+        /// </summary>
+        [Command("auth", "Authenticate as a principal in this database")]
+        public void Authenticate(String userName)
+        {
+            var idp = ApplicationServiceContext.Current.GetService<IIdentityProviderService>();
+            Console.Write("Password:");
+            var password = MaskedReadLine();
+            Console.WriteLine();
+            var context = AuthenticationContext.EnterContext(idp.Authenticate(userName, password));
+            Console.WriteLine("AUTHN: {0}", AuthenticationContext.Current.Principal.Identity.Name);
+        }
+
+
+        /// <summary>
+        /// Read a masked line input
+        /// </summary>
+        private static String MaskedReadLine()
+        {
+            StringBuilder input = new StringBuilder();
+            while (true)
+            {
+                var key = Console.ReadKey(true);
+                if (key.Key == ConsoleKey.Enter) break;
+                if (key.Key == ConsoleKey.Backspace && input.Length > 0) input.Remove(input.Length - 1, 1);
+                else if (key.Key != ConsoleKey.Backspace) input.Append(key.KeyChar);
+            }
+            return input.ToString();
         }
 
         /// <summary>
@@ -753,7 +837,7 @@ namespace SanteDB.SDL.BreDebugger.Shell
             }
 
             var idp = typeof(IDataPersistenceService<>).MakeGenericType(t);
-            var ids = ApplicationContext.Current.GetService(idp) as IDataPersistenceService;
+            var ids = ApplicationServiceContext.Current.GetService(idp) as IDataPersistenceService;
             if (ids == null)
                 throw new InvalidOperationException($"Persistence service for {type} not found");
 
@@ -768,7 +852,7 @@ namespace SanteDB.SDL.BreDebugger.Shell
         public Object InsertScopeDb()
         {
             var idp = typeof(IDataPersistenceService<>).MakeGenericType(this.m_scopeObject.GetType());
-            var ids = ApplicationContext.Current.GetService(idp) as IDataPersistenceService;
+            var ids = ApplicationServiceContext.Current.GetService(idp) as IDataPersistenceService;
 
             if (ids == null)
                 throw new InvalidOperationException($"Cannot find persister {idp}");
@@ -802,12 +886,11 @@ namespace SanteDB.SDL.BreDebugger.Shell
             }
 
             var idp = typeof(IDataPersistenceService<>).MakeGenericType(t);
-            var ids = ApplicationContext.Current.GetService(idp) as IDataPersistenceService;
+            var ids = ApplicationServiceContext.Current.GetService(idp) as IDataPersistenceService;
             if (ids == null)
                 throw new InvalidOperationException($"Persistence service for {type} not found");
 
-            var mi = typeof(QueryExpressionParser).GetGenericMethod("BuildLinqExpression", new Type[] { t }, new Type[] { typeof(NameValueCollection) });
-            var qd = mi.Invoke(null, new object[] { NameValueCollection.ParseQueryString(qry) }) as Expression;
+            var qd = QueryExpressionParser.BuildLinqExpression(t, qry.ParseQueryString());
 
             int? o = String.IsNullOrEmpty(skip) ? 0 : Int32.Parse(skip),
                 c = String.IsNullOrEmpty(take) ? (int?)null : Int32.Parse(take);

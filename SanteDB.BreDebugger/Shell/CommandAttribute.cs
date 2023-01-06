@@ -19,7 +19,7 @@
  */
 using System;
 
-namespace SanteDB.SDL.BreDebugger.Shell
+namespace SanteDB.SDK.BreDebugger.Shell
 {
     /// <summary>
     /// Represents a debugger command 

@@ -22,7 +22,7 @@ using System;
 using System.Collections.Specialized;
 using System.ComponentModel;
 
-namespace SanteDB.SDL.BreDebugger.Options
+namespace SanteDB.SDK.BreDebugger.Options
 {
     /// <summary>
     /// Represents base parameters for the debugger
@@ -86,5 +86,20 @@ namespace SanteDB.SDL.BreDebugger.Options
         [Parameter("xprot")]
         [Description("Debug a clinical protocol")]
         public bool Protocol { get; set; }
+
+
+        /// <summary>
+        /// Loads the specified assemblies
+        /// </summary>
+        [Parameter("assembly")]
+        [Description("Loads the specified assembly into the debugger environment (for testing .NET plugins)")]
+        public StringCollection Assemblies { get; set; }
+
+        /// <summary>
+        /// Extensions
+        /// </summary>
+        [Parameter("extension")]
+        [Description("Registers a C# class as an extended object in JavaScript rules (use: --extension=MyJavaScriptObject:MyNamespace.MyClass")]
+        public StringCollection Extensions { get; set; }
     }
 }

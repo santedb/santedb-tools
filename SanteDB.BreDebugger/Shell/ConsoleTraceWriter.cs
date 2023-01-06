@@ -23,7 +23,7 @@ using System.Collections.Generic;
 using System.Diagnostics.Tracing;
 using System.Threading;
 
-namespace SanteDB.SDL.BreDebugger.Shell
+namespace SanteDB.SDK.BreDebugger.Shell
 {
     /// <summary>
     /// Tracer writer that writes to the console
@@ -136,6 +136,12 @@ namespace SanteDB.SDL.BreDebugger.Shell
                 this.m_dispatchThread.Join(); // Abort thread
                 this.m_dispatchThread = null;
             }
+        }
+
+        /// <inheritdoc/>
+        public override void TraceEventWithData(EventLevel level, string source, string message, object[] data)
+        {
+            this.TraceEvent(level, source, $"{message}\r\n=-=-=-=- DATA -=-=-=-={{0}}", data);
         }
     }
 }

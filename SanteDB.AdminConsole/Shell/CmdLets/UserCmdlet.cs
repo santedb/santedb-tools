@@ -392,6 +392,7 @@ namespace SanteDB.AdminConsole.Shell.CmdLets
             public String Password { get; set; }
         }
 
+
         /// <summary>
         /// Set user password
         /// </summary>

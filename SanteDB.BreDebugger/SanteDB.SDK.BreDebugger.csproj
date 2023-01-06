@@ -55,10 +55,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <StartupObject>SdbDebug.Program</StartupObject>
+    <StartupObject>SanteDB.SDK.BreDebugger.Program</StartupObject>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="..\Solution Items\MohawkCollege.Util.Console.Parameters.dll"/>
+    <Reference Include="..\Solution Items\MohawkCollege.Util.Console.Parameters.dll" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />
@@ -70,10 +70,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Core\DebugAppletManagerService.cs" />
     <Compile Include="Core\DebugApplicationContext.cs" />
-    <Compile Include="Core\DebugConfigurationManager.cs" />
+    <Compile Include="Core\DebuggerInitialConfigurationProvider.cs" />
     <Compile Include="Options\DebuggerParameters.cs" />
+    <Compile Include="Services\DebugProtocolRepository.cs" />
+    <Compile Include="Services\FileSystemResolver.cs" />
     <Compile Include="Shell\BreDebugger.cs" />
     <Compile Include="Shell\CommandAttribute.cs" />
     <Compile Include="Shell\ConsoleTraceWriter.cs" />
@@ -104,9 +105,6 @@
         <ProjectReference Include="..\..\santedb-applets\SanteDB.Core.Applets\SanteDB.Core.Applets.csproj">
           <Project>{39E61451-F4FE-493D-B754-5F06EB284AAC}</Project>
           <Name>SanteDB.Core.Applets</Name>
-        </ProjectReference>
-        <ProjectReference Include="..\..\santedb-dc-core\SanteDB.Disconnected\SanteDB.Disconnected.csproj">
-          <Name>SanteDB.Disconnected</Name>
         </ProjectReference>
         <ProjectReference Include="..\..\santedb-bre-js\SanteDB.BusinessRules.JavaScript\SanteDB.BusinessRules.JavaScript.csproj">
           <Project>{3BFD6EE6-0267-4D82-BE7D-9B48B2F6F3D4}</Project>
@@ -147,9 +145,37 @@
       <Version>13.0.1</Version>
     </PackageReference>
   </ItemGroup>
-  
+  <ItemGroup>
+    <ProjectReference Include="..\..\santedb-cache-memory\SanteDB.Caching.Memory\SanteDB.Caching.Memory.csproj">
+      <Project>{8553ABC7-ABFA-4A21-B0E8-68B7DE76129D}</Project>
+      <Name>SanteDB.Caching.Memory</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\santedb-data\SanteDB.Persistence.Data\SanteDB.Persistence.Data.csproj">
+      <Project>{81BD479F-5DBC-42E9-96C2-40380AAC36BC}</Project>
+      <Name>SanteDB.Persistence.Data</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\santedb-dc-core\SanteDB.Client.Disconnected\SanteDB.Client.Disconnected.csproj">
+      <Project>{b5f6e774-311f-45d8-83ee-ddfc17cbf40d}</Project>
+      <Name>SanteDB.Client.Disconnected</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\santedb-dc-core\SanteDB.Client\SanteDB.Client.csproj">
+      <Project>{ca1fa614-e86c-4307-87b8-8b2319a23ed5}</Project>
+      <Name>SanteDB.Client</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\santedb-orm\SanteDB.OrmLite\SanteDB.OrmLite.csproj">
+      <Project>{407C87E6-A1F3-45E6-B883-A8176B350817}</Project>
+      <Name>SanteDB.OrmLite</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\santedb-restsvc\SanteDB.Rest.AMI\SanteDB.Rest.AMI.csproj">
+      <Project>{F14023E2-F8DF-4EBC-B2C4-34A825E3790E}</Project>
+      <Name>SanteDB.Rest.AMI</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SanteDB.DevTools\SanteDB.DevTools.csproj">
+      <Project>{223D4D87-6819-4F38-AE69-A82E249E1879}</Project>
+      <Name>SanteDB.DevTools</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

@@ -22,6 +22,7 @@ using Jint.Runtime.Interop;
 using Newtonsoft.Json;
 using SanteDB.BusinessRules.JavaScript;
 using SanteDB.BusinessRules.JavaScript.JNI;
+using SanteDB.Client.Configuration;
 using SanteDB.Core;
 using SanteDB.Core.Applets.ViewModel.Json;
 using SanteDB.Core.BusinessRules;
@@ -29,19 +30,20 @@ using SanteDB.Core.Diagnostics;
 using SanteDB.Core.Interfaces;
 using SanteDB.Core.Model;
 using SanteDB.Core.Services;
-using SanteDB.DisconnectedClient;
-using SanteDB.DisconnectedClient.Rules;
-using SdbDebug.Core;
-using SdbDebug.Options;
+using SanteDB.Core.Services.Impl;
+using SanteDB.SDK.BreDebugger.Core;
+using SanteDB.SDK.BreDebugger.Options;
+using SanteDB.SDK.BreDebugger.Services;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.Tracing;
 using System.Dynamic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 
-namespace SanteDB.SDL.BreDebugger.Shell
+namespace SanteDB.SDK.BreDebugger.Shell
 {
     /// <summary>
     /// Business Rules debugger
@@ -79,58 +81,6 @@ namespace SanteDB.SDL.BreDebugger.Shell
         /// </summary>
         private String m_loadFile = String.Empty;
 
-        public class ConsoleTraceWriter : TraceWriter
-        {
-            /// <summary>
-            /// Write
-            /// </summary>
-            public ConsoleTraceWriter(EventLevel filter, string initializationData, IDictionary<String, EventLevel> settings) : base(filter, initializationData, settings)
-            {
-            }
-
-            public override void TraceEventWithData(EventLevel level, string source, string message, object[] data)
-            {
-                this.WriteTrace(level, source, message, data);
-            }
-
-            protected override void WriteTrace(EventLevel level, string source, string format, params object[] args)
-            {
-                if (source == typeof(JsConsoleProvider).FullName)
-                    Console.WriteLine(format, args);
-            }
-
-        }
-
-
-
-        /// <summary>
-        /// File system resolver
-        /// </summary>
-        private class FileSystemResolver : IDataReferenceResolver
-        {
-            public String RootDirectory { get; set; }
-
-            public FileSystemResolver()
-            {
-                this.RootDirectory = Environment.CurrentDirectory;
-            }
-
-            /// <summary>
-            /// Resolve specified reference
-            /// </summary>
-            public Stream Resolve(string reference)
-            {
-                reference = reference.Replace("~", this.RootDirectory);
-                if (File.Exists(reference))
-                    return File.OpenRead(reference);
-                else
-                {
-                    Console.Error.WriteLine("ERR: {0}", reference);
-                    return null;
-                }
-            }
-        }
-
         // Parameters
         private DebuggerParameters m_parms;
 
@@ -138,24 +88,38 @@ namespace SanteDB.SDL.BreDebugger.Shell
         /// BRE debugger
         /// </summary>
         /// <param name="sources"></param>
-        public BreDebugger(DebuggerParameters parms) : base(parms.WorkingDirectory)
+        public BreDebugger(DebuggerParameters parms) : base(parms)
         {
+
             this.m_parms = parms;
             Console.WriteLine("Starting debugger...");
-            DebugApplicationContext.Start(parms);
-            ApplicationServiceContext.Current = ApplicationContext.Current;
-            ApplicationServiceContext.Current.GetService<IServiceManager>().AddServiceProvider(typeof(FileSystemResolver));
-            Tracer.AddWriter(new ConsoleTraceWriter(EventLevel.LogAlways, "dbg", null), EventLevel.LogAlways);
+            //Tracer.AddWriter(new ConsoleTraceWriter(EventLevel.LogAlways, "dbg", null), EventLevel.LogAlways);
 
             if (!String.IsNullOrEmpty(parms.WorkingDirectory))
-                ApplicationContext.Current.GetService<FileSystemResolver>().RootDirectory = parms.WorkingDirectory;
-            var rootPath = ApplicationContext.Current.GetService<FileSystemResolver>().RootDirectory;
+                ApplicationServiceContext.Current.GetService<FileSystemResolver>().RootDirectory = parms.WorkingDirectory;
+            var rootPath = ApplicationServiceContext.Current.GetService<FileSystemResolver>().RootDirectory;
 
             // Load debug targets
             Console.WriteLine("Loading debuggees...");
-
             JavascriptExecutorPool.Current.ExecuteGlobal(o => o.Engine.Step += JreStep);
-            JavascriptExecutorPool.Current.ExecuteGlobal(j => j.AddExposedObject("SanteDBDcg", new DisconnectedGatewayJni()));
+
+            if (parms.Extensions != null)
+            {
+                foreach (var ext in parms.Extensions)
+                {
+                    var extParts = ext.Split(':');
+                    if (extParts.Length != 2)
+                    {
+                        throw new InvalidOperationException($"Extension parameters must include alias and type such as --MyExtension:MyNamespace.MyClass");
+                    }
+                    var extType = Type.GetType(extParts[1]);
+                    if (extType == null)
+                    {
+                        throw new InvalidOperationException($"Cannot find extension type {extParts[1]} - use the --assembly=X to force loading your assembly");
+                    }
+                    JavascriptExecutorPool.Current.ExecuteGlobal(j => j.AddExposedObject(extParts[0], Activator.CreateInstance(extType)));
+                }
+            }
 
             if (parms.Sources != null)
                 foreach (var rf in parms.Sources)
@@ -181,7 +145,7 @@ namespace SanteDB.SDL.BreDebugger.Shell
             this.m_loadedFiles.Clear();
             // Load debug targets
             Console.WriteLine("Reloading debuggees...");
-            var rootPath = ApplicationContext.Current.GetService<FileSystemResolver>().RootDirectory;
+            var rootPath = ApplicationServiceContext.Current.GetService<FileSystemResolver>().RootDirectory;
             if (this.m_parms.Sources != null)
                 foreach (var rf in this.m_parms.Sources)
                 {
@@ -439,7 +403,14 @@ namespace SanteDB.SDL.BreDebugger.Shell
                 }
                 catch
                 {
-                    this.DumpObject(kobj?.AsObject()?.GetOwnProperties(), path);
+                    if (kobj.IsObject())
+                    {
+                        this.DumpObject(kobj?.AsObject()?.GetOwnProperties(), path);
+                    }
+                    else
+                    {
+                        Console.WriteLine("{0} = {1}", id, kobj);
+                    }
                 }
             }
         }
@@ -625,8 +596,24 @@ namespace SanteDB.SDL.BreDebugger.Shell
                         sr.ReadLine();
                     ln++;
                 }
+
                 if (sr.EndOfStream)
-                    Console.WriteLine("<<EOF>>");
+                {
+                    if (this.m_currentDebug != null)
+                    {
+                        Console.WriteLine("Source not avaialble - (built-in function - showing disassembly)");
+                        Console.WriteLine("{0}: {1}", this.m_currentDebug.CurrentStatement.Location.Start.Line, this.m_currentDebug.CurrentStatement.Type);
+                        foreach (var itm in this.m_currentDebug.CurrentStatement.ChildNodes.Where(o => o != null))
+                        {
+                            Console.WriteLine("\t{0}: {1}", itm.Location.Start.Line, itm.Type);
+                        }
+                        return;
+                    }
+                    else
+                    {
+                        Console.WriteLine("<<EOF>>");
+                    }
+                }
 
             }
         }
@@ -697,7 +684,7 @@ namespace SanteDB.SDL.BreDebugger.Shell
             if (asType == null)
                 asType = this.m_scopeObject.GetType();
             var rdb = typeof(IBusinessRulesService<>).MakeGenericType(asType);
-            var rds = ApplicationContext.Current.GetService(rdb);
+            var rds = ApplicationServiceContext.Current.GetService(rdb);
             if (rds == null)
                 throw new InvalidOperationException($"Cannot find business rule registered for {this.m_scopeObject.GetType().Name}");
             else
@@ -795,7 +782,7 @@ namespace SanteDB.SDL.BreDebugger.Shell
             if (asType == null)
                 asType = this.m_scopeObject.GetType();
             var rdb = typeof(IBusinessRulesService<>).MakeGenericType(asType);
-            var rds = ApplicationContext.Current.GetService(rdb);
+            var rds = ApplicationServiceContext.Current.GetService(rdb);
             if (rds == null)
                 throw new InvalidOperationException($"Cannot find business rule registered for {this.m_scopeObject.GetType().Name}");
             else

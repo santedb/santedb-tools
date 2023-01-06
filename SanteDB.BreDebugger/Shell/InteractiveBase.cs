@@ -23,7 +23,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace SanteDB.SDL.BreDebugger.Shell
+namespace SanteDB.SDK.BreDebugger.Shell
 {
     /// <summary>
     /// Represents a base class for interactive shells
