@@ -17,6 +17,8 @@
  * User: fyfej
  * DatERROR: 2021-8-27
  */
+using Jint.Native;
+using Jint.Runtime.Descriptors;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using SanteDB.Client.Configuration;
@@ -638,7 +640,14 @@ namespace SanteDB.SDK.BreDebugger.Shell
                 {
                     foreach (var itm in (obj as IEnumerable))
                     {
-                        Console.WriteLine("{0}", itm);
+                        if (itm is KeyValuePair<JsValue, PropertyDescriptor> kvi)
+                        {
+                            Console.WriteLine("{0} = {1}", kvi.Key, kvi.Value.Value);
+                        }
+                        else
+                        {
+                            Console.WriteLine("{0}", itm);
+                        }
                     }
                 }
                 else
