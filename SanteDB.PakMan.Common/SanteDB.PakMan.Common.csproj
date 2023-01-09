@@ -7,7 +7,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>SanteDB.PakMan</RootNamespace>
     <Version>$(VersionNumber)</Version>
-    <PackageId>PakMan.Common</PackageId>
+    <PackageId>SanteDB.PakMan.Common</PackageId>
   </PropertyGroup>
   <ItemGroup>
     <None Include="..\SanteDB.licenseheader" Link="SanteDB.licenseheader" />
