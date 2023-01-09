@@ -25,7 +25,7 @@ var guidSeed = null;
 // SanteDB Self-Hosted SHIM
 setInterval(() => __SanteDBAppService.GetStatus(), 10000);
 
-__SanteDBAppService.GetStatus = function () {
+__SanteDBAppService.GetStatus = __SanteDBAppService.GetStatus || function () {
     return new Promise(function (fulfill, reject) {
         $.getJSON({
             url: "/app/State",
@@ -34,22 +34,22 @@ __SanteDBAppService.GetStatus = function () {
     });
 }
 
-__SanteDBAppService.GetClientId = function () {
+__SanteDBAppService.GetClientId = __SanteDBAppService.GetClientId || function () {
     if (__SanteDBAppService.state)
         return __SanteDBAppService.state.client_id;
 }
 
-__SanteDBAppService.GetRealm = function () {
+__SanteDBAppService.GetRealm = __SanteDBAppService.GetRealm || function () {
     if (__SanteDBAppService.state)
         return __SanteDBAppService.state.realm;
 }
 
-__SanteDBAppService.GetDeviceId = function () {
+__SanteDBAppService.GetDeviceId = __SanteDBAppService.GetDeviceId || function () {
     if (__SanteDBAppService.state)
         return __SanteDBAppService.state.device_id;
 }
 
-__SanteDBAppService.ShowToast = function (string) {
+__SanteDBAppService.ShowToast = __SanteDBAppService.ShowToast || function (string) {
     toastr.info(string, "", {
         "newestOnTop": true,
         "positionClass": "toast-bottom-center",
@@ -65,25 +65,25 @@ __SanteDBAppService.ShowToast = function (string) {
     });
 }
 
-__SanteDBAppService.GetOnlineState = function () {
+__SanteDBAppService.GetOnlineState = __SanteDBAppService.GetOnlineState || function () {
     if (__SanteDBAppService.state)
         return __SanteDBAppService.state.online;
     else return false;
 }
 
-__SanteDBAppService.IsAdminAvailable = function () {
+__SanteDBAppService.IsAdminAvailable = __SanteDBAppService.IsAdminAvailable || function () {
     if (__SanteDBAppService.state)
         return __SanteDBAppService.state.ami;
     else return false;
 }
 
-__SanteDBAppService.IsClinicalAvailable = function () {
+__SanteDBAppService.IsClinicalAvailable = __SanteDBAppService.IsClinicalAvailable || function () {
     if (__SanteDBAppService.state)
         return __SanteDBAppService.state.hdsi;
     else return false;
 }
 
-__SanteDBAppService.BarcodeScan = function () {
+__SanteDBAppService.BarcodeScan = __SanteDBAppService.BarcodeScan || function () {
     return new Promise(function (fulfill, reject) {
         Html5Qrcode.getCameras().then(devices => {
             if (devices && devices.length) {
@@ -138,23 +138,23 @@ __SanteDBAppService.BarcodeScan = function () {
     });
 }
 
-__SanteDBAppService.Close = function () {
+__SanteDBAppService.Close = __SanteDBAppService.Close || function () {
     alert("You need to restart the service for the changes to take effect");
     window.close();
 }
 
-__SanteDBAppService.GetLocale = function () {
+__SanteDBAppService.GetLocale = __SanteDBAppService.GetLocale || function () {
     if (window.sessionStorage.lang)
         return window.sessionStorage.lang;
     else
         return (navigator.language || navigator.userLanguage).substring(0, 2);
 }
 
-__SanteDBAppService.SetLocale = function (locale) {
+__SanteDBAppService.SetLocale = __SanteDBAppService.SetLocale || function (locale) {
     window.sessionStorage.lang = locale;
 }
 
-__SanteDBAppService.NewGuid = function () {
+__SanteDBAppService.NewGuid = __SanteDBAppService.NewGuid || function () {
     // Use modern browser
     if (crypto) {
         if (crypto.randomUUID) {
@@ -179,7 +179,7 @@ __SanteDBAppService.NewGuid = function () {
     return retVal;
 }
 
-__SanteDBAppService.GetMagic = function () {
+__SanteDBAppService.GetMagic = __SanteDBAppService.GetMagic || function () {
     return EmptyGuid;
 }
 

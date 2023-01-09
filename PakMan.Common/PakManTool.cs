@@ -89,21 +89,50 @@ namespace SanteDB.PakMan
         {
             return version.Replace("*", (DateTime.Now.Subtract(new DateTime(DateTime.Now.Year, 1, 1)).TotalSeconds % 100000).ToString("00000"));
         }
+        /// <summary>
+        /// Compress content
+        /// </summary>
+        public static byte[] DeCompressContent(byte[] content)
+        {
+            using (var ms = new MemoryStream(content))
+            {
+                using (var cs = new SharpCompress.Compressors.LZMA.LZipStream(ms, SharpCompress.Compressors.CompressionMode.Decompress))
+                {
+                    using(var oms = new MemoryStream())
+                    {
+                        cs.CopyTo(oms);
+                        return oms.ToArray();
+                    }
+                }
+            }
+        }
 
         /// <summary>
         /// Compress content
         /// </summary>
-        internal static byte[] CompressContent(object content)
+        public static byte[] CompressContent(byte[] content)
         {
-
             using (var ms = new MemoryStream())
             {
                 using (var cs = new SharpCompress.Compressors.LZMA.LZipStream(ms, SharpCompress.Compressors.CompressionMode.Compress))
                 {
-                    byte[] data = content as byte[];
-                    if (data == null)
-                        data = System.Text.Encoding.UTF8.GetBytes(content.ToString());
-                    cs.Write(data, 0, data.Length);
+                    cs.Write(content, 0, content.Length);
+                }
+                return ms.ToArray();
+            }
+        }
+
+        /// <summary>
+        /// Compress content
+        /// </summary>
+        public static byte[] CompressContent(String content)
+        {
+            using (var ms = new MemoryStream())
+            {
+                using (var cs = new SharpCompress.Compressors.LZMA.LZipStream(ms, SharpCompress.Compressors.CompressionMode.Compress))
+                using(var sw = new StreamWriter(cs, System.Text.Encoding.UTF8))
+                {
+                    sw.Write(content);    
                 }
                 return ms.ToArray();
             }
