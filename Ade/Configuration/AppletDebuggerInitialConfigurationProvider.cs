@@ -40,7 +40,6 @@ using SanteDB.Rest.BIS;
 using SanteDB.Client.OAuth;
 using SanteDB.Client.UserInterface.Impl;
 using SanteDB.Rest.Common;
-using SanteDB.DevTools.Services;
 using SanteDB.Client.Disconnected.Data.Synchronization.Configuration;
 using SanteDB.Rest.OAuth.Configuration;
 using SanteDB.Client.Upstream.Security;

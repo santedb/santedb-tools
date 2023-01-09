@@ -16,7 +16,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using SanteDB.DevTools.Services;
+using SanteDB.Client.UserInterface;
 
 namespace SanteDB.Tools.Debug.Services
 {

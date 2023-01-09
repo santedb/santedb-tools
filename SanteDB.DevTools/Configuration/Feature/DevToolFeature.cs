@@ -2,7 +2,6 @@
 using SanteDB.Core.Applets.Services.Impl;
 using SanteDB.Core.Configuration;
 using SanteDB.Core.Configuration.Features;
-using SanteDB.DevTools.Services;
 using SanteDB.Client.Services;
 using SanteDB.Tools.Debug.Services;
 using System;
@@ -10,6 +9,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
+using SanteDB.Client.UserInterface;
 
 namespace SanteDB.DevTools.Configuration.Feature
 {
@@ -21,7 +21,6 @@ namespace SanteDB.DevTools.Configuration.Feature
     {
         private const string DebugAppletEnabledSetting = "Enable Debug Applet Repository";
         private const string DebugAppletConfiguration = "Debug Applet Configuration";
-        private const string DebugWebBridgeEnabledSetting = "Enable Debugging of UI Screen";
 
         // Generic feature configuration
         private GenericFeatureConfiguration m_configuration;
@@ -66,7 +65,6 @@ namespace SanteDB.DevTools.Configuration.Feature
         public IEnumerable<IConfigurationTask> CreateInstallTasks()
         {
             yield return new InstallServiceTask(this, typeof(DebugAppletManagerService), () => (bool)this.m_configuration.Values[DebugAppletEnabledSetting] == true, typeof(IAppletManagerService));
-            yield return new InstallServiceTask(this, typeof(WebAppletHostBridgeProvider), () => (bool)this.m_configuration.Values[DebugAppletEnabledSetting] == true, typeof(IAppletHostBridgeProvider));
             yield return new InstallConfigurationSectionTask(this, this.m_configuration.Values[DebugAppletConfiguration] as IConfigurationSection, "Applet Debugging");
         }
 
@@ -95,8 +93,6 @@ namespace SanteDB.DevTools.Configuration.Feature
             this.m_configuration.Values.Add(DebugAppletConfiguration, sectionConfig ?? new DebugAppletConfigurationSection());
             this.m_configuration.Options.Add(DebugAppletEnabledSetting, () => ConfigurationOptionType.Boolean);
             this.m_configuration.Values.Add(DebugAppletEnabledSetting, appServiceProviders.Any(t => typeof(DebugAppletManagerService) == t.Type));
-            this.m_configuration.Options.Add(DebugWebBridgeEnabledSetting, () => ConfigurationOptionType.Boolean);
-            this.m_configuration.Values.Add(DebugWebBridgeEnabledSetting, appServiceProviders.Any(t => typeof(WebAppletHostBridgeProvider) == t.Type));
             // Construct the configuration options
             return sectionConfig != null ? FeatureInstallState.Installed : FeatureInstallState.NotInstalled;
         }

@@ -4,14 +4,6 @@
 <PropertyGroup Condition="'$(VersionNumber)' == ''">
     <VersionNumber>3.0-debug</VersionNumber>
   </PropertyGroup>
-
-<ItemGroup>
-  <None Remove="Resources\WebAppletBridge.js" />
-</ItemGroup>
-
-<ItemGroup>
-  <EmbeddedResource Include="Resources\WebAppletBridge.js" />
-</ItemGroup>
  
   <ItemGroup>
     <None Include="..\SanteDB.licenseheader">
