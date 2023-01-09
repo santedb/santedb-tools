@@ -100,12 +100,6 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\PakMan.Common\SanteDB.PakMan.Common.csproj">
-      <Project>{9E67324A-2F6A-4A8C-BCDD-479B68DA286F}</Project>
-      <Name>SanteDB.PakMan.Common</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="www\app.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -148,6 +142,12 @@
     <PackageReference Include="System.Text.Encoding.CodePages">
       <Version>7.0.0</Version>
     </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SanteDB.PakMan.Common\SanteDB.PakMan.Common.csproj">
+      <Project>{9e67324a-2f6a-4a8c-bcdd-479b68da286f}</Project>
+      <Name>SanteDB.PakMan.Common</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="BeforeBuild">

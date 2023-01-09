@@ -120,6 +120,10 @@ namespace SanteDB.SDK.AppletDebugger
             {
                 yield return $"--base=\"{this.BaseUrl}\"";
             }
+            if(NoBrowser)
+            {
+                yield return "--nobrowser";
+            }
         }
 
         /// <summary>

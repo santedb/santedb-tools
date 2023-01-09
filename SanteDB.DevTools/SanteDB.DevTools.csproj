@@ -20,7 +20,7 @@
   </ItemGroup>
  
   <ItemGroup>
-    <ProjectReference Include="..\PakMan.Common\SanteDB.PakMan.Common.csproj" />
+    <ProjectReference Include="..\SanteDB.PakMan.Common\SanteDB.PakMan.Common.csproj" />
   </ItemGroup>
 
 
@@ -66,7 +66,7 @@
           <Project>{3a45f695-47a2-464c-ace6-bdabbfa39fbc}</Project>
           <Name>SanteDB.Core.Api</Name>
         </ProjectReference>
-        <ProjectReference Include="..\..\santedb-dc-core\SanteDB.Client\SanteDB.Client.csproj"/>
+        <ProjectReference Include="..\..\santedb-dc-core\SanteDB.Client\SanteDB.Client.csproj" />
         
       </ItemGroup>
     </When>

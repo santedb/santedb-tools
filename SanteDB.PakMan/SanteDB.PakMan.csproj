@@ -154,8 +154,8 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\PakMan.Common\SanteDB.PakMan.Common.csproj">
-      <Project>{9E67324A-2F6A-4A8C-BCDD-479B68DA286F}</Project>
+    <ProjectReference Include="..\SanteDB.PakMan.Common\SanteDB.PakMan.Common.csproj">
+      <Project>{9e67324a-2f6a-4a8c-bcdd-479b68da286f}</Project>
       <Name>SanteDB.PakMan.Common</Name>
     </ProjectReference>
   </ItemGroup>
