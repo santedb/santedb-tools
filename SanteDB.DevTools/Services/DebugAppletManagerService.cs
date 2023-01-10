@@ -150,7 +150,10 @@ namespace SanteDB.Tools.Debug.Services
                                 newItm.Content = PakManTool.CompressContent(bytea);
                                 break;
                             case String str:
-                                newItm.Content = PakManTool.CompressContent(str);
+                                newItm.Content = PakManTool.CompressContent(bytea);
+                                break;
+                            case Object o:
+                                newItm.Content = o;
                                 break;
                         }
                     }
