@@ -17,6 +17,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using SanteDB.Client.UserInterface;
+using System.Security.Cryptography;
 
 namespace SanteDB.Tools.Debug.Services
 {
@@ -115,7 +116,49 @@ namespace SanteDB.Tools.Debug.Services
         {
             using (var ms = new MemoryStream())
             {
-                this.GetApplet(appletId).CreatePackage().Save(ms);
+                var sourceApplet = this.GetApplet(appletId);
+                var newApplet = new AppletManifest()
+                {
+                    Info = sourceApplet.Info,
+                    Strings = sourceApplet.Strings,
+                    ErrorAssets = sourceApplet.ErrorAssets,
+                    Assets = new List<AppletAsset>(),
+                    Locales = sourceApplet.Locales,
+                    Settings = sourceApplet.Settings,
+                    LoginAsset = sourceApplet.LoginAsset,
+                    Menus = sourceApplet.Menus,
+                    StartAsset = sourceApplet.StartAsset,
+                    Templates = sourceApplet.Templates,
+                    ViewModel = sourceApplet.ViewModel
+                };
+                foreach(var itm in sourceApplet.Assets)
+                {
+                    var newItm = new AppletAsset()
+                    {
+                        Content = itm.Content,
+                        Language = itm.Language,
+                        MimeType = itm.MimeType,
+                        Name = itm.Name,
+                        Policies = itm.Policies
+                    };
+
+                    if(newItm.Content == null)
+                    {
+                        switch(this.ResolveAppletAsset(itm))
+                        {
+                            case byte[] bytea:
+                                newItm.Content = PakManTool.CompressContent(bytea);
+                                break;
+                            case String str:
+                                newItm.Content = PakManTool.CompressContent(str);
+                                break;
+                        }
+                    }
+                    newApplet.Assets.Add(newItm);
+                }
+                var package = newApplet.CreatePackage();
+                package.Meta.Hash = SHA256.Create().ComputeHash(package.Manifest);
+                package.Save(ms);
                 return ms.ToArray();
             }
         }
