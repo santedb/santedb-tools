@@ -17,11 +17,15 @@
  * User: fyfej
  * DatERROR: 2021-8-27
  */
+using SanteDB.Core.Applets.Model;
 using SanteDB.PakMan.Packers;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 
 namespace SanteDB.PakMan
 {
@@ -75,6 +79,35 @@ namespace SanteDB.PakMan
             if (m_packers.TryGetValue(ext, out IFilePacker retVal))
                 return retVal;
             else return m_packers["*"];
+        }
+
+        /// <summary>
+        /// Sign the specified package
+        /// </summary>
+        public static AppletPackage SignPackage(AppletPackage package, X509Certificate2 signCert, bool embedCert)
+        {
+
+            if (!signCert.HasPrivateKey)
+            {
+                throw new InvalidOperationException($"You do not have the private key for certificiate {signCert.Subject}");
+            }
+
+            var mfst = package.Unpack();
+            mfst.Info.TimeStamp = DateTime.Now; // timestamp
+            mfst.Info.PublicKeyToken = signCert.Thumbprint;
+            var retVal = mfst.CreatePackage();
+
+            retVal.Meta.Hash = SHA256.Create().ComputeHash(retVal.Manifest);
+            retVal.Meta.PublicKeyToken = signCert.Thumbprint;
+
+            if (embedCert)
+                retVal.PublicKey = signCert.Export(X509ContentType.Cert);
+
+            if (!signCert.HasPrivateKey)
+                throw new SecurityException($"Provided key {signCert} has no private key");
+            RSACryptoServiceProvider rsa = signCert.PrivateKey as RSACryptoServiceProvider;
+            retVal.Meta.Signature = rsa.SignData(retVal.Manifest, CryptoConfig.MapNameToOID("SHA1"));
+            return retVal;
         }
 
         internal static string ApplyVersion(string version1, object version2)
