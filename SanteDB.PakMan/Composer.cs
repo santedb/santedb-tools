@@ -92,7 +92,7 @@ namespace SanteDB.PakMan
                         if (this.m_parms.Sign && pkg.Meta.Signature == null)
                         {
                             Emit.Message("WARN", "Package {0} is not signed, but you're signing your package. We'll sign it using your key", pkg.Meta.Id);
-                            pkg = new Signer(this.m_parms).CreateSignedPackage(pkg.Unpack());
+                            pkg = new Signer(this.m_parms).CreateSignedPackage(pkg);
                         }
                         sln.Include.Add(pkg);
                     }
