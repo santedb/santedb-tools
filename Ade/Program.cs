@@ -174,11 +174,7 @@ namespace SanteDB.SDK.AppletDebugger
 
                     Console.WriteLine("Press CTRL+C key to close...");
                     stopEvent.WaitOne();
-                    if (!isUserInitiatedShutdown)
-                    {
-                        Console.WriteLine("Exiting in 5 seconds");
-                        Thread.Sleep(1000);
-                    }
+                    Thread.Sleep(5000); // Allow for restarts
                 }
                 catch (Exception e)
                 {
