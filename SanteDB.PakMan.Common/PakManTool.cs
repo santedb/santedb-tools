@@ -23,6 +23,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Security;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
@@ -66,9 +67,7 @@ namespace SanteDB.PakMan
         {
             var ext = Path.GetExtension(file);
             if (m_packers == null)
-                m_packers = AppDomain.CurrentDomain.GetAssemblies()
-                    .Where(a => !a.IsDynamic)
-                    .SelectMany(a => a.ExportedTypes)
+                m_packers = AppDomain.CurrentDomain.GetAllTypes()
                     .Where(t => typeof(IFilePacker).IsAssignableFrom(t) && !t.IsAbstract && !t.IsInterface)
                     .Select(t => Activator.CreateInstance(t))
                     .OfType<IFilePacker>()

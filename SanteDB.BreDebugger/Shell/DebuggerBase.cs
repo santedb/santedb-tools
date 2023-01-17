@@ -241,7 +241,7 @@ namespace SanteDB.SDK.BreDebugger.Shell
                 t = new SanteDB.Core.Model.Serialization.ModelSerializationBinder().BindToType(typeof(IdentifiedData).Assembly.FullName, type);
             if (t == null)
             {
-                t = typeof(Int32).Assembly.ExportedTypes.FirstOrDefault(tr => tr.Namespace == "System" && tr.Name == type);
+                t = typeof(Int32).Assembly.GetExportedTypesSafe().FirstOrDefault(tr => tr.Namespace == "System" && tr.Name == type);
                 if (t == null)
                     throw new MissingMethodException(type, (string)null);
             }
@@ -420,7 +420,7 @@ namespace SanteDB.SDK.BreDebugger.Shell
                 t = new SanteDB.Core.Model.Serialization.ModelSerializationBinder().BindToType(typeof(IdentifiedData).Assembly.FullName, type);
             if (t == null)
             {
-                t = typeof(Int32).Assembly.ExportedTypes.FirstOrDefault(o => o.Namespace == "System" && o.Name == type);
+                t = typeof(Int32).Assembly.GetExportedTypesSafe().FirstOrDefault(o => o.Namespace == "System" && o.Name == type);
                 if (t == null)
                     throw new MissingMethodException(type, (string)null);
                 object res = null;
@@ -469,7 +469,7 @@ namespace SanteDB.SDK.BreDebugger.Shell
                 t = new SanteDB.Core.Model.Serialization.ModelSerializationBinder().BindToType(typeof(IdentifiedData).Assembly.FullName, type);
             if (t == null)
             {
-                t = typeof(Int32).Assembly.ExportedTypes.FirstOrDefault(o => o.Namespace == "System" && o.Name == type);
+                t = typeof(Int32).Assembly.GetExportedTypesSafe().FirstOrDefault(o => o.Namespace == "System" && o.Name == type);
                 if (t == null)
                     throw new MissingMethodException(type, (string)null);
             }
@@ -511,7 +511,7 @@ namespace SanteDB.SDK.BreDebugger.Shell
                 t = new SanteDB.Core.Model.Serialization.ModelSerializationBinder().BindToType(typeof(IdentifiedData).Assembly.FullName, type);
             if (t == null)
             {
-                t = typeof(Int32).Assembly.ExportedTypes.FirstOrDefault(o => o.Namespace == "System" && o.Name == type);
+                t = typeof(Int32).Assembly.GetExportedTypesSafe().FirstOrDefault(o => o.Namespace == "System" && o.Name == type);
                 if (t == null)
                     throw new MissingMethodException(type, (string)null);
             }
@@ -840,7 +840,7 @@ namespace SanteDB.SDK.BreDebugger.Shell
                 t = new SanteDB.Core.Model.Serialization.ModelSerializationBinder().BindToType(typeof(IdentifiedData).Assembly.FullName, type);
             if (t == null)
             {
-                t = typeof(Int32).Assembly.ExportedTypes.FirstOrDefault(o => o.Namespace == "System" && o.Name == type);
+                t = typeof(Int32).Assembly.GetExportedTypesSafe().FirstOrDefault(o => o.Namespace == "System" && o.Name == type);
                 if (t == null)
                     throw new MissingMethodException(type, (string)null);
             }
@@ -889,7 +889,7 @@ namespace SanteDB.SDK.BreDebugger.Shell
                 t = new SanteDB.Core.Model.Serialization.ModelSerializationBinder().BindToType(typeof(IdentifiedData).Assembly.FullName, type);
             if (t == null)
             {
-                t = typeof(Int32).Assembly.ExportedTypes.FirstOrDefault(tr => tr.Namespace == "System" && tr.Name == type);
+                t = typeof(Int32).Assembly.GetExportedTypesSafe().FirstOrDefault(tr => tr.Namespace == "System" && tr.Name == type);
                 if (t == null)
                     throw new MissingMethodException(type, (string)null);
             }

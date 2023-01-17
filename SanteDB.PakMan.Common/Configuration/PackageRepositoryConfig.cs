@@ -55,9 +55,7 @@ namespace SanteDB.PakMan.Configuration
 
             if (this.m_repository == null)
             {
-                this.m_repository = AppDomain.CurrentDomain.GetAssemblies()
-                    .Where(a => !a.IsDynamic)
-                    .SelectMany(a => a.ExportedTypes)
+                this.m_repository = AppDomain.CurrentDomain.GetAllTypes()
                     .Where(t => !t.IsInterface && typeof(IPackageRepository).IsAssignableFrom(t) && !t.IsAbstract)
                     .Select(t => Activator.CreateInstance(t) as IPackageRepository)
                     .FirstOrDefault(o => o.Scheme == new Uri(this.Path).Scheme);

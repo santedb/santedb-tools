@@ -54,19 +54,16 @@ namespace SanteDB.AdminConsole.Shell
         /// </summary>
         public InteractiveShell()
         {
-            foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
+            foreach (var t in AppDomain.CurrentDomain.GetAllTypes())
             {
-                foreach (var t in asm.GetTypes().Where(o => o.GetCustomAttribute<AdminCommandletAttribute>() != null))
+                foreach (var me in t.GetRuntimeMethods().Where(o => o.GetCustomAttribute<AdminCommandAttribute>() != null))
                 {
-                    foreach (var me in t.GetRuntimeMethods().Where(o => o.GetCustomAttribute<AdminCommandAttribute>() != null))
-                    {
-                        this.m_commandlets.Add(me.GetCustomAttribute<AdminCommandAttribute>(), me);
-                    }
+                    this.m_commandlets.Add(me.GetCustomAttribute<AdminCommandAttribute>(), me);
+                }
 
-                    if (t.GetRuntimeMethod("Init", new Type[0]) != null)
-                    {
-                        t.GetRuntimeMethod("Init", new Type[0]).Invoke(null, null);
-                    }
+                if (t.GetRuntimeMethod("Init", new Type[0]) != null)
+                {
+                    t.GetRuntimeMethod("Init", new Type[0]).Invoke(null, null);
                 }
             }
         }
@@ -111,7 +108,7 @@ namespace SanteDB.AdminConsole.Shell
             {
                 Console.WriteLine("\t{0}:{1}", l++, i.Message);
 
-                if(i is RestClientException<Object> rso && rso.Result is RestServiceFault rsf)
+                if (i is RestClientException<Object> rso && rso.Result is RestServiceFault rsf)
                 {
                     Console.WriteLine("\t\tREMOTE: {0}", rsf.Message);
                     foreach (var itm in rsf.Rules ?? new List<DetectedIssue>())
