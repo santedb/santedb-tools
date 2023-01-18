@@ -70,46 +70,9 @@
     <MonoDataSqlitePortablePath Condition="'$(Platform)' == 'x86'">$(MonoDataSqlitePortableHardware)-x86</MonoDataSqlitePortablePath>
     <MonoDataSqlitePortablePath Condition="'$(Platform)' == 'ARM'">$(MonoDataSqlitePortableHardware)-arm</MonoDataSqlitePortablePath>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'SignedRelease|AnyCPU'">
-    <OutputPath>..\bin\SignedRelease\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <Prefer32Bit>true</Prefer32Bit>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'MacDebug|AnyCPU'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>..\bin\MacDebug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <Prefer32Bit>true</Prefer32Bit>
-    <WarningLevel>4</WarningLevel>
-    <Optimize>false</Optimize>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'MacRelease|AnyCPU'">
-    <OutputPath>..\bin\MacRelease\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <Prefer32Bit>true</Prefer32Bit>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'MacRelease|x86'">
-    <OutputPath>..\bin\x86\MacRelease\</OutputPath>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'MacDebug|x86'">
-    <OutputPath>..\bin\x86\MacDebug\</OutputPath>
-  </PropertyGroup>
+
+
+
   <ItemGroup>
     <Reference Include="MohawkCollege.Util.Console.Parameters">
       <HintPath>..\Solution Items\MohawkCollege.Util.Console.Parameters.dll</HintPath>
@@ -265,43 +228,7 @@
     </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'SignedRelease|x86'">
-    <!--<PreBuildEvent>
-      copy "$(SolutionDir)\Solution Items\libcrypto-1_1.dll" "$(TargetDir)"
-      copy "$(SolutionDir)\Solution Items\spellfix.dll" "$(TargetDir)"
-      copy "$(SolutionDir)\Solution Items\SqlCipher.dll" "$(TargetDir)"
-      copy "$(SolutionDir)\Solution Items\SqlCipher.dll" "$(TargetDir)\sqlite3.dll"
-    </PreBuildEvent>-->
-    <OutputPath>..\bin\x86\SignedRelease\</OutputPath>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
-    <PreBuildEvent>
-      copy "$(SolutionDir)\Solution Items\libcrypto-1_1.dll" "$(TargetDir)"
-      copy "$(SolutionDir)\Solution Items\spellfix.dll" "$(TargetDir)"
-      copy "$(SolutionDir)\Solution Items\SqlCipher.dll" "$(TargetDir)"
-      copy "$(SolutionDir)\Solution Items\SqlCipher.dll" "$(TargetDir)\sqlite3.dll"
-    </PreBuildEvent>
-    <OutputPath>..\bin\x86\Release\</OutputPath>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
-    <!--<PreBuildEvent>
-      copy "$(SolutionDir)\Solution Items\libcrypto-1_1.dll" "$(TargetDir)"
-      copy "$(SolutionDir)\Solution Items\spellfix.dll" "$(TargetDir)"
-      copy "$(SolutionDir)\Solution Items\SqlCipher.dll" "$(TargetDir)"
-      copy "$(SolutionDir)\Solution Items\SqlCipher.dll" "$(TargetDir)\sqlite3.dll"
-    </PreBuildEvent>-->
-    <OutputPath>..\bin\x86\Debug\</OutputPath>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'SignedRelease|AnyCPU'">
-    <!--<PreBuildEvent>
-      copy "$(SolutionDir)\Solution Items\libcrypto-1_1.dll" "$(TargetDir)"
-      copy "$(SolutionDir)\Solution Items\spellfix.dll" "$(TargetDir)"
-      copy "$(SolutionDir)\Solution Items\SqlCipher.dll" "$(TargetDir)"
-      copy "$(SolutionDir)\Solution Items\SqlCipher.dll" "$(TargetDir)\sqlite3.dll"
 
-    </PreBuildEvent>-->
-    <OutputPath>..\bin\SignedRelease\</OutputPath>
-  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
     <!--<PreBuildEvent>
       copy "$(SolutionDir)\Solution Items\libcrypto-1_1.dll" "$(TargetDir)"

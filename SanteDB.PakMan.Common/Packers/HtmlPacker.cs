@@ -110,7 +110,6 @@ namespace SanteDB.PakMan.Packers
                             Value = t?.Value
                         }).ToList();
                     }
-                    htmlAsset.Layout = PakManTool.TranslatePath(xe.Attribute((XNamespace)PakManTool.XS_APPLET + "layout")?.Value);
                     htmlAsset.Static = xe.Attribute((XNamespace)PakManTool.XS_APPLET + "static")?.Value == "true";
                 }
 

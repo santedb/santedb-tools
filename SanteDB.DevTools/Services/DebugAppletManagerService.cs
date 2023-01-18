@@ -467,7 +467,6 @@ namespace SanteDB.Tools.Debug.Services
                         Language = t.Attribute("lang")?.Value,
                         Value = t?.Value
                     }).ToList();
-                    htmlAsset.Layout = this.CorrectAppletName(xe.Attribute(xs_santedb + "layout")?.Value);
                     htmlAsset.Static = xe.Attribute(xs_santedb + "static")?.Value == "true";
                 }
 
