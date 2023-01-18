@@ -411,7 +411,7 @@ namespace SanteDB.Tools.Debug.Services
                                         navigateAsset.Name).Replace('/', Path.DirectorySeparatorChar);
 
             if (!File.Exists(itmPath))
-                return null;
+                return navigateAsset.Content;
             else if (navigateAsset.MimeType == "text/html")
             {
                 XElement xe = XElement.Load(itmPath);
