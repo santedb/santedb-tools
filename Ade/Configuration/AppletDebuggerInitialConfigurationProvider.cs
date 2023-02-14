@@ -264,6 +264,8 @@ namespace SanteDB.SDK.AppletDebugger.Configuration
             {
                 AuditFilters = new List<AuditFilterConfiguration>()
                 {
+                    // Do not audit successful access controls and security alerts
+                    new AuditFilterConfiguration(ActionType.Execute, EventIdentifierType.SecurityAlert | EventIdentifierType.NetworkActivity, OutcomeIndicator.Success, false, false),
                     // Audit any failure - No matter which event
                     new AuditFilterConfiguration(null, null, OutcomeIndicator.EpicFail | OutcomeIndicator.MinorFail | OutcomeIndicator.SeriousFail, true, true),
                     // Audit anything that creates, reads, or updates data
