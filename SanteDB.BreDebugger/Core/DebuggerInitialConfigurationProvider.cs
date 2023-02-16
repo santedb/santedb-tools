@@ -185,7 +185,6 @@ namespace SanteDB.SDK.BreDebugger.Core
                         typeof(AdoRelationshipValidationProvider),
                         typeof(PersistenceEntitySource),
                         typeof(LocalRepositoryFactory),
-                        typeof(LocalTagPersistenceService),
                         typeof(DefaultNetworkInformationService),
                         typeof(AppletLocalizationService),
                         typeof(AppletBusinessRulesDaemon),
