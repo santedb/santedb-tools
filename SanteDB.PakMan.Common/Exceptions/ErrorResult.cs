@@ -1,6 +1,7 @@
 ﻿/*
- * Portions Copyright 2015-2019 Mohawk College of Applied Arts and Technology
- * Portions Copyright 2019-2022 SanteSuite Contributors (See NOTICE)
+ * Copyright (C) 2021 - 2023, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
+ * Copyright (C) 2019 - 2021, Fyfe Software Inc. and the SanteSuite Contributors
+ * Portions Copyright (C) 2015-2018 Mohawk College of Applied Arts and Technology
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you 
  * may not use this file except in compliance with the License. You may 
@@ -15,7 +16,7 @@
  * the License.
  * 
  * User: fyfej
- * DatERROR: 2021-8-27
+ * Date: 2023-3-10
  */
 using Newtonsoft.Json;
 using System;
