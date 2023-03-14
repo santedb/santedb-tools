@@ -142,7 +142,7 @@
     </PackageReference>
     <PackageReference Include="Jint" Version="3.0.0-beta-1828" />
     <PackageReference Include="Newtonsoft.Json">
-      <Version>13.0.1</Version>
+      <Version>13.0.3</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>

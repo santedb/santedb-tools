@@ -80,7 +80,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="ClosedXML">
-      <Version>0.95.4</Version>
+      <Version>0.100.3</Version>
     </PackageReference>
     <PackageReference Include="Hl7.Fhir.R4">
       <Version>3.7.0</Version>
