@@ -18,6 +18,7 @@
  * User: fyfej
  * Date: 2023-3-10
  */
+using Jint;
 using Jint.Runtime.Debugger;
 using Jint.Runtime.Interop;
 using Newtonsoft.Json;
@@ -102,7 +103,7 @@ namespace SanteDB.SDK.BreDebugger.Shell
 
             // Load debug targets
             Console.WriteLine("Loading debuggees...");
-            JavascriptExecutorPool.Current.ExecuteGlobal(o => o.Engine.Step += JreStep);
+            JavascriptExecutorPool.Current.ExecuteGlobal(o => o.Engine.DebugHandler.Step += JreStep);
 
             if (parms.Extensions != null)
             {
@@ -142,7 +143,7 @@ namespace SanteDB.SDK.BreDebugger.Shell
         public void ResetEvironment()
         {
             JavascriptExecutorPool.Current.Dispose();
-            JavascriptExecutorPool.Current.ExecuteGlobal(o => o.Engine.Step += JreStep);
+            JavascriptExecutorPool.Current.ExecuteGlobal(o => o.Engine.DebugHandler.Step += JreStep);
             this.m_loadedFiles.Clear();
             // Load debug targets
             Console.WriteLine("Reloading debuggees...");
@@ -172,11 +173,11 @@ namespace SanteDB.SDK.BreDebugger.Shell
         /// </summary>
         private Jint.Runtime.Debugger.StepMode JreStep(object sender, Jint.Runtime.Debugger.DebugInformation e)
         {
-            if (this.m_stepMode.HasValue && (this.m_stepMode == StepMode.Over || this.m_stepMode == StepMode.Into) || this.m_isStepRegistered || this.Breakpoints.Contains(e.CurrentStatement.Location.Start.Line))
+            if (this.m_stepMode.HasValue && (this.m_stepMode == StepMode.Over || this.m_stepMode == StepMode.Into) || this.m_isStepRegistered || this.Breakpoints.Contains(e.CurrentNode.Location.Start.Line))
             {
                 var col = Console.ForegroundColor;
                 Console.ForegroundColor = this.GetResponseColor();
-                this.m_prompt = $"{e.CurrentStatement.LabelSet?.Name ?? this.m_loadFile} @ {e.CurrentStatement.Location.Start.Line} (step) >";
+                this.m_prompt = $"{e.CurrentCallFrame.FunctionName ?? this.m_loadFile} @ {e.CurrentNode.Location.Start.Line} (step) >";
                 this.m_currentDebug = e;
                 int l = Console.CursorLeft;
                 Console.CursorLeft = 0;
@@ -388,14 +389,16 @@ namespace SanteDB.SDK.BreDebugger.Shell
         {
             this.ThrowIfNotDebugging();
             // Locals?
+            var locals = this.m_currentDebug.CurrentScopeChain.First(o => o.ScopeType == DebugScopeType.Local);
             if (id == null)
-                this.DumpObject(this.m_currentDebug.Locals, path);
+            {
+                this.DumpObject(locals.BindingNames.ToDictionary(o=>o, o => locals.GetBindingValue(o)), path);
+            }
             else
             {
-                var kobj = this.m_currentDebug.Locals[id];
+                var kobj = locals.GetBindingValue(id);
                 try
                 {
-                    JavascriptExecutorPool.Current.ExecuteGlobal(e => kobj = e.Engine.GetValue(kobj));
                     if (kobj.IsObject())
                         this.DumpObject((kobj.AsObject() as ObjectWrapper).Target, path);
                     else
@@ -435,15 +438,16 @@ namespace SanteDB.SDK.BreDebugger.Shell
         {
 
             this.ThrowIfNotDebugging();
+            var locals = this.m_currentDebug.CurrentScopeChain.First(o => o.ScopeType == DebugScopeType.Local);
+
             // Locals?
             if (id == null)
-                this.DumpObject(this.m_currentDebug.Locals, path);
+                this.DumpObject(locals.BindingNames.ToDictionary(o=>o, o => locals.GetBindingValue(o)), path);
             else
             {
-                var kobj = this.m_currentDebug.Locals[id];
+                var kobj = locals.GetBindingValue(id);
                 try
                 {
-                    JavascriptExecutorPool.Current.ExecuteGlobal(e => kobj = e.Engine.GetValue(kobj));
                     if (kobj.IsObject())
                     {
                         Object obj = new Dictionary<String, Object>((kobj.AsObject() as ObjectWrapper).Target as ExpandoObject);
@@ -494,14 +498,14 @@ namespace SanteDB.SDK.BreDebugger.Shell
         {
             this.ThrowIfNotDebugging();
             // Locals?
+            var globals = this.m_currentDebug.CurrentScopeChain.First(o => o.ScopeType == DebugScopeType.Global);
             if (id == null)
-                this.DumpObject(this.m_currentDebug.Globals, path);
+                this.DumpObject(globals.BindingNames.ToDictionary(o=>o, o => globals.GetBindingValue(o)), path);
             else
             {
-                var kobj = this.m_currentDebug.Globals[id];
+                var kobj = globals.GetBindingValue(id);
                 try
                 {
-                    JavascriptExecutorPool.Current.ExecuteGlobal(e => kobj = e.Engine.GetValue(kobj));
                     if (kobj.IsObject())
                         this.DumpObject((kobj.AsObject() as ObjectWrapper).Target, path);
                     else
@@ -544,7 +548,7 @@ namespace SanteDB.SDK.BreDebugger.Shell
         public void PrintLoc()
         {
             this.ThrowIfNotDebugging();
-            this.PrintFile(this.m_currentDebug.CurrentStatement.Location.Start.Line.ToString(), this.m_currentDebug.CurrentStatement.Location.Start.Line.ToString());
+            this.PrintFile(this.m_currentDebug.CurrentNode.Location.Start.Line.ToString(), this.m_currentDebug.CurrentNode.Location.Start.Line.ToString());
         }
 
         /// <summary>
@@ -554,7 +558,7 @@ namespace SanteDB.SDK.BreDebugger.Shell
         public void PrintBlock()
         {
             this.ThrowIfNotDebugging();
-            this.PrintFile((this.m_currentDebug.CurrentStatement.Location.Start.Line - 5).ToString(), (this.m_currentDebug.CurrentStatement.Location.End.Line + 5).ToString());
+            this.PrintFile((this.m_currentDebug.CurrentNode.Location.Start.Line - 5).ToString(), (this.m_currentDebug.CurrentNode.Location.End.Line + 5).ToString());
 
         }
 
@@ -576,8 +580,8 @@ namespace SanteDB.SDK.BreDebugger.Shell
             String fileName = null;
             if (this.m_currentDebug != null)
             {
-                if (!this.m_loadedFiles.TryGetValue(this.m_currentDebug.CurrentStatement.LabelSet?.Name ?? this.m_loadFile, out fileName))
-                    throw new InvalidOperationException($"Source for {this.m_currentDebug.CurrentStatement.LabelSet} not found");
+                if (!this.m_loadedFiles.TryGetValue(this.m_currentDebug.CurrentCallFrame.FunctionName ?? this.m_loadFile, out fileName))
+                    throw new InvalidOperationException($"Source for {this.m_currentDebug.CurrentCallFrame.FunctionName} not found");
             }
             else if (!this.m_loadedFiles.TryGetValue(Path.GetFileName(this.m_loadFile), out fileName))
                 throw new InvalidOperationException($"Source for '{this.m_loadFile}' not found");
@@ -591,7 +595,7 @@ namespace SanteDB.SDK.BreDebugger.Shell
                 while (!sr.EndOfStream)
                 {
                     if (ln >= startInt && ln <= endInt)
-                        Console.WriteLine($"[{ln}]{(this.m_currentDebug?.CurrentStatement.Location.Start.Line <= ln && this.m_currentDebug?.CurrentStatement.Location.End.Line >= ln ? "++>" : this.Breakpoints.Contains(ln) ? "***" : "   ")}{sr.ReadLine()}");
+                        Console.WriteLine($"[{ln}]{(this.m_currentDebug?.CurrentNode.Location.Start.Line <= ln && this.m_currentDebug?.CurrentNode.Location.End.Line >= ln ? "++>" : this.Breakpoints.Contains(ln) ? "***" : "   ")}{sr.ReadLine()}");
                     else if (ln >= endInt) break;
                     else
                         sr.ReadLine();
@@ -603,8 +607,8 @@ namespace SanteDB.SDK.BreDebugger.Shell
                     if (this.m_currentDebug != null)
                     {
                         Console.WriteLine("Source not avaialble - (built-in function - showing disassembly)");
-                        Console.WriteLine("{0}: {1}", this.m_currentDebug.CurrentStatement.Location.Start.Line, this.m_currentDebug.CurrentStatement.Type);
-                        foreach (var itm in this.m_currentDebug.CurrentStatement.ChildNodes.Where(o => o != null))
+                        Console.WriteLine("{0}: {1}", this.m_currentDebug.CurrentNode.Location.Start.Line, this.m_currentDebug.CurrentNode.Type);
+                        foreach (var itm in this.m_currentDebug.CurrentNode.ChildNodes.Where(o => o != null))
                         {
                             Console.WriteLine("\t{0}: {1}", itm.Location.Start.Line, itm.Type);
                         }

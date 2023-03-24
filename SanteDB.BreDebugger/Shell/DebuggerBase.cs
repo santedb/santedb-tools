@@ -613,33 +613,33 @@ namespace SanteDB.SDK.BreDebugger.Shell
 
                 int maxWidth = (Console.WindowWidth / 6);
 
-                if (obj is IList)
+                if (obj is IList list)
                 {
                     int i = 0;
-                    Console.WriteLine("Count:{0}", (obj as IList).Count);
-                    foreach (var itm in obj as IList)
+                    Console.WriteLine("Count:{0}", list.Count);
+                    foreach (var itm in list)
                     {
-                        Console.WriteLine("[{0}] {1}", i, (obj as IList)[i++]);
+                        Console.WriteLine("[{0}] {1}", i, list[i++]);
                         if (i > 99) break;
                     }
                 }
-                else if (obj is IDictionary)
+                else if (obj is IDictionary dict)
                 {
-                    Console.WriteLine("Count:{0}", (obj as IDictionary).Count);
+                    Console.WriteLine("Count:{0}", dict.Count);
                     int i = 0;
-                    foreach (var itm in (obj as IDictionary))
+                    foreach (var itm in dict)
                     {
-                        var k = (obj as IDictionary).Keys.OfType<Object>().Skip(i++).First();
-                        Console.WriteLine("[{0}] {1}", k, (obj as IDictionary)[k]);
+                        var k = dict.Keys.OfType<Object>().Skip(i++).First();
+                        Console.WriteLine("[{0}] {1}", k, dict[k]);
 
                         if (i > 99) break;
                     }
                 }
                 else if (primitives.Contains(obj.GetType()))
                     Console.WriteLine(obj);
-                else if (obj is IEnumerable)
+                else if (obj is IEnumerable enu)
                 {
-                    foreach (var itm in (obj as IEnumerable))
+                    foreach (var itm in enu)
                     {
                         if (itm is KeyValuePair<JsValue, PropertyDescriptor> kvi)
                         {
