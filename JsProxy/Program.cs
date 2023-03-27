@@ -574,6 +574,7 @@ function Exception(type, message, detail, cause, stack, policyId, policyOutcome,
                 writer.WriteLine("\t */");
 
                 writer.WriteLine("\t{0} : '{1}',", fi.Name, fi.GetValue(null));
+                writer.WriteLine("\t{0}Int : '{1}',", fi.Name, (int)fi.GetValue(null));
             }
 
             writer.WriteLine("}}  // {0} ", jobject.Id);
