@@ -54,7 +54,7 @@ namespace SanteDB.DevTools.Configuration
         /// Applets which should be debugged
         /// </summary>
         [DisplayName("Applets To Debug"), Description("The director(ies) which contain manifest.xml files to use as the basis for debugging applets")]
-        [Editor("System.Windows.Forms.Design.FolderNameEditor, System.Design", "System.Drawing.Design.UITypeEditor, System.Drawing")]
+        [Editor("System.Windows.Forms.Design.StringCollectionEditor, System.Design", "System.Drawing.Design.UITypeEditor, System.Drawing")]
         [XmlArray("applets"), XmlArrayItem("add")]
         public List<String> AppletsToDebug { get; set; }
 
