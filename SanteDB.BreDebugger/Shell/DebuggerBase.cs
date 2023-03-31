@@ -56,8 +56,6 @@ namespace SanteDB.SDK.BreDebugger.Shell
     /// </summary>
     public abstract class DebuggerBase : InteractiveBase
     {
-        // Exit debugger
-        private bool m_exitRequested = false;
 
 
         private bool m_fullStack = false;
@@ -258,8 +256,7 @@ namespace SanteDB.SDK.BreDebugger.Shell
                 c = String.IsNullOrEmpty(take) ? (int?)null : Int32.Parse(take);
 
             Console.WriteLine("INF: {0} where {1} ({2}..{3})", type, qd, o, c);
-            int tc = 0;
-            var retVal = ids.Query(qd, o.Value, c, out tc);
+            var retVal = ids.Query(qd).Skip(o.Value).Take(c??100);
 
             this.DumpObject(retVal, path);
         }
@@ -434,7 +431,7 @@ namespace SanteDB.SDK.BreDebugger.Shell
                 return JsonConvert.DeserializeObject(data, t, new JsonSerializerSettings()
                 {
                     SerializationBinder = new SanteDB.Core.Model.Serialization.ModelSerializationBinder(),
-                    TypeNameAssemblyFormat = 0,
+                    TypeNameAssemblyFormatHandling = TypeNameAssemblyFormatHandling.Simple,
                     TypeNameHandling = TypeNameHandling.All
                 });
             }
@@ -449,9 +446,9 @@ namespace SanteDB.SDK.BreDebugger.Shell
             return JsonConvert.DeserializeObject(json, new JsonSerializerSettings()
             {
                 SerializationBinder = new SanteDB.Core.Model.Serialization.ModelSerializationBinder(),
-                TypeNameAssemblyFormat = 0,
+                TypeNameAssemblyFormatHandling = TypeNameAssemblyFormatHandling.Simple,
                 TypeNameHandling = TypeNameHandling.All
-            });
+            }) ;
         }
 
         /// <summary>
@@ -492,7 +489,7 @@ namespace SanteDB.SDK.BreDebugger.Shell
             return JsonConvert.DeserializeObject(File.ReadAllText(filePath), new JsonSerializerSettings()
             {
                 SerializationBinder = new SanteDB.Core.Model.Serialization.ModelSerializationBinder(),
-                TypeNameAssemblyFormat = 0,
+                TypeNameAssemblyFormatHandling = TypeNameAssemblyFormatHandling.Simple,
                 TypeNameHandling = TypeNameHandling.All
             });
         }
@@ -907,7 +904,7 @@ namespace SanteDB.SDK.BreDebugger.Shell
 
             Console.WriteLine("INF: {0} where {1} ({2}..{3})", type, qd, o, c);
             int tc = 0;
-            var retVal = ids.Query(qd, o.Value, c, out tc);
+            var retVal = ids.Query(qd).Skip(o.Value).Take(c ?? 100);
             Console.WriteLine("INF: {0} set to scope", tc);
             return retVal;
         }

@@ -154,7 +154,10 @@ namespace SanteDB.SDK.AppletDebugger
         [Parameter("name")]
         [Description("Allows for separate environment names for multiple debugging")]
         public string InstanceName { get; set; }
-
+        
+        /// <summary>
+        /// Gets or sets the base url of the debugger
+        /// </summary>
         [Parameter("base")]
         [Description("Allows for the changing of the base URL (default is http://127.0.0.1)")]
         public string BaseUrl { get; set; }

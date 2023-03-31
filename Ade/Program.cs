@@ -160,10 +160,8 @@ namespace SanteDB.SDK.AppletDebugger
                     }
                     ManualResetEvent stopEvent = new ManualResetEvent(false);
 
-                    bool isUserInitiatedShutdown = false;
                     Console.CancelKeyPress += (o, e) =>
                     {
-                        isUserInitiatedShutdown = true;
                         ServiceUtil.Stop();
                         stopEvent.Set();
                     };

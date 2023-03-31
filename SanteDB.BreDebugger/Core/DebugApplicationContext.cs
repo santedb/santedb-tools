@@ -42,8 +42,6 @@ namespace SanteDB.SDK.BreDebugger.Core
     internal class DebuggerApplicationContext : SanteDBContextBase
     {
 
-        // The original console parameters
-        private DebuggerParameters m_consoleParameters;
 
         /// <inheritdoc/>
         public DebuggerApplicationContext(DebuggerParameters debugParameters, IConfigurationManager configurationManager) : base(SanteDBHostType.Test, configurationManager)

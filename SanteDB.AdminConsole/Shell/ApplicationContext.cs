@@ -67,13 +67,20 @@ namespace SanteDB.AdminConsole.Shell
         /// </summary>
         private Dictionary<string, IRestClient> m_restClients = new Dictionary<string, IRestClient>();
 
+#pragma warning disable CS0067
+        /// <inheritdoc/>
         public event EventHandler Starting;
 
+        /// <inheritdoc/>
         public event EventHandler Started;
 
+        /// <inheritdoc/>
         public event EventHandler Stopping;
 
+        /// <inheritdoc/>
         public event EventHandler Stopped;
+
+#pragma warning restore
 
         /// <summary>
         /// Gets the time that the application context was started

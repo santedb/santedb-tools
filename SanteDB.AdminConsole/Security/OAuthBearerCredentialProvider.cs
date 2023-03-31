@@ -112,7 +112,6 @@ namespace SanteDB.AdminConsole.Security
                 }
             }
 
-            return null;
         }
     }
 }
