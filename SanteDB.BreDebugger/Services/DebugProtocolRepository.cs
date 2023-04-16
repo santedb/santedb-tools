@@ -59,7 +59,7 @@ namespace SanteDB.SDK.BreDebugger.Services
         }
 
         /// <inheritdoc/>
-        public IQueryResultSet<IClinicalProtocol> FindProtocol(string protocolName = null, string protocolOid = null)
+        public IQueryResultSet<IClinicalProtocol> FindProtocol(string protocolName = null, string protocolOid = null, string groupId = null)
         {
             if (!String.IsNullOrEmpty(protocolName))
             {
@@ -68,6 +68,10 @@ namespace SanteDB.SDK.BreDebugger.Services
             else if (!String.IsNullOrEmpty(protocolOid))
             {
                 return this.m_protocols.Where(o => o.GetProtocolData().Oid == protocolOid).AsResultSet();
+            }
+            else if (!String.IsNullOrEmpty(groupId))
+            {
+                return this.m_protocols.Where(o => o.GetProtocolData().GroupId == groupId).AsResultSet();
             }
             else
             {
