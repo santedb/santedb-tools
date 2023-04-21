@@ -54,7 +54,7 @@ namespace SanteDB.AdminConsole.Shell
         /// </summary>
         public InteractiveShell()
         {
-            foreach (var t in AppDomain.CurrentDomain.GetAllTypes())
+            foreach (var t in AppDomain.CurrentDomain.GetAllTypes().Where(t=>t.HasCustomAttribute<AdminCommandletAttribute>()))
             {
                 foreach (var me in t.GetRuntimeMethods().Where(o => o.GetCustomAttribute<AdminCommandAttribute>() != null))
                 {

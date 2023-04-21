@@ -2,7 +2,7 @@
   "profiles": {
     "SanteDB.AdminConsole": {
       "commandName": "Project",
-      "commandLineArgs": "-v Verbose -x localhost:5555"
+      "commandLineArgs": "-r oss-mpi-ncc1701.fyfesoftware.ca"
     }
   }
 }
