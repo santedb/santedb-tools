@@ -102,6 +102,7 @@
     <Compile Include="Composer.cs" />
     <Compile Include="Emit.cs" />
     <Compile Include="Distributor.cs" />
+    <Compile Include="Inspector.cs" />
     <Compile Include="PakManParameters.cs" />
     <Compile Include="frmKeyPassword.cs">
       <SubType>Form</SubType>

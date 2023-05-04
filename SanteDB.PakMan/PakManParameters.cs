@@ -59,6 +59,13 @@ namespace SanteDB.PakMan
         public String Output { get; set; }
 
         /// <summary>
+        /// Display information about the package
+        /// </summary>
+        [Description("Show information for file")]
+        [Parameter("info")]
+        public bool Info { get; set; }
+
+        /// <summary>
         /// Gets or sets the indicator for showing help
         /// </summary>
         [Parameter("?")]

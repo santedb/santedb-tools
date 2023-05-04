@@ -51,6 +51,11 @@ namespace SanteDB.PakMan
                 parser.WriteHelp(Console.Out);
                 return 0;
             }
+            else if(parameters.Info)
+            {
+                // Load the file and dump the contents
+                return new Inspector(parameters).Dump();
+            }
             else if (parameters.Compose)
             {
                 var retVal = new Composer(parameters).Compose();
