@@ -110,6 +110,10 @@ namespace SanteDB.AdminConsole.Util
                     try
                     {
                         Object value = col.Compile().DynamicInvoke(tuple);
+                        if(value is Byte[] b)
+                        {
+                            value = b.HexEncode();
+                        }
                         String stringValue = value?.ToString();
                         if (stringValue == null)
                         {

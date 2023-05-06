@@ -57,7 +57,7 @@ namespace SanteDB.AdminConsole.Shell.CmdLets
         /// Get diagnostic info from server
         /// </summary>
         [AdminCommand("server.info", "Gets diagnostic information from the server")]
-        public static void ServerVersionQuery()
+        internal static void ServerVersionQuery()
         {
             var diagReport = m_client.GetServerDiagnoticReport().ApplicationInfo;
 
@@ -69,7 +69,7 @@ namespace SanteDB.AdminConsole.Shell.CmdLets
         /// Get assembly info from server
         /// </summary>
         [AdminCommand("server.asm", "Shows the server assembly information")]
-        public static void ServerAssemblyQuery()
+        internal static void ServerAssemblyQuery()
         {
             var diagReport = m_client.GetServerDiagnoticReport().ApplicationInfo;
 
@@ -96,7 +96,7 @@ namespace SanteDB.AdminConsole.Shell.CmdLets
         /// </summary>
         [AdminCommand("server.threads", "Shows the server thread information")]
         [Description("This command will show the running threads in the connected IMS instance")]
-        public static void ServiceThreadInformation()
+        internal static void ServiceThreadInformation()
         {
             var diagReport = m_client.GetServerDiagnoticReport();
             DisplayUtil.TablePrint(diagReport.Threads,
@@ -114,7 +114,7 @@ namespace SanteDB.AdminConsole.Shell.CmdLets
         /// </summary>
         [AdminCommand("server.services", "Shows the server service information")]
         [Description("This command will show the running daemon services in the connected IMS instance")]
-        public static void ServiceInformation()
+        internal static void ServiceInformation()
         {
             var diagReport = m_client.GetServerDiagnoticReport().ApplicationInfo;
 

@@ -47,7 +47,7 @@ namespace SanteDB.AdminConsole.Shell.CmdLets
         /// <summary>
         /// Display options
         /// </summary>
-        public class DisplayOptions
+        internal class DisplayOptions
         {
             /// <summary>
             /// Gets or sets the number of lines
@@ -113,7 +113,7 @@ namespace SanteDB.AdminConsole.Shell.CmdLets
         /// List logs
         /// </summary>
         [AdminCommand("log.messages", "Outputs the most recent log file")]
-        public static void Dmesg(DisplayOptions logOptions)
+        internal static void Dmesg(DisplayOptions logOptions)
         {
 
             var loginfo = m_client.GetLogs().CollectionItem.OfType<LogFileInfo>().OrderByDescending(o => o.LastWrite).FirstOrDefault();
@@ -137,7 +137,7 @@ namespace SanteDB.AdminConsole.Shell.CmdLets
         /// List logs
         /// </summary>
         [AdminCommand("log.list", "Lists the available log files")]
-        public static void LogList()
+        internal static void LogList()
         {
 
             var loginfo = m_client.GetLogs();
@@ -151,7 +151,7 @@ namespace SanteDB.AdminConsole.Shell.CmdLets
         /// <summary>
         /// Gets or sets the log name
         /// </summary>
-        public class LogCatDisplayOptions : DisplayOptions
+        internal class LogCatDisplayOptions : DisplayOptions
         {
 
             /// <summary>
@@ -166,7 +166,7 @@ namespace SanteDB.AdminConsole.Shell.CmdLets
         /// List logs
         /// </summary>
         [AdminCommand("log.cat", "Lists the contents of the specified file")]
-        public static void LogCat(LogCatDisplayOptions logOptions)
+        internal static void LogCat(LogCatDisplayOptions logOptions)
         {
 
             foreach (var l in logOptions.LogName)

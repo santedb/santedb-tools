@@ -53,7 +53,7 @@ namespace SanteDB.AdminConsole.Shell.CmdLets
         /// <summary>
         /// Authority params base
         /// </summary>
-        public class IdentityDomainParamBase
+        internal class IdentityDomainParamBase
         {
             /// <summary>
             /// Gets or sets the authority
@@ -69,7 +69,7 @@ namespace SanteDB.AdminConsole.Shell.CmdLets
         /// <summary>
         /// Add the assigning authority
         /// </summary>
-        public class AddIdentityDomainParams : IdentityDomainParamBase
+        internal class AddIdentityDomainParams : IdentityDomainParamBase
         {
             /// <summary>
             /// Gets or sets the OID
@@ -117,7 +117,7 @@ namespace SanteDB.AdminConsole.Shell.CmdLets
         /// <summary>
         /// Add the assigning authority
         /// </summary>
-        public class ListIdentityDomainParams : IdentityDomainParamBase
+        internal class ListIdentityDomainParams : IdentityDomainParamBase
         {
             /// <summary>
             /// Gets or sets the OID
@@ -147,7 +147,7 @@ namespace SanteDB.AdminConsole.Shell.CmdLets
         /// </summary>
         [AdminCommand("id.list", "Query identity domains")]
         [Description("This command will list all registered identity domains")]
-        public static void ListIdentityDomain(ListIdentityDomainParams parms)
+        internal static void ListIdentityDomain(ListIdentityDomainParams parms)
         {
             IEnumerable<IdentityDomain> auths = null;
             if (!String.IsNullOrEmpty(parms.Name))
@@ -182,7 +182,7 @@ namespace SanteDB.AdminConsole.Shell.CmdLets
         [AdminCommand("id.add", "Add identity domain application")]
         [Description("This command will create a new identity domain which can be used to identify external authorities")]
         // [PolicyPermission(System.Security.Permissions.SecurityAction.Demand, PolicyId = PermissionPolicyIdentifiers.UnrestrictedMetadata)]
-        public static void AddIdentityDomain(AddIdentityDomainParams parms)
+        internal static void AddIdentityDomain(AddIdentityDomainParams parms)
         {
 
             // First, resolve the assigner 

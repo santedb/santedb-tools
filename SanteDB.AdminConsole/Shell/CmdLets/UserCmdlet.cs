@@ -34,6 +34,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using SanteDB.Core.Model.AMI.Security;
 
 namespace SanteDB.AdminConsole.Shell.CmdLets
 {
@@ -476,5 +477,6 @@ namespace SanteDB.AdminConsole.Shell.CmdLets
                 );
             }
         }
+
     }
 }
