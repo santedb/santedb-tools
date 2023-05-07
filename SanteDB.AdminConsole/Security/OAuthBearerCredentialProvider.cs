@@ -57,6 +57,7 @@ namespace SanteDB.AdminConsole.Security
                 //TODO: Validate that the token isn't expired.
                 return new OAuthBearerTokenCredentials(oacp);
             }
+            string mfaSecret = null;
 
             while (true)
             {
@@ -78,6 +79,7 @@ namespace SanteDB.AdminConsole.Security
                     {
                         return null;
                     }
+                    Console.WriteLine();
                 }
                 else
                 {
@@ -89,7 +91,7 @@ namespace SanteDB.AdminConsole.Security
                 {
                     var oauthclient = app.GetService<IOAuthClient>();
 
-                    var principal = oauthclient.AuthenticateUser(app.Configuration.User, app.Configuration.Password) as OAuthClaimsPrincipal;
+                    var principal = oauthclient.AuthenticateUser(app.Configuration.User, app.Configuration.Password, clientId: app.Configuration.AppId , tfaSecret: mfaSecret) as OAuthClaimsPrincipal;
 
                     //var principal = (authenticationProvider as AdminConsole.Security.OAuthIdentityProvider)?.Authenticate(
                     //    new SanteDBClaimsPrincipal(new SanteDBClaimsIdentity(this.m_configuration.User, false, "OAUTH2")), this.m_configuration.Password) ??
@@ -103,6 +105,19 @@ namespace SanteDB.AdminConsole.Security
                     else
                     {
                         app.Configuration.Password = null;
+                    }
+                }
+                catch(RestClientException<OAuthClientTokenResponse> e)
+                {
+                    switch(e.Result.Error)
+                    {
+                        case "mfa_required":
+                            mfaSecret = DisplayUtil.PasswordPrompt($"{e.Result.ErrorDescription}:");
+                            break;
+                        default:
+                            app.Tracer.TraceError("Authentication error: {0} - {1}", e.Result.Error, e.Result.ErrorDescription);
+                           app.Configuration.Password = null;
+                            break;
                     }
                 }
                 catch (Exception e)

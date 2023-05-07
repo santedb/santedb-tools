@@ -76,13 +76,13 @@ namespace SanteDB.AdminConsole.Shell.CmdLets
             var certs = m_client.Client.Get<AmiCollection>($"/Certificate", query);
             DisplayUtil.TablePrint(certs.CollectionItem.OfType<X509Certificate2Info>(),
                 new String[] { "ID", "Subject", "Thumbrint", "Expires", "Key", "Valid" },
-                new int[] { 5, 54, 44, 25, 7, 7 },
+                new int[] { 5, 54, 44, 25, 4, 5 },
                 o => o.Id,
                 o => o.Subject,
                 o => o.Thumbprint,
                 o => o.NotAfter,
-                o => o.HasPrivateKey,
-                o => o.IsValid
+                o => o.HasPrivateKey ? "*" : "",
+                o => o.IsValid ? "*" : ""
                 );
         }
 

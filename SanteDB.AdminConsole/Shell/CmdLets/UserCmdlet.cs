@@ -228,7 +228,7 @@ namespace SanteDB.AdminConsole.Shell.CmdLets
                     throw new KeyNotFoundException($"User {un} not found");
                 }
 
-                user.Entity.Lockout = !parms.Locked ? null : (DateTime?)DateTime.MaxValue;
+                user.Entity.Lockout = !parms.Locked ? null : (DateTimeOffset?)DateTimeOffset.MaxValue;
 
                 if (parms.Locked)
                 {
@@ -316,14 +316,15 @@ namespace SanteDB.AdminConsole.Shell.CmdLets
             }
 
             DisplayUtil.TablePrint(users.CollectionItem.OfType<SecurityUserInfo>(),
-                new String[] { "SID", "Name", "Last Auth", "Lockout", "ILA", "A" },
-                new int[] { 38, 24, 22, 22, 4, 2 },
+                new String[] { "SID", "Name", "Last Auth", "Lockout", "ILA", "A", "MFA" },
+                new int[] { 38, 24, 22, 22, 4, 2, 4 },
                 o => o.Entity.Key,
                 o => o.Entity.UserName,
                 o => o.Entity.LastLoginTimeXml,
                 o => o.Entity.LockoutXml,
                 o => o.Entity.InvalidLoginAttempts,
-                o => o.Entity.ObsoletionTime.HasValue ? null : "*"
+                o => o.Entity.ObsoletionTime.HasValue ? null : "*",
+                o=>o.Entity.TwoFactorEnabled ? "*" : ""
             );
         }
 
@@ -460,13 +461,23 @@ namespace SanteDB.AdminConsole.Shell.CmdLets
                 {
                     throw new KeyNotFoundException($"User {un} not found");
                 }
+                string mfaMethod = String.Empty;
+                if(user.Entity.TwoFactorMechnaismKey != Guid.Empty)
+                {
+                    var query = new NameValueCollection();
+                    query.Add("id", user.Entity.TwoFactorMechnaismKey.ToString());
+                    mfaMethod = m_client.Client.Get<AmiCollection>("Tfa", query).CollectionItem.OfType<TfaMechanismInfo>().First().Name;
+                    
+                }
 
                 DisplayUtil.PrintPolicies(user,
-                    new string[] { "Name", "SID", "Email", "Phone", "Invalid Logins", "Lockout", "Last Login", "Created", "Updated", "De-Activated", "Roles" },
+                    new string[] { "Name", "SID", "Email", "Phone", "MFA Enabled", "MFA Method", "Invalid Logins", "Lockout", "Last Login", "Created", "Updated", "De-Activated", "Roles" },
                     u => u.UserName,
                     u => u.Key,
                     u => u.Email,
                     u => u.PhoneNumber,
+                    u => u.TwoFactorEnabled,
+                    u => mfaMethod,
                     u => u.InvalidLoginAttempts,
                     u => u.LockoutXml,
                     u => u.LastLoginTimeXml,

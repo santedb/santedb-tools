@@ -1,6 +1,9 @@
 {
   "profiles": {
-    "SanteDB.AdminConsole": {
+    "Unsecured - Default - Local": {
+      "commandName": "Project"
+    },
+    "Secured - Default - Local": {
       "commandName": "Project",
       "commandLineArgs": "--tls --port=8443"
     }

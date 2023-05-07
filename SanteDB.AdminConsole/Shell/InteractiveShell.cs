@@ -124,6 +124,8 @@ namespace SanteDB.AdminConsole.Shell
                         {
                             Console.WriteLine("\t\t\tREMOTE [CAUSE]: RULE: {0} {1}", itm.Priority.ToString(), itm.Text);
                         }
+                        rsf = rsf.CausedBy;
+
                     }
 
                 }
