@@ -234,6 +234,34 @@
 	  
     </PreBuildEvent>-->
     <OutputPath>..\bin\Release\</OutputPath>
+    <!--<PreBuildEvent>
+      copy "$(SolutionDir)\Solution Items\libcrypto-1_1.dll" "$(TargetDir)"
+      copy "$(SolutionDir)\Solution Items\spellfix.dll" "$(TargetDir)"
+      copy "$(SolutionDir)\Solution Items\SqlCipher.dll" "$(TargetDir)"
+      copy "$(SolutionDir)\Solution Items\SqlCipher.dll" "$(TargetDir)\sqlite3.dll"
+	  
+    </PreBuildEvent>-->
+    <!--<PreBuildEvent>
+      copy "$(SolutionDir)\Solution Items\libcrypto-1_1.dll" "$(TargetDir)"
+      copy "$(SolutionDir)\Solution Items\spellfix.dll" "$(TargetDir)"
+      copy "$(SolutionDir)\Solution Items\SqlCipher.dll" "$(TargetDir)"
+      copy "$(SolutionDir)\Solution Items\SqlCipher.dll" "$(TargetDir)\sqlite3.dll"
+	  
+    </PreBuildEvent>-->
+    <!--<PreBuildEvent>
+      copy "$(SolutionDir)\Solution Items\libcrypto-1_1.dll" "$(TargetDir)"
+      copy "$(SolutionDir)\Solution Items\spellfix.dll" "$(TargetDir)"
+      copy "$(SolutionDir)\Solution Items\SqlCipher.dll" "$(TargetDir)"
+      copy "$(SolutionDir)\Solution Items\SqlCipher.dll" "$(TargetDir)\sqlite3.dll"
+	  
+    </PreBuildEvent>-->
+    <!--<PreBuildEvent>
+      copy "$(SolutionDir)\Solution Items\libcrypto-1_1.dll" "$(TargetDir)"
+      copy "$(SolutionDir)\Solution Items\spellfix.dll" "$(TargetDir)"
+      copy "$(SolutionDir)\Solution Items\SqlCipher.dll" "$(TargetDir)"
+      copy "$(SolutionDir)\Solution Items\SqlCipher.dll" "$(TargetDir)\sqlite3.dll"
+	  
+    </PreBuildEvent>-->
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <!--<PreBuildEvent>
@@ -244,6 +272,30 @@
     </PreBuildEvent>-->
     <OutputPath>..\bin\Debug\</OutputPath>
     <DocumentationFile>..\bin\Debug\sdb-ade.xml</DocumentationFile>
+    <!--<PreBuildEvent>
+      copy "$(SolutionDir)\Solution Items\libcrypto-1_1.dll" "$(TargetDir)"
+      copy "$(SolutionDir)\Solution Items\spellfix.dll" "$(TargetDir)"
+      copy "$(SolutionDir)\Solution Items\SqlCipher.dll" "$(TargetDir)"
+      copy "$(SolutionDir)\Solution Items\SqlCipher.dll" "$(TargetDir)\sqlite3.dll"
+    </PreBuildEvent>-->
+    <!--<PreBuildEvent>
+      copy "$(SolutionDir)\Solution Items\libcrypto-1_1.dll" "$(TargetDir)"
+      copy "$(SolutionDir)\Solution Items\spellfix.dll" "$(TargetDir)"
+      copy "$(SolutionDir)\Solution Items\SqlCipher.dll" "$(TargetDir)"
+      copy "$(SolutionDir)\Solution Items\SqlCipher.dll" "$(TargetDir)\sqlite3.dll"
+    </PreBuildEvent>-->
+    <!--<PreBuildEvent>
+      copy "$(SolutionDir)\Solution Items\libcrypto-1_1.dll" "$(TargetDir)"
+      copy "$(SolutionDir)\Solution Items\spellfix.dll" "$(TargetDir)"
+      copy "$(SolutionDir)\Solution Items\SqlCipher.dll" "$(TargetDir)"
+      copy "$(SolutionDir)\Solution Items\SqlCipher.dll" "$(TargetDir)\sqlite3.dll"
+    </PreBuildEvent>-->
+    <!--<PreBuildEvent>
+      copy "$(SolutionDir)\Solution Items\libcrypto-1_1.dll" "$(TargetDir)"
+      copy "$(SolutionDir)\Solution Items\spellfix.dll" "$(TargetDir)"
+      copy "$(SolutionDir)\Solution Items\SqlCipher.dll" "$(TargetDir)"
+      copy "$(SolutionDir)\Solution Items\SqlCipher.dll" "$(TargetDir)\sqlite3.dll"
+    </PreBuildEvent>-->
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

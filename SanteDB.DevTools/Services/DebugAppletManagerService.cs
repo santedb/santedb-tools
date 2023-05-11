@@ -645,7 +645,7 @@ namespace SanteDB.Tools.Debug.Services
         /// </summary>
         private String CorrectAppletName(string value)
         {
-            return value?.ToLower().Replace("\\", "/");
+            return value?.Replace("\\", "/");
         }
 
         /// <summary>

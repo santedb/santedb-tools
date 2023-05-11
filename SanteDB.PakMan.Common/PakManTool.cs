@@ -56,7 +56,7 @@ namespace SanteDB.PakMan
         public static String TranslatePath(string value)
         {
 
-            return value?.ToLower().Replace("\\", "/");
+            return value?.Replace("\\", "/");
         }
 
         /// <summary>
