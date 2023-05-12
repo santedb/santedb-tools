@@ -35,10 +35,11 @@ namespace SanteDB.PakMan
 
         public Inspector(PakManParameters parameters)
         {
-            if(!File.Exists(parameters.Source)) {
+            if (!File.Exists(parameters.Source))
+            {
                 throw new FileNotFoundException(parameters.Source);
             }
-            using(var fs = File.OpenRead(parameters.Source))
+            using (var fs = File.OpenRead(parameters.Source))
             {
                 this.m_applet = AppletPackage.Load(fs);
             }
@@ -61,7 +62,7 @@ namespace SanteDB.PakMan
             Console.WriteLine("Name(s): {0}", string.Join("\r\n\t", this.m_applet.Meta.Names.Select(o => o.Value)));
             Console.WriteLine("Public Key: {0}", this.m_applet.PublicKey);
             Console.WriteLine("Timestamp: {0}", this.m_applet.Meta.TimeStamp?.ToString("o") ?? "none");
-            if(this.m_applet.PublicKey != null)
+            if (this.m_applet.PublicKey != null)
             {
                 var cert = new X509Certificate2(this.m_applet.PublicKey);
                 Console.WriteLine("=== Embedded Publisher Information ===");
@@ -71,14 +72,15 @@ namespace SanteDB.PakMan
                 Console.WriteLine("VALIDITY: {0} THRU {1}", cert.NotBefore, cert.NotAfter);
             }
 
-            if(this.m_applet is AppletSolution sln)
+            if (this.m_applet is AppletSolution sln)
             {
                 int i = 1;
                 Console.WriteLine("-- INCLUDES --");
-                foreach(var itm in sln.Include)
+                foreach (var itm in sln.Include)
                 {
                     Console.Write("\t{0} - {1} v. {2}", i++, itm.Meta.Id, itm.Meta.Version);
-                    if (itm.PublicKey != null) {
+                    if (itm.PublicKey != null)
+                    {
                         var cert = new X509Certificate2(itm.PublicKey);
                         Console.Write(", {0}", cert.Subject);
                     }

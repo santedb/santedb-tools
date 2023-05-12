@@ -19,13 +19,13 @@
  * Date: 2023-3-10
  */
 using MohawkCollege.Util.Console.Parameters;
+using SanteDB.AdminConsole.Attributes;
+using SanteDB.AdminConsole.Util;
 using SanteDB.Core.Interop;
 using SanteDB.Core.Model.AMI.Auth;
 using SanteDB.Core.Model.DataTypes;
 using SanteDB.Messaging.AMI.Client;
 using SanteDB.Messaging.HDSI.Client;
-using SanteDB.AdminConsole.Attributes;
-using SanteDB.AdminConsole.Util;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -189,7 +189,7 @@ namespace SanteDB.AdminConsole.Shell.CmdLets
             IEnumerable<SecurityApplicationInfo> assigner = null;
             if (parms.Assigner != null)
             {
-                assigner = parms.Assigner.OfType<String>().Select(a => m_amiClient.GetApplications(o => o.Name == a).CollectionItem.FirstOrDefault()).OfType<SecurityApplicationInfo>().ToList() ;
+                assigner = parms.Assigner.OfType<String>().Select(a => m_amiClient.GetApplications(o => o.Name == a).CollectionItem.FirstOrDefault()).OfType<SecurityApplicationInfo>().ToList();
                 if (!assigner.Any())
                 {
                     throw new KeyNotFoundException("Assigner unknown");
@@ -219,7 +219,7 @@ namespace SanteDB.AdminConsole.Shell.CmdLets
                 {
                     Url = parms.Url,
                     AuthorityScope = scope,
-                    AssigningAuthority = assigner.Select(o=> new AssigningAuthority(){ AssigningApplicationKey = o.Entity.Key, Reliability = IdentifierReliability.Authoritative }).ToList(),
+                    AssigningAuthority = assigner.Select(o => new AssigningAuthority() { AssigningApplicationKey = o.Entity.Key, Reliability = IdentifierReliability.Authoritative }).ToList(),
                     IsUnique = parms.Unique
                 };
                 aa = m_amiClient.CreateIdentityDomain(aa);

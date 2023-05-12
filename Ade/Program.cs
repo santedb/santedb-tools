@@ -19,24 +19,18 @@
  * Date: 2023-3-10
  */
 using MohawkCollege.Util.Console.Parameters;
-using SanteDB.Client;
 using SanteDB.Client.Configuration;
 using SanteDB.Client.Rest;
 using SanteDB.Core;
 using SanteDB.Core.Services;
 using SanteDB.Core.Services.Impl;
-using SanteDB.DevTools.Configuration;
 using SanteDB.Security.Certs.BouncyCastle;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Net;
-using System.Net.Security;
 using System.Reflection;
 using System.Threading;
-using System.Windows.Forms;
 
 namespace SanteDB.SDK.AppletDebugger
 {
@@ -141,7 +135,7 @@ namespace SanteDB.SDK.AppletDebugger
 
                     var context = new DebuggerApplicationContext(consoleArgs, configurationManager);
 
-                    if(consoleArgs.AutoBindCertificate)
+                    if (consoleArgs.AutoBindCertificate)
                     {
                         RestDebugCertificateInstallation.InstallDebuggerCertificate(new Uri(consoleArgs.BaseUrl), new BouncyCastleCertificateGenerator());
                     }

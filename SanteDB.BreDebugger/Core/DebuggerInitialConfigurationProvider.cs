@@ -34,14 +34,12 @@ using SanteDB.Core.Diagnostics;
 using SanteDB.Core.Protocol;
 using SanteDB.Core.Security;
 using SanteDB.Core.Security.Configuration;
-using SanteDB.Core.Services;
 using SanteDB.Core.Services.Impl;
 using SanteDB.Core.Services.Impl.Repository;
 using SanteDB.DevTools.Configuration;
 using SanteDB.OrmLite.Configuration;
 using SanteDB.OrmLite.Providers.Sqlite;
 using SanteDB.Persistence.Data.Services;
-using SanteDB.Rest.AMI.Configuration;
 using SanteDB.SDK.BreDebugger.Options;
 using SanteDB.SDK.BreDebugger.Services;
 using SanteDB.SDK.BreDebugger.Shell;
@@ -70,7 +68,7 @@ namespace SanteDB.SDK.BreDebugger.Core
         public SanteDBConfiguration Provide(SanteDBHostType hostContext, SanteDBConfiguration configuration)
         {
             var appServiceSection = configuration.GetSection<ApplicationServiceContextConfigurationSection>();
-            if(appServiceSection == null)
+            if (appServiceSection == null)
             {
                 configuration.AddSection(new ApplicationServiceContextConfigurationSection());
             }
@@ -89,7 +87,7 @@ namespace SanteDB.SDK.BreDebugger.Core
                 AllowUnsignedApplets = true
             });
 
-            if(parameters.References != null)
+            if (parameters.References != null)
             {
                 configuration.AddSection(new DebugAppletConfigurationSection()
                 {
@@ -129,7 +127,7 @@ namespace SanteDB.SDK.BreDebugger.Core
                 Providers = providers.Select(o => new ProviderRegistrationConfiguration(o.Invariant, o.DbProviderType)).ToList(),
                 AdoProvider = providers.Select(t => new ProviderRegistrationConfiguration(t.Invariant, t.AdoNetFactoryType)).ToList()
             });
-  
+
 
             // Construct the inital data section
             var dataSection = configuration.GetSection<DataConfigurationSection>();
@@ -201,7 +199,7 @@ namespace SanteDB.SDK.BreDebugger.Core
                         typeof(SimpleCarePlanService),
                         typeof(SimplePatchService),
                         typeof(DebugAppletManagerService),
-            }.Select(o=>new TypeReferenceConfiguration(o)));
+            }.Select(o => new TypeReferenceConfiguration(o)));
 
             // Trace writer
             configuration.AddSection(new DiagnosticsConfigurationSection()

@@ -19,9 +19,9 @@
  * Date: 2023-3-10
  */
 using Newtonsoft.Json;
-using SanteDB.PakMan.Exceptions;
 using RestSrvr;
 using RestSrvr.Message;
+using SanteDB.PakMan.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -59,7 +59,7 @@ namespace SanteDB.PakSrv
             else if (error is DuplicateNameException)
                 response.StatusCode = System.Net.HttpStatusCode.Conflict;
             else
-                response.StatusCode = System.Net.HttpStatusCode.InternalServerError ;
+                response.StatusCode = System.Net.HttpStatusCode.InternalServerError;
 
             var errorResponse = new ErrorResult(error);
             response.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(errorResponse)));

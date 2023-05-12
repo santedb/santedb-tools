@@ -19,11 +19,11 @@
  * Date: 2023-3-10
  */
 using MohawkCollege.Util.Console.Parameters;
+using SanteDB.AdminConsole.Attributes;
 using SanteDB.Core.BusinessRules;
 using SanteDB.Core.Http;
 using SanteDB.Core.Security;
 using SanteDB.Rest.Common.Fault;
-using SanteDB.AdminConsole.Attributes;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -54,7 +54,7 @@ namespace SanteDB.AdminConsole.Shell
         /// </summary>
         public InteractiveShell()
         {
-            foreach (var t in AppDomain.CurrentDomain.GetAllTypes().Where(t=>t.HasCustomAttribute<AdminCommandletAttribute>()))
+            foreach (var t in AppDomain.CurrentDomain.GetAllTypes().Where(t => t.HasCustomAttribute<AdminCommandletAttribute>()))
             {
                 foreach (var me in t.GetRuntimeMethods().Where(o => o.GetCustomAttribute<AdminCommandAttribute>() != null))
                 {

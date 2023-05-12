@@ -2,21 +2,15 @@
 using SanteDB.AdminConsole.Attributes;
 using SanteDB.AdminConsole.Util;
 using SanteDB.Core.Interop;
-using SanteDB.Core.Model.AMI.Auth;
 using SanteDB.Core.Model.AMI.Collections;
 using SanteDB.Core.Model.AMI.Security;
 using SanteDB.Messaging.AMI.Client;
 using System;
-using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-using static SanteDB.AdminConsole.Shell.CmdLets.CertCmdlet;
 
 namespace SanteDB.AdminConsole.Shell.CmdLets
 {
@@ -120,7 +114,7 @@ namespace SanteDB.AdminConsole.Shell.CmdLets
 
             using (var ms = new MemoryStream(m_client.Client.Get($"/Certificate/{certGetOptions.Thumbprint[0]}", query)))
             {
-                using(var sr = new StreamReader(ms))
+                using (var sr = new StreamReader(ms))
                 {
                     Console.WriteLine(sr.ReadToEnd());
                 }

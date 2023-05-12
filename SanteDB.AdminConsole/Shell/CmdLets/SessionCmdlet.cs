@@ -2,18 +2,14 @@
 using SanteDB.AdminConsole.Attributes;
 using SanteDB.AdminConsole.Util;
 using SanteDB.Core.Interop;
-using SanteDB.Core.Model.AMI.Auth;
 using SanteDB.Core.Model.AMI.Collections;
 using SanteDB.Core.Model.AMI.Security;
 using SanteDB.Messaging.AMI.Client;
 using System;
-using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SanteDB.AdminConsole.Shell.CmdLets
 {
@@ -65,15 +61,15 @@ namespace SanteDB.AdminConsole.Shell.CmdLets
         internal static void Kill(KillSessionParameter killSession)
         {
 
-            if(!String.IsNullOrEmpty(killSession.User))
+            if (!String.IsNullOrEmpty(killSession.User))
             {
                 var query = new NameValueCollection();
                 query.Add("userIdentity", killSession.User);
-                var sessions = m_client.Client.Get<AmiCollection>("/SessionInfo", query).CollectionItem.OfType<SecuritySessionInfo>().Select(o=>o.SessionId);
+                var sessions = m_client.Client.Get<AmiCollection>("/SessionInfo", query).CollectionItem.OfType<SecuritySessionInfo>().Select(o => o.SessionId);
                 killSession.SessionId = new StringCollection();
                 killSession.SessionId.AddRange(sessions.Select(o => o.HexEncode()).ToArray());
             }
-            foreach(var itm in killSession.SessionId)
+            foreach (var itm in killSession.SessionId)
             {
                 Console.Write("\tKilling {0}.", itm);
                 m_client.Client.Delete<SecuritySessionInfo>($"/SessionInfo/{itm}");

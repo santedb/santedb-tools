@@ -19,6 +19,8 @@
  * Date: 2023-3-10
  */
 using MohawkCollege.Util.Console.Parameters;
+using SanteDB.AdminConsole.Attributes;
+using SanteDB.AdminConsole.Util;
 using SanteDB.Core.Interop;
 using SanteDB.Core.Model.AMI.Auth;
 using SanteDB.Core.Model.AMI.Collections;
@@ -26,15 +28,12 @@ using SanteDB.Core.Model.Constants;
 using SanteDB.Core.Model.Patch;
 using SanteDB.Core.Model.Security;
 using SanteDB.Messaging.AMI.Client;
-using SanteDB.AdminConsole.Attributes;
-using SanteDB.AdminConsole.Util;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using SanteDB.Core.Model.AMI.Security;
 
 namespace SanteDB.AdminConsole.Shell.CmdLets
 {
@@ -324,7 +323,7 @@ namespace SanteDB.AdminConsole.Shell.CmdLets
                 o => o.Entity.LockoutXml,
                 o => o.Entity.InvalidLoginAttempts,
                 o => o.Entity.ObsoletionTime.HasValue ? null : "*",
-                o=>o.Entity.TwoFactorEnabled ? "*" : ""
+                o => o.Entity.TwoFactorEnabled ? "*" : ""
             );
         }
 
@@ -462,12 +461,12 @@ namespace SanteDB.AdminConsole.Shell.CmdLets
                     throw new KeyNotFoundException($"User {un} not found");
                 }
                 string mfaMethod = String.Empty;
-                if(user.Entity.TwoFactorMechnaismKey != Guid.Empty)
+                if (user.Entity.TwoFactorMechnaismKey != Guid.Empty)
                 {
                     var query = new NameValueCollection();
                     query.Add("id", user.Entity.TwoFactorMechnaismKey.ToString());
                     mfaMethod = m_client.Client.Get<AmiCollection>("Tfa", query).CollectionItem.OfType<TfaMechanismInfo>().First().Name;
-                    
+
                 }
 
                 DisplayUtil.PrintPolicies(user,

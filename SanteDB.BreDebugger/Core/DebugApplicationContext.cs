@@ -18,21 +18,12 @@
  * User: fyfej
  * Date: 2023-3-10
  */
-using SanteDB.Client;
 using SanteDB.Core;
-using SanteDB.Core.Applets.Model;
-using SanteDB.Core.Applets.Services;
-using SanteDB.Core.Configuration;
 using SanteDB.Core.Diagnostics;
-using SanteDB.Core.Model.EntityLoader;
-using SanteDB.Core.Model.Security;
 using SanteDB.Core.Services;
-using SanteDB.DevTools.Configuration;
 using SanteDB.SDK.BreDebugger.Options;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.Tracing;
-using System.IO;
 
 namespace SanteDB.SDK.BreDebugger.Core
 {

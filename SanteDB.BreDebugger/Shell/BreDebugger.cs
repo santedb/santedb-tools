@@ -23,23 +23,16 @@ using Jint.Runtime.Debugger;
 using Jint.Runtime.Interop;
 using Newtonsoft.Json;
 using SanteDB.BusinessRules.JavaScript;
-using SanteDB.BusinessRules.JavaScript.JNI;
-using SanteDB.Client.Configuration;
 using SanteDB.Core;
 using SanteDB.Core.Applets.ViewModel.Json;
 using SanteDB.Core.BusinessRules;
-using SanteDB.Core.Diagnostics;
-using SanteDB.Core.Interfaces;
 using SanteDB.Core.Model;
 using SanteDB.Core.Services;
-using SanteDB.Core.Services.Impl;
-using SanteDB.SDK.BreDebugger.Core;
 using SanteDB.SDK.BreDebugger.Options;
 using SanteDB.SDK.BreDebugger.Services;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics.Tracing;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
@@ -392,7 +385,7 @@ namespace SanteDB.SDK.BreDebugger.Shell
             var locals = this.m_currentDebug.CurrentScopeChain.First(o => o.ScopeType == DebugScopeType.Local);
             if (id == null)
             {
-                this.DumpObject(locals.BindingNames.ToDictionary(o=>o, o => locals.GetBindingValue(o)), path);
+                this.DumpObject(locals.BindingNames.ToDictionary(o => o, o => locals.GetBindingValue(o)), path);
             }
             else
             {
@@ -442,7 +435,7 @@ namespace SanteDB.SDK.BreDebugger.Shell
 
             // Locals?
             if (id == null)
-                this.DumpObject(locals.BindingNames.ToDictionary(o=>o, o => locals.GetBindingValue(o)), path);
+                this.DumpObject(locals.BindingNames.ToDictionary(o => o, o => locals.GetBindingValue(o)), path);
             else
             {
                 var kobj = locals.GetBindingValue(id);
@@ -500,7 +493,7 @@ namespace SanteDB.SDK.BreDebugger.Shell
             // Locals?
             var globals = this.m_currentDebug.CurrentScopeChain.First(o => o.ScopeType == DebugScopeType.Global);
             if (id == null)
-                this.DumpObject(globals.BindingNames.ToDictionary(o=>o, o => globals.GetBindingValue(o)), path);
+                this.DumpObject(globals.BindingNames.ToDictionary(o => o, o => globals.GetBindingValue(o)), path);
             else
             {
                 var kobj = globals.GetBindingValue(id);

@@ -18,18 +18,16 @@
  * User: fyfej
  * Date: 2023-3-10
  */
+using SanteDB.Client.UserInterface;
 using SanteDB.Core.Applets.Services;
 using SanteDB.Core.Applets.Services.Impl;
 using SanteDB.Core.Configuration;
 using SanteDB.Core.Configuration.Features;
-using SanteDB.Client.Services;
 using SanteDB.Tools.Debug.Services;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Text;
-using SanteDB.Client.UserInterface;
 
 namespace SanteDB.DevTools.Configuration.Feature
 {

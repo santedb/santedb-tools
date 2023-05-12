@@ -19,11 +19,11 @@
  * Date: 2023-3-10
  */
 using MohawkCollege.Util.Console.Parameters;
+using SanteDB.AdminConsole.Attributes;
+using SanteDB.AdminConsole.Util;
 using SanteDB.Core.Interop;
 using SanteDB.Core.Model.AMI.Applet;
 using SanteDB.Messaging.AMI.Client;
-using SanteDB.AdminConsole.Attributes;
-using SanteDB.AdminConsole.Util;
 using System;
 using System.Collections.Specialized;
 using System.ComponentModel;

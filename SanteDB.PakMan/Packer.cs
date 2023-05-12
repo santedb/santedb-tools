@@ -18,13 +18,10 @@
  * User: fyfej
  * Date: 2023-3-10
  */
-using SanteDB.PakMan.Repository;
 using SanteDB.Core.Applets.Model;
+using SanteDB.PakMan.Repository;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Security.Cryptography;
 
 namespace SanteDB.PakMan
 {
@@ -65,7 +62,7 @@ namespace SanteDB.PakMan
             {
                 var packer = new AppletPackager(manifestFile, this.m_parms.Optimize);
                 AppletPackage pkg = packer.Pack(this.m_parms.Version);
-                if(this.m_parms.Sign)
+                if (this.m_parms.Sign)
                 {
                     pkg = packer.Sign(pkg, this.m_parms.GetSigningCert());
                 }
@@ -76,7 +73,7 @@ namespace SanteDB.PakMan
 
                 if (!Directory.Exists(Path.GetDirectoryName(this.m_parms.Output)) && !String.IsNullOrEmpty(Path.GetDirectoryName(this.m_parms.Output)))
                     Directory.CreateDirectory(Path.GetDirectoryName(this.m_parms.Output));
-                
+
                 var outFile = this.m_parms.Output ?? pkg.Meta.Id + ".pak";
                 using (var ofs = File.Create(outFile))
                     pkg.Save(ofs);

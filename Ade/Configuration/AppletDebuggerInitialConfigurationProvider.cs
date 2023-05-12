@@ -22,52 +22,43 @@ using SanteDB.BI.Services.Impl;
 using SanteDB.BusinessRules.JavaScript;
 using SanteDB.Caching.Memory;
 using SanteDB.Caching.Memory.Session;
-using SanteDB.Cdss.Xml;
 using SanteDB.Client.Configuration;
+using SanteDB.Client.Configuration.Upstream;
+using SanteDB.Client.Disconnected.Data.Synchronization.Configuration;
+using SanteDB.Client.OAuth;
+using SanteDB.Client.Repositories;
 using SanteDB.Client.Tickles;
 using SanteDB.Client.Upstream;
-using SanteDB.Core.Applets.Configuration;
+using SanteDB.Client.Upstream.Management;
+using SanteDB.Client.Upstream.Repositories;
+using SanteDB.Client.Upstream.Security;
+using SanteDB.Client.UserInterface.Impl;
+using SanteDB.Core;
 using SanteDB.Core.Applets.Services.Impl;
 using SanteDB.Core.Configuration;
 using SanteDB.Core.Configuration.Http;
-using SanteDB.Client.Configuration.Upstream;
+using SanteDB.Core.Data;
+using SanteDB.Core.Data.Backup;
+using SanteDB.Core.Diagnostics;
 using SanteDB.Core.Diagnostics.Tracing;
 using SanteDB.Core.Http;
 using SanteDB.Core.Model.Audit;
 using SanteDB.Core.Model.DataTypes;
 using SanteDB.Core.Model.Entities;
 using SanteDB.Core.Model.Security;
-using SanteDB.Core.Protocol;
 using SanteDB.Core.Security;
 using SanteDB.Core.Security.Audit;
 using SanteDB.Core.Security.Configuration;
 using SanteDB.Core.Security.Privacy;
 using SanteDB.Core.Services.Impl;
+using SanteDB.Rest.OAuth.Configuration;
+using SanteDB.Security.Certs.BouncyCastle;
+using SanteDB.Tools.Debug.Services;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.NetworkInformation;
-using System.Text;
-using System.Threading.Tasks;
-using SanteDB.Core.Data.Backup;
-using SanteDB.Tools.Debug.Services;
-using SanteDB.Core;
-using SanteDB.Core.Diagnostics;
-using SanteDB.Rest.HDSI;
-using SanteDB.Rest.AMI;
-using SanteDB.Rest.BIS;
-using SanteDB.Client.OAuth;
-using SanteDB.Client.UserInterface.Impl;
-using SanteDB.Rest.Common;
-using SanteDB.Client.Disconnected.Data.Synchronization.Configuration;
-using SanteDB.Rest.OAuth.Configuration;
-using SanteDB.Client.Upstream.Security;
-using SanteDB.Client.Upstream.Management;
-using SanteDB.Client.Upstream.Repositories;
-using SanteDB.Client.Repositories;
-using SanteDB.Security.Certs.BouncyCastle;
-using SanteDB.Core.Data;
 
 namespace SanteDB.SDK.AppletDebugger.Configuration
 {
@@ -183,7 +174,7 @@ namespace SanteDB.SDK.AppletDebugger.Configuration
                 }
             };
 
-          
+
 
             configuration.AddSection(new SecurityConfigurationSection()
             {
@@ -204,9 +195,9 @@ namespace SanteDB.SDK.AppletDebugger.Configuration
                 }
             });
             // Trace writer
-            
+
             var logDirectory = Path.Combine(localDataPath, "log");
-            if(!Directory.Exists(logDirectory))
+            if (!Directory.Exists(logDirectory))
             {
                 Directory.CreateDirectory(logDirectory);
             }
