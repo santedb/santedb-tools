@@ -23,6 +23,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
+using System.Xml.Linq;
 
 namespace SanteDB.PakMan
 {
@@ -60,7 +61,8 @@ namespace SanteDB.PakMan
             Console.WriteLine("Version: {0}", this.m_applet.Meta.Version);
             Console.WriteLine("Author: {0}", this.m_applet.Meta.Author);
             Console.WriteLine("Name(s): {0}", string.Join("\r\n\t", this.m_applet.Meta.Names.Select(o => o.Value)));
-            Console.WriteLine("Public Key: {0}", this.m_applet.PublicKey);
+            Console.WriteLine("Public Key ID: {0}", this.m_applet.Meta.PublicKeyToken);
+            Console.WriteLine("Content Hash: {0}", this.m_applet.Meta.Hash.HexEncode());
             Console.WriteLine("Timestamp: {0}", this.m_applet.Meta.TimeStamp?.ToString("o") ?? "none");
             if (this.m_applet.PublicKey != null)
             {
@@ -86,6 +88,36 @@ namespace SanteDB.PakMan
                     }
                     Console.WriteLine();
 
+                }
+            }
+            else 
+            {
+                Console.WriteLine("-- CONTENTS --");
+                Console.WriteLine("CLASS\tMime Type\t\tName");
+                foreach(var itm in this.m_applet.Unpack().Assets)
+                {
+                    switch(itm.Content)
+                    {
+                        case AppletWidget w:
+                            Console.Write("WIDGET");
+                            break;
+                        case AppletAssetHtml h:
+                            Console.Write("HTML");
+                            break;
+                        case byte[] b:
+                            Console.Write("BINARY");
+                            break;
+                        case AppletAssetVirtual v:
+                            Console.Write("VIRTUAL");
+                            break;
+                        case XElement x:
+                            Console.Write("XML");
+                            break;
+                        case string s:
+                            Console.Write("TEXT");
+                            break;
+                    }
+                    Console.WriteLine("\t{1}\t\t{2}", itm.Content.GetType().Name, itm.MimeType, itm.Name);
                 }
             }
             return 0;
