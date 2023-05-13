@@ -114,6 +114,10 @@ namespace SanteDB.AdminConsole.Util
                         {
                             value = b.HexEncode();
                         }
+                        else if (value is DateTime dt)
+                        {
+                            value = dt.ToLocalTime();
+                        }
                         String stringValue = value?.ToString();
                         if (stringValue == null)
                         {
