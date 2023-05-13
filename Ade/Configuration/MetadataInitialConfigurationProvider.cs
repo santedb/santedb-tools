@@ -47,7 +47,7 @@ namespace SanteDB.SDK.AppletDebugger.Configuration
         /// </summary>
         public SanteDBConfiguration Provide(SanteDBHostType hostContext, SanteDBConfiguration existing)
         {
-            if(hostContext != SanteDBHostType.Gateway)
+            if (hostContext != SanteDBHostType.Gateway)
             {
                 return existing;
             }
@@ -69,7 +69,7 @@ namespace SanteDB.SDK.AppletDebugger.Configuration
             // Add swagger configuration
             if (!appServiceConfig.ServiceProviders.Any(o => o.Type == typeof(MetadataMessageHandler)))
             {
-                appServiceConfig.ServiceProviders.Add(new TypeReferenceConfiguration( typeof(MetadataMessageHandler)));
+                appServiceConfig.ServiceProviders.Add(new TypeReferenceConfiguration(typeof(MetadataMessageHandler)));
                 existing.AddSection(new MetadataConfigurationSection()
                 {
                     Services = new List<SanteDB.Core.Interop.ServiceEndpointOptions>()

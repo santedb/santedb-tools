@@ -18,18 +18,14 @@
  * User: fyfej
  * Date: 2023-3-10
  */
+using SanteDB.AdminConsole.Security;
 using SanteDB.Core;
 using SanteDB.Core.Configuration.Http;
 using SanteDB.Core.Diagnostics;
 using SanteDB.Core.Http;
 using SanteDB.Core.Http.Description;
 using SanteDB.Core.Interop;
-using SanteDB.Core.Security;
-using SanteDB.Core.Security.Claims;
-using SanteDB.Core.Security.Services;
 using SanteDB.Messaging.AMI.Client;
-using SanteDB.AdminConsole.Security;
-using SanteDB.AdminConsole.Util;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;

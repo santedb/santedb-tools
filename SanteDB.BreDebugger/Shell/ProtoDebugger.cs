@@ -18,15 +18,9 @@
  * User: fyfej
  * Date: 2023-3-10
  */
-using SanteDB.BusinessRules.JavaScript;
-using SanteDB.BusinessRules.JavaScript.JNI;
 using SanteDB.Cdss.Xml;
 using SanteDB.Cdss.Xml.Model;
 using SanteDB.Core;
-using SanteDB.Core.Diagnostics;
-using SanteDB.Core.Interfaces;
-using SanteDB.Core.Model.Acts;
-using SanteDB.Core.Model.Query;
 using SanteDB.Core.Model.Roles;
 using SanteDB.Core.Protocol;
 using SanteDB.Core.Services;
@@ -36,10 +30,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Diagnostics.Tracing;
 using System.IO;
 using System.Linq;
-using System.Linq.Expressions;
 
 namespace SanteDB.SDK.BreDebugger.Shell
 {
@@ -53,7 +45,7 @@ namespace SanteDB.SDK.BreDebugger.Shell
         // Loaded files
         private Dictionary<String, String> m_loadedFiles = new Dictionary<string, string>();
 
-        
+
 
 
         /// <summary>
@@ -191,7 +183,7 @@ namespace SanteDB.SDK.BreDebugger.Shell
         public void Reset()
         {
             var protoRepo = ApplicationServiceContext.Current.GetService<IClinicalProtocolRepositoryService>();
-            foreach(var p in protoRepo.FindProtocol().ToArray())
+            foreach (var p in protoRepo.FindProtocol().ToArray())
             {
                 protoRepo.RemoveProtocol(p.Id);
             }

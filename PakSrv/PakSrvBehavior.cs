@@ -25,7 +25,6 @@ using SanteDB.Core.Applets.Model;
 using SanteDB.Core.Model.Query;
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;

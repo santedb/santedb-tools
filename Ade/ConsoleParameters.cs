@@ -86,13 +86,13 @@ namespace SanteDB.SDK.AppletDebugger
         /// </summary>
         internal IEnumerable<String> ToArgumentList()
         {
-            if(!String.IsNullOrEmpty(this.InstanceName))
+            if (!String.IsNullOrEmpty(this.InstanceName))
             {
                 yield return $"--name=\"{this.InstanceName}\"";
             }
-            if(this.Assemblies != null)
+            if (this.Assemblies != null)
             {
-                foreach(var asm in this.Assemblies)
+                foreach (var asm in this.Assemblies)
                 {
                     yield return $"--assembly=\"{asm}\"";
                 }
@@ -101,27 +101,29 @@ namespace SanteDB.SDK.AppletDebugger
             {
                 yield return "--core";
             }
-            if(!String.IsNullOrEmpty(this.SolutionFile)) {
+            if (!String.IsNullOrEmpty(this.SolutionFile))
+            {
                 yield return $"--solution=\"{this.SolutionFile}\"";
             }
-            if(this.References != null)
+            if (this.References != null)
             {
-                foreach(var refr in this.References) {
+                foreach (var refr in this.References)
+                {
                     yield return $"--ref=\"{refr}\"";
                 }
             }
-            if(this.AppletDirectories != null)
+            if (this.AppletDirectories != null)
             {
-                foreach(var dir in this.AppletDirectories)
+                foreach (var dir in this.AppletDirectories)
                 {
                     yield return $"--applet=\"{dir}\"";
                 }
             }
-            if(!String.IsNullOrEmpty(this.BaseUrl))
+            if (!String.IsNullOrEmpty(this.BaseUrl))
             {
                 yield return $"--base=\"{this.BaseUrl}\"";
             }
-            if(NoBrowser)
+            if (NoBrowser)
             {
                 yield return "--nobrowser";
             }
@@ -154,7 +156,7 @@ namespace SanteDB.SDK.AppletDebugger
         [Parameter("name")]
         [Description("Allows for separate environment names for multiple debugging")]
         public string InstanceName { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the base url of the debugger
         /// </summary>

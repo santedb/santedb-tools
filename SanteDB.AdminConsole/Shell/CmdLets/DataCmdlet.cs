@@ -19,6 +19,8 @@
  * Date: 2023-3-10
  */
 using MohawkCollege.Util.Console.Parameters;
+using SanteDB.AdminConsole.Attributes;
+using SanteDB.AdminConsole.Util;
 using SanteDB.Core.Data.Initialization;
 using SanteDB.Core.Interop;
 using SanteDB.Core.Model;
@@ -26,8 +28,6 @@ using SanteDB.Core.Model.Collection;
 using SanteDB.Core.Model.Query;
 using SanteDB.Core.Model.Serialization;
 using SanteDB.Messaging.HDSI.Client;
-using SanteDB.AdminConsole.Attributes;
-using SanteDB.AdminConsole.Util;
 using System;
 using System.Collections.Specialized;
 using System.ComponentModel;
@@ -146,8 +146,8 @@ namespace SanteDB.AdminConsole.Shell.CmdLets
                 }
             }
 
-            Int32.TryParse(parms.Offset , out int offset);
-            Int32.TryParse(parms.Count , out int count);
+            Int32.TryParse(parms.Offset, out int offset);
+            Int32.TryParse(parms.Count, out int count);
 
             if (parms.Display == null)
             {

@@ -24,7 +24,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Security;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
@@ -56,7 +55,7 @@ namespace SanteDB.PakMan
         public static String TranslatePath(string value)
         {
 
-            return value?.ToLower().Replace("\\", "/");
+            return value?.Replace("\\", "/");
         }
 
         /// <summary>
@@ -131,7 +130,7 @@ namespace SanteDB.PakMan
             {
                 using (var cs = new SharpCompress.Compressors.LZMA.LZipStream(ms, SharpCompress.Compressors.CompressionMode.Decompress))
                 {
-                    using(var oms = new MemoryStream())
+                    using (var oms = new MemoryStream())
                     {
                         cs.CopyTo(oms);
                         return oms.ToArray();
@@ -163,9 +162,9 @@ namespace SanteDB.PakMan
             using (var ms = new MemoryStream())
             {
                 using (var cs = new SharpCompress.Compressors.LZMA.LZipStream(ms, SharpCompress.Compressors.CompressionMode.Compress))
-                using(var sw = new StreamWriter(cs, System.Text.Encoding.UTF8))
+                using (var sw = new StreamWriter(cs, System.Text.Encoding.UTF8))
                 {
-                    sw.Write(content);    
+                    sw.Write(content);
                 }
                 return ms.ToArray();
             }

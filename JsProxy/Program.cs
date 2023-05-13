@@ -179,7 +179,7 @@ function Exception(type, message, detail, cause, stack, policyId, policyOutcome,
                         CodeCompileUnit compileUnit = new CodeCompileUnit();
 
                         var asm = asmFile;
-                        if(!Path.IsPathRooted(asm))
+                        if (!Path.IsPathRooted(asm))
                         {
                             asm = Path.Combine(Path.GetDirectoryName(typeof(Program).Assembly.Location), asm);
                         }
@@ -229,16 +229,16 @@ function Exception(type, message, detail, cause, stack, policyId, policyOutcome,
                     var tocs = new Dictionary<String, String>();
                     foreach (var type in Assembly.LoadFrom(asm).GetTypes().Where(o => o.GetInterfaces().Any(t => t.FullName == typeof(IServiceImplementation).FullName) && o.IsInterface))
                     {
-                        
+
                         var metaData = new Dictionary<String, Object>();
 
                         var fileName = Path.GetTempFileName();
                         String topicTitle = String.Empty;
                         using (TextWriter output = File.CreateText(fileName))
-                            topicTitle = GenerateServiceDocumentation(output, type, xmlDoc).Replace("<","{").Replace(">","}");
+                            topicTitle = GenerateServiceDocumentation(output, type, xmlDoc).Replace("<", "{").Replace(">", "}");
 
                         var wikiFile = topicTitle.ToLower();
-                        foreach(var np in nonprint)
+                        foreach (var np in nonprint)
                         {
                             wikiFile = wikiFile.Replace(np, '-');
                         }
@@ -252,7 +252,7 @@ function Exception(type, message, detail, cause, stack, policyId, policyOutcome,
                     }
                     using (TextWriter toc = File.CreateText(Path.Combine(parms.Output ?? "out", "SUMMARY.md")))
                     {
-                        foreach(var itm in tocs.OrderBy(o=>o.Key))
+                        foreach (var itm in tocs.OrderBy(o => o.Key))
                         {
                             toc.WriteLine("* [{0}]({1})", itm.Key, itm.Value);
                         }
@@ -270,7 +270,7 @@ function Exception(type, message, detail, cause, stack, policyId, policyOutcome,
             Console.WriteLine("Generating documentation for {0}...", type.FullName);
             // Emit the template
             writer.WriteLine("`{1}` in assembly {2} version {3}", type.GetCustomAttribute<DescriptionAttribute>()?.Description ?? GenerateCSName(type).Replace("<", "&lt;"), GenerateCSName(type).Replace("<", "&lt;"), type.Assembly.GetName().Name, type.Assembly.GetName().Version);
-            
+
             writer.WriteLine("\r\n# Summary");
 
             // Lookup the summary information
@@ -494,10 +494,10 @@ function Exception(type, message, detail, cause, stack, policyId, policyOutcome,
             writer.WriteLine("```");
 
             writer.WriteLine("\r\n# References\r\n");
-            writer.WriteLine("* [{0} C# Documentation]({1})", GenerateCSName(type).Replace("<", "&lt;"), $"http://santesuite.org/assets/doc/net/html/T_{type.FullName.Replace(".", "_").Replace("`","_")}.htm");
+            writer.WriteLine("* [{0} C# Documentation]({1})", GenerateCSName(type).Replace("<", "&lt;"), $"http://santesuite.org/assets/doc/net/html/T_{type.FullName.Replace(".", "_").Replace("`", "_")}.htm");
             foreach (var impl in impls)
             {
-                writer.WriteLine("* [{0} C# Documentation]({1})", impl.GetCustomAttribute<DescriptionAttribute>()?.Description ?? GenerateCSName(impl).Replace("<","&lt;"), $"http://santesuite.org/assets/doc/net/html/T_{impl.FullName.Replace(".", "_").Replace("`", "_")}.htm");
+                writer.WriteLine("* [{0} C# Documentation]({1})", impl.GetCustomAttribute<DescriptionAttribute>()?.Description ?? GenerateCSName(impl).Replace("<", "&lt;"), $"http://santesuite.org/assets/doc/net/html/T_{impl.FullName.Replace(".", "_").Replace("`", "_")}.htm");
             }
 
             return type.GetCustomAttribute<DescriptionAttribute>()?.Description ?? GenerateCSName(type);

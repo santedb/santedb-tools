@@ -24,12 +24,9 @@ using SanteDB.Core.Services;
 using SanteDB.DevTools.Configuration;
 using SanteDB.Tools.Debug.Services;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace SanteDB.SDK.AppletDebugger
 {
@@ -81,7 +78,7 @@ namespace SanteDB.SDK.AppletDebugger
             // Delay fire - allow other objects to finish up on the restart request event
             Thread.Sleep(1000);
             ServiceUtil.Stop();
-            var pi = new ProcessStartInfo(typeof(Program).Assembly.Location, string.Join(" ", this.m_consoleParameters.ToArgumentList())) ;
+            var pi = new ProcessStartInfo(typeof(Program).Assembly.Location, string.Join(" ", this.m_consoleParameters.ToArgumentList()));
             Process.Start(pi);
         }
     }

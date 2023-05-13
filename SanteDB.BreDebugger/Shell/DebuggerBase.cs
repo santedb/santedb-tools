@@ -25,7 +25,6 @@ using Newtonsoft.Json.Converters;
 using SanteDB.Client.Configuration;
 using SanteDB.Core;
 using SanteDB.Core.Applets.ViewModel.Json;
-using SanteDB.Core.Interfaces;
 using SanteDB.Core.Model;
 using SanteDB.Core.Model.Map;
 using SanteDB.Core.Model.Query;
@@ -38,11 +37,9 @@ using SanteDB.SDK.BreDebugger.Options;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Numerics;
 using System.Reflection;
 using System.Text;
@@ -149,7 +146,7 @@ namespace SanteDB.SDK.BreDebugger.Shell
 
             var context = new DebuggerApplicationContext(parms, configurationManager);
             ServiceUtil.Start(Guid.NewGuid(), context);
-;
+            ;
         }
 
 
@@ -256,7 +253,7 @@ namespace SanteDB.SDK.BreDebugger.Shell
                 c = String.IsNullOrEmpty(take) ? (int?)null : Int32.Parse(take);
 
             Console.WriteLine("INF: {0} where {1} ({2}..{3})", type, qd, o, c);
-            var retVal = ids.Query(qd).Skip(o.Value).Take(c??100);
+            var retVal = ids.Query(qd).Skip(o.Value).Take(c ?? 100);
 
             this.DumpObject(retVal, path);
         }
@@ -448,7 +445,7 @@ namespace SanteDB.SDK.BreDebugger.Shell
                 SerializationBinder = new SanteDB.Core.Model.Serialization.ModelSerializationBinder(),
                 TypeNameAssemblyFormatHandling = TypeNameAssemblyFormatHandling.Simple,
                 TypeNameHandling = TypeNameHandling.All
-            }) ;
+            });
         }
 
         /// <summary>

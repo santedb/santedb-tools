@@ -18,12 +18,12 @@
  * User: fyfej
  * Date: 2023-3-10
  */
+using SanteDB.AdminConsole.Shell;
 using SanteDB.Core.Interop;
 using SanteDB.Core.Model;
 using SanteDB.Core.Model.AMI.Auth;
 using SanteDB.Core.Model.Security;
 using SanteDB.Messaging.AMI.Client;
-using SanteDB.AdminConsole.Shell;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -110,7 +110,7 @@ namespace SanteDB.AdminConsole.Util
                     try
                     {
                         Object value = col.Compile().DynamicInvoke(tuple);
-                        if(value is Byte[] b)
+                        if (value is Byte[] b)
                         {
                             value = b.HexEncode();
                         }

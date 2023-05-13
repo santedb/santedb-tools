@@ -18,26 +18,23 @@
  * User: fyfej
  * Date: 2023-3-10
  */
+using SanteDB.Client.Services;
+using SanteDB.Client.UserInterface;
 using SanteDB.Core;
 using SanteDB.Core.Applets;
-using SanteDB.Core.Applets.Configuration;
 using SanteDB.Core.Applets.Model;
 using SanteDB.Core.Applets.Services;
 using SanteDB.Core.Diagnostics;
 using SanteDB.Core.Services;
 using SanteDB.DevTools.Configuration;
-using SanteDB.Client.Services;
 using SanteDB.PakMan;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Xml.Linq;
-using SanteDB.Client.UserInterface;
 using System.Security.Cryptography;
+using System.Threading;
+using System.Xml.Linq;
 
 namespace SanteDB.Tools.Debug.Services
 {
@@ -151,7 +148,7 @@ namespace SanteDB.Tools.Debug.Services
                     Templates = sourceApplet.Templates,
                     ViewModel = sourceApplet.ViewModel
                 };
-                foreach(var itm in sourceApplet.Assets)
+                foreach (var itm in sourceApplet.Assets)
                 {
                     var newItm = new AppletAsset()
                     {
@@ -162,9 +159,9 @@ namespace SanteDB.Tools.Debug.Services
                         Policies = itm.Policies
                     };
 
-                    if(newItm.Content == null)
+                    if (newItm.Content == null)
                     {
-                        switch(this.ResolveAppletAsset(itm))
+                        switch (this.ResolveAppletAsset(itm))
                         {
                             case byte[] bytea:
                                 newItm.Content = PakManTool.CompressContent(bytea);
@@ -408,7 +405,7 @@ namespace SanteDB.Tools.Debug.Services
                 {
                     this.m_threadPoolService.QueueUserWorkItem(_ =>
                     {
-                    // HACK: Wait the thread and attempt reload
+                        // HACK: Wait the thread and attempt reload
                         Thread.Sleep(500);
                         fsw_Changed(sender, e);
                     });
@@ -645,7 +642,7 @@ namespace SanteDB.Tools.Debug.Services
         /// </summary>
         private String CorrectAppletName(string value)
         {
-            return value?.ToLower().Replace("\\", "/");
+            return value?.Replace("\\", "/");
         }
 
         /// <summary>

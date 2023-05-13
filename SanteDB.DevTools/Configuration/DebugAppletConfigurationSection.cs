@@ -22,7 +22,6 @@ using SanteDB.Core.Configuration;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Text;
 using System.Xml.Serialization;
 
 namespace SanteDB.DevTools.Configuration

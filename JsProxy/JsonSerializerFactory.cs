@@ -19,15 +19,12 @@
  * Date: 2023-3-10
  */
 using Newtonsoft.Json;
-using SanteDB.Core;
 using SanteDB.Core.Applets.ViewModel.Json;
 using SanteDB.Core.Diagnostics;
 using SanteDB.Core.Model;
-using SanteDB.Core.Model.Acts;
 using SanteDB.Core.Model.Attributes;
 using SanteDB.Core.Model.Interfaces;
 using SanteDB.Core.Model.Serialization;
-using SanteDB.Core.Services;
 using System;
 using System.CodeDom;
 using System.Collections;
@@ -158,7 +155,7 @@ namespace SanteDB.SDK.JsProxy
 
             foreach (var t in asm.GetTypes().Where(o => o.GetCustomAttribute<JsonObjectAttribute>() != null))
             {
-                
+
                 var ctdecl = this.CreateViewModelSerializer(t);
                 if (ctdecl != null)
                     retVal.Types.Add(ctdecl);
@@ -195,7 +192,7 @@ namespace SanteDB.SDK.JsProxy
             retVal.Members.Add(this.CreateFromSimpleValue(forType));
             retVal.Members.Add(this.CreateGetSimpleValue(forType));
 
-            foreach(CodeTypeMember m in retVal.Members)
+            foreach (CodeTypeMember m in retVal.Members)
             {
                 m.Comments.Add(new CodeCommentStatement("<inheritdoc/>", true));
             }
@@ -456,31 +453,31 @@ namespace SanteDB.SDK.JsProxy
                             shouldForceLoad.TrueStatements.Add(new CodeVariableDeclarationStatement(pi.PropertyType, "_delay", s_null));
                             var _strongKeyReferenceValue = new CodePropertyReferenceExpression(_strongKeyReference, "Value");
 
-                        if (typeof(ISimpleAssociation).IsAssignableFrom(pi.PropertyType.StripGeneric()))
-                        {
-                            var codeRef = new CodeMethodReferenceExpression(new CodeTypeReferenceExpression(typeof(ExtensionMethods)), nameof(ExtensionMethods.LoadCollection), new CodeTypeReference(pi.PropertyType.StripGeneric()));
-                            shouldForceLoad.TrueStatements.Add(new CodeAssignStatement(_delay, new CodeMethodInvokeExpression(s_toList, new CodeMethodInvokeExpression(codeRef, _strongType, new CodePrimitiveExpression(pi.Name)))));
-                            wasLoadedExpression = new CodeBinaryOperatorExpression(new CodePropertyReferenceExpression(_delay, "Count"), CodeBinaryOperatorType.GreaterThan, new CodePrimitiveExpression(0));
+                            if (typeof(ISimpleAssociation).IsAssignableFrom(pi.PropertyType.StripGeneric()))
+                            {
+                                var codeRef = new CodeMethodReferenceExpression(new CodeTypeReferenceExpression(typeof(ExtensionMethods)), nameof(ExtensionMethods.LoadCollection), new CodeTypeReference(pi.PropertyType.StripGeneric()));
+                                shouldForceLoad.TrueStatements.Add(new CodeAssignStatement(_delay, new CodeMethodInvokeExpression(s_toList, new CodeMethodInvokeExpression(codeRef, _strongType, new CodePrimitiveExpression(pi.Name)))));
+                                wasLoadedExpression = new CodeBinaryOperatorExpression(new CodePropertyReferenceExpression(_delay, "Count"), CodeBinaryOperatorType.GreaterThan, new CodePrimitiveExpression(0));
+                            }
                         }
-                    }
-                    else
-                    {
-                        var keyPropertyRef = pi.GetCustomAttribute<SerializationReferenceAttribute>();
-                        if (keyPropertyRef != null)
+                        else
                         {
-                            var _keyPropertyCodeReference = new CodePropertyReferenceExpression(_strongType, keyPropertyRef.RedirectProperty);
-                            var shouldForceLoadCondition = new CodeBinaryOperatorExpression(new CodePropertyReferenceExpression(_keyPropertyCodeReference, "HasValue"), CodeBinaryOperatorType.BooleanAnd, new CodeMethodInvokeExpression(new CodeMethodReferenceExpression(_context, "ShouldForceLoad"), new CodePrimitiveExpression(jsonName), _strongKeyReference));
-                            //if(typeof(IVersionedEntity).IsAssignableFrom(forType))
-                            //    shouldForceLoadCondition = new CodeBinaryOperatorExpression(new CodePropertyReferenceExpression(new CodePropertyReferenceExpression(_strongType, "VersionKey"), "HasValue"), CodeBinaryOperatorType.BooleanAnd, shouldForceLoadCondition);
-                            shouldForceLoad = new CodeConditionStatement(shouldForceLoadCondition);
-                            // Check persistence
-                            nullPropertyValueCondition.TrueStatements.Add(shouldForceLoad);
-                            shouldForceLoad.TrueStatements.Add(new CodeVariableDeclarationStatement(pi.PropertyType, "_delay", s_null));
-                            var codeRef = new CodeMethodReferenceExpression(new CodeTypeReferenceExpression(typeof(ExtensionMethods)), nameof(ExtensionMethods.LoadProperty), new CodeTypeReference(pi.PropertyType.StripGeneric()));
-                            shouldForceLoad.TrueStatements.Add(new CodeAssignStatement(_delay, new CodeMethodInvokeExpression(codeRef, _strongType, new CodePrimitiveExpression(pi.Name))));
-                            wasLoadedExpression = new CodeBinaryOperatorExpression(_delay, CodeBinaryOperatorType.IdentityInequality, s_null);
+                            var keyPropertyRef = pi.GetCustomAttribute<SerializationReferenceAttribute>();
+                            if (keyPropertyRef != null)
+                            {
+                                var _keyPropertyCodeReference = new CodePropertyReferenceExpression(_strongType, keyPropertyRef.RedirectProperty);
+                                var shouldForceLoadCondition = new CodeBinaryOperatorExpression(new CodePropertyReferenceExpression(_keyPropertyCodeReference, "HasValue"), CodeBinaryOperatorType.BooleanAnd, new CodeMethodInvokeExpression(new CodeMethodReferenceExpression(_context, "ShouldForceLoad"), new CodePrimitiveExpression(jsonName), _strongKeyReference));
+                                //if(typeof(IVersionedEntity).IsAssignableFrom(forType))
+                                //    shouldForceLoadCondition = new CodeBinaryOperatorExpression(new CodePropertyReferenceExpression(new CodePropertyReferenceExpression(_strongType, "VersionKey"), "HasValue"), CodeBinaryOperatorType.BooleanAnd, shouldForceLoadCondition);
+                                shouldForceLoad = new CodeConditionStatement(shouldForceLoadCondition);
+                                // Check persistence
+                                nullPropertyValueCondition.TrueStatements.Add(shouldForceLoad);
+                                shouldForceLoad.TrueStatements.Add(new CodeVariableDeclarationStatement(pi.PropertyType, "_delay", s_null));
+                                var codeRef = new CodeMethodReferenceExpression(new CodeTypeReferenceExpression(typeof(ExtensionMethods)), nameof(ExtensionMethods.LoadProperty), new CodeTypeReference(pi.PropertyType.StripGeneric()));
+                                shouldForceLoad.TrueStatements.Add(new CodeAssignStatement(_delay, new CodeMethodInvokeExpression(codeRef, _strongType, new CodePrimitiveExpression(pi.Name))));
+                                wasLoadedExpression = new CodeBinaryOperatorExpression(_delay, CodeBinaryOperatorType.IdentityInequality, s_null);
+                            }
                         }
-                    }
 
                         if (wasLoadedExpression != null)
                         {
