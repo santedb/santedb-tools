@@ -114,7 +114,7 @@ namespace SanteDB.SDK.BreDebugger.Core
                     {
                         KeyName ="default",
                         Algorithm = SanteDB.Core.Security.Configuration.SignatureAlgorithm.HS256,
-                        HmacSecret = "@SanteDBDefault$$$2021"
+                        HmacSecret = $"@SanteDBDefault$$${DateTime.Now.Year}_{Environment.MachineName}"
                     }
                 }
             });
