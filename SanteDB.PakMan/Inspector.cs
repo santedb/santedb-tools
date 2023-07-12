@@ -20,9 +20,15 @@
  */
 using SanteDB.Core.Applets.Model;
 using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using System.Xml.Linq;
 
 namespace SanteDB.PakMan
@@ -52,11 +58,94 @@ namespace SanteDB.PakMan
         }
 
         /// <summary>
+        /// Print data as columns
+        /// </summary>
+        public static void TablePrint<T>(IEnumerable<T> data, params Expression<Func<T, Object>>[] columns)
+        {
+
+
+            // Column width
+            int defaultWidth = (Console.WindowWidth - columns.Length) / columns.Length,
+                c = 0;
+            int[] cWidths = columns.Select(o => defaultWidth - 2).ToArray();
+
+            foreach (var col in columns)
+            {
+                
+
+                var body = (col as LambdaExpression).Body;
+                if (body.NodeType == ExpressionType.Convert)
+                {
+                    body = (body as UnaryExpression).Operand;
+                }
+
+                var member = (body as MemberExpression)?.Member;
+                string colName = member?.GetCustomAttribute<DescriptionAttribute>()?.Description ?? member?.Name ?? "?";
+                if (colName.Length > cWidths[c])
+                {
+                    Console.Write("{0}... ", colName.Substring(0, cWidths[c] - 3));
+                }
+                else
+                {
+                    Console.Write("{0}{1} ", colName, new String(' ', cWidths[c] - colName.Length));
+                }
+
+                c++;
+            }
+
+            Console.WriteLine();
+
+            // Now output data
+            foreach (var tuple in data)
+            {
+                c = 0;
+                foreach (var col in columns)
+                {
+                    try
+                    {
+                        Object value = col.Compile().DynamicInvoke(tuple);
+                        if (value is Byte[] b)
+                        {
+                            value = b.HexEncode();
+                        }
+                        else if (value is DateTime dt)
+                        {
+                            value = dt.ToLocalTime();
+                        }
+                        String stringValue = value?.ToString();
+                        if (stringValue == null)
+                        {
+                            Console.Write(new string(' ', cWidths[c] + 1));
+                        }
+                        else if (stringValue.Length > cWidths[c])
+                        {
+                            Console.Write("{0}... ", stringValue.Substring(0, cWidths[c] - 3));
+                        }
+                        else
+                        {
+                            Console.Write("{0}{1} ", stringValue, new String(' ', cWidths[c] - stringValue.Length));
+                        }
+                    }
+                    catch
+                    {
+                        Console.Write(new string(' ', cWidths[c] + 1));
+                    }
+                    finally
+                    {
+                        c++;
+                    }
+                }
+                Console.WriteLine();
+            }
+        }
+
+        /// <summary>
         /// Dump the inforation for the package
         /// </summary>
         internal int Dump()
         {
             Console.WriteLine("Package Type: {0}", this.m_applet.GetType().Name);
+            Console.WriteLine("Tooling Version: {0}", this.m_applet.Version);
             Console.WriteLine("ID: {0}", this.m_applet.Meta.Id);
             Console.WriteLine("Version: {0}", this.m_applet.Meta.Version);
             Console.WriteLine("Author: {0}", this.m_applet.Meta.Author);
@@ -78,47 +167,67 @@ namespace SanteDB.PakMan
             {
                 int i = 1;
                 Console.WriteLine("-- INCLUDES --");
-                foreach (var itm in sln.Include)
+                var includes = sln.Include.Select(o => new
                 {
-                    Console.Write("\t{0} - {1} v. {2}", i++, itm.Meta.Id, itm.Meta.Version);
-                    if (itm.PublicKey != null)
-                    {
-                        var cert = new X509Certificate2(itm.PublicKey);
-                        Console.Write(", {0}", cert.Subject);
-                    }
-                    Console.WriteLine();
-
-                }
+                    Id = o.Meta.Id,
+                    Version = o.Meta.Version,
+                    PublicKey = o.PublicKey != null ? new X509Certificate2(o.PublicKey).Subject : null
+                });
+                TablePrint(includes, o => o.Id, o => o.Version, o => o.PublicKey);
             }
-            else 
+            else
             {
+                var mfst = this.m_applet.Unpack();
+
+                Console.WriteLine("MENUS: {0}", String.Join(" , ", mfst.Menus.OrderBy(o => o.Order).Select(o => $"{o.Text[0].Value} ({o.Context} - {o.Menus.Count()} sub-items)")));
+                Console.WriteLine("TEMPLATES: {0}", String.Join(" , ", mfst.Templates.Select(o=>o.Oid)));
+                Console.WriteLine("LOCALES: {0}", String.Join(" , ", mfst.Locales.Select(o=>o.Code)));
+                Console.WriteLine("I18N STRINGS: {0}", String.Join(" , ", mfst.Strings.Select(o=>$"{o.Language} ({o.String.Count()} strings - Refer: {o.Reference})")));
                 Console.WriteLine("-- CONTENTS --");
-                Console.WriteLine("CLASS\tMime Type\t\tName");
-                foreach(var itm in this.m_applet.Unpack().Assets)
+                var contents = mfst.Assets.Select(itm =>
                 {
-                    switch(itm.Content)
+
+                    long szContent = 0;
+                    string typeName = String.Empty,
+                        mimeType = itm.MimeType,
+                        name = itm.Name;
+                    switch (itm.Content)
                     {
                         case AppletWidget w:
-                            Console.Write("WIDGET");
+                            typeName = "WIDGET";
+                            szContent = Encoding.UTF8.GetByteCount(w.Html.ToString());
                             break;
                         case AppletAssetHtml h:
-                            Console.Write("HTML");
+                            typeName = "HTML";
+                            szContent = Encoding.UTF8.GetByteCount(h.Html.ToString());
                             break;
                         case byte[] b:
-                            Console.Write("BINARY");
+                            typeName = "BINARY";
+                            szContent = b.Length;
                             break;
                         case AppletAssetVirtual v:
-                            Console.Write("VIRTUAL");
+                            typeName = "VIRTUAL";
+                            szContent = 0;
                             break;
                         case XElement x:
-                            Console.Write("XML");
+                            typeName = "XML";
+                            szContent = Encoding.UTF8.GetByteCount(x.ToString());
                             break;
                         case string s:
-                            Console.Write("TEXT");
+                            typeName = "TEXT";
+                            szContent = Encoding.UTF8.GetByteCount(s);
                             break;
                     }
-                    Console.WriteLine("\t{1}\t\t{2}", itm.Content.GetType().Name, itm.MimeType, itm.Name);
-                }
+                    return new
+                    {
+                        Type = typeName,
+                        MimeType = mimeType,
+                        Name = name,
+                        Size = szContent 
+                    };
+                });
+                TablePrint(contents, o => o.Type, o => o.MimeType, o => o.Name, o => $"{o.Size / 1024f:#,##0.#} kb");
+                Console.WriteLine("Total: {0} assets ({1:#,##0.#} kb)", contents.Count(), contents.Sum(o => o.Size) / 1024f);
             }
             return 0;
 
