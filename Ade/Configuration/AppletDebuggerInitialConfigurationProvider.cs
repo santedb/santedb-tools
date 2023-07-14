@@ -112,7 +112,7 @@ namespace SanteDB.SDK.AppletDebugger.Configuration
                     new TypeReferenceConfiguration(typeof(UpstreamRepositoryFactory)),
                     new TypeReferenceConfiguration(typeof(UpstreamPolicyInformationService)),
                     new TypeReferenceConfiguration(typeof(DataPolicyFilterService)),
-                    new TypeReferenceConfiguration(typeof(DefaultOperatingSystemInfoService)),
+                    new TypeReferenceConfiguration(typeof(DefaultOperatingSystemService)),
                     new TypeReferenceConfiguration(typeof(AppletSubscriptionRepository)),
                     new TypeReferenceConfiguration(typeof(InMemoryPivotProvider)),
                     new TypeReferenceConfiguration(typeof(AuditDaemonService)),

@@ -118,12 +118,15 @@
           <Name>SanteDB.Core.Applets</Name>
         </ProjectReference>
         <ProjectReference Include="..\..\santedb-dc-core\SanteDB.Client.Disconnected\SanteDB.Client.Disconnected.csproj">
-          <Name>SanteDB.Disconnected</Name>
+          <Name>SanteDB.Client.Disconnected</Name>
+          <Project>{B5F6E774-311F-45D8-83EE-DDFC17CBF40D}</Project>
         </ProjectReference>
         <ProjectReference Include="..\..\santedb-dc-core\SanteDB.Client\SanteDB.Client.csproj">
           <Name>SanteDB.Client</Name>
         </ProjectReference>
         <ProjectReference Include="..\..\santedb-cache-memory\SanteDB.Caching.Memory\SanteDB.Caching.Memory.csproj">
+          <Project>{8553ABC7-ABFA-4A21-B0E8-68B7DE76129D}</Project>
+          <Name>SanteDB.Caching.Memory</Name>
         </ProjectReference>
         <ProjectReference Include="..\..\santedb-bre-js\SanteDB.BusinessRules.JavaScript\SanteDB.BusinessRules.JavaScript.csproj">
           <Project>{3BFD6EE6-0267-4D82-BE7D-9B48B2F6F3D4}</Project>
@@ -149,11 +152,26 @@
           <Project>{F3D2FA84-C398-4390-9834-1272CC2D6F89}</Project>
           <Name>SanteDB.Core.Model.RISI</Name>
         </ProjectReference>
-        <ProjectReference Include="..\..\santedb-data\SanteDB.Persistence.Data\SanteDB.Persistence.Data.csproj" />
-        <ProjectReference Include="..\..\santedb-data\SanteDB.Persistence.Auditing.ADO\SanteDB.Persistence.Auditing.ADO.csproj" />
-        <ProjectReference Include="..\..\santedb-data\SanteDB.Persistence.PubSub.ADO\SanteDB.Persistence.PubSub.ADO.csproj" />
-        <ProjectReference Include="..\..\santedb-openapi\SanteDB.Messaging.OpenAPI\SanteDB.Messaging.Metadata.csproj" />
-        <ProjectReference Include="..\..\santedb-restsvc\SanteDB.Rest.Common\SanteDB.Rest.Common.csproj" />
+        <ProjectReference Include="..\..\santedb-data\SanteDB.Persistence.Data\SanteDB.Persistence.Data.csproj">
+          <Project>{81BD479F-5DBC-42E9-96C2-40380AAC36BC}</Project>
+          <Name>SanteDB.Persistence.Data</Name>
+        </ProjectReference>
+        <ProjectReference Include="..\..\santedb-data\SanteDB.Persistence.Auditing.ADO\SanteDB.Persistence.Auditing.ADO.csproj">
+          <Project>{45EA67A6-48F6-4906-84EC-5C13C80C9CC4}</Project>
+          <Name>SanteDB.Persistence.Auditing.ADO</Name>
+        </ProjectReference>
+        <ProjectReference Include="..\..\santedb-data\SanteDB.Persistence.PubSub.ADO\SanteDB.Persistence.PubSub.ADO.csproj">
+          <Project>{B727F549-3B5D-4094-BDFB-55F15756D2D6}</Project>
+          <Name>SanteDB.Persistence.PubSub.ADO</Name>
+        </ProjectReference>
+        <ProjectReference Include="..\..\santedb-openapi\SanteDB.Messaging.OpenAPI\SanteDB.Messaging.Metadata.csproj">
+          <Project>{1B690052-ED2E-4389-838D-9B9FB188F541}</Project>
+          <Name>SanteDB.Messaging.Metadata</Name>
+        </ProjectReference>
+        <ProjectReference Include="..\..\santedb-restsvc\SanteDB.Rest.Common\SanteDB.Rest.Common.csproj">
+          <Project>{786BD0EE-1806-4158-BA45-80249AC6DFE7}</Project>
+          <Name>SanteDB.Rest.Common</Name>
+        </ProjectReference>
         <!--<ProjectReference Include="..\..\santedb-restsvc\SanteDB.Rest.HDSI\SanteDB.Rest.HDSI.csproj" />
         <ProjectReference Include="..\..\santedb-restsvc\SanteDB.Rest.AMI\SanteDB.Rest.AMI.csproj" />
         <ProjectReference Include="..\..\santedb-restsvc\SanteDB.Rest.OAuth\SanteDB.Rest.OAuth.csproj" />
