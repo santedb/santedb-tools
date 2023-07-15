@@ -340,10 +340,7 @@ namespace SanteDB.Tools.Debug.Services
                         if (!File.Exists(e.FullPath)) return;
                         // Wait until file is not locked so we can process it
                         bool isEmpty = false;
-                        while (this.IsFileLocked(e.FullPath, out isEmpty))
-                        {
-                            Thread.Sleep(100);
-                        }
+                        SpinWait.SpinUntil(() => !this.IsFileLocked(e.FullPath, out isEmpty));
                         if (isEmpty) return;
 
                         // Manifest has changed so re-process
