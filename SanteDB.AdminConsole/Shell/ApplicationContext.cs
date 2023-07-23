@@ -212,7 +212,7 @@ namespace SanteDB.AdminConsole.Shell
                 var amiOptions = boostrapamiclient.Options();
 
                 // Server version
-                if (new Version(amiOptions.InterfaceVersion.Substring(0, amiOptions.InterfaceVersion.LastIndexOf(".")) + ".0") > typeof(AmiServiceClient).Assembly.GetName().Version)
+                if (!new Version(amiOptions.InterfaceVersion).IsCompatible(typeof(AmiServiceClient).Assembly.GetName().Version))
                 {
                     throw new InvalidOperationException($"Server version of AMI is too new for this version of console. Expected {typeof(AmiServiceClient).Assembly.GetName().Version} got {amiOptions.InterfaceVersion}");
                 }
