@@ -105,7 +105,7 @@ namespace SanteDB.VocabImport
                                     Element = new CodeSystem()
                                     {
                                         Key = csId,
-                                        Authority = CamelCase(cs.Name),
+                                        Domain = CamelCase(cs.Name),
                                         Url = cs.Url,
                                         Oid = cs.Identifier.First(i => i.System == "urn:ietf:rfc:3986").Value,
                                         VersionText = cs.Version,
@@ -270,13 +270,13 @@ namespace SanteDB.VocabImport
             {
                 cs = new CodeSystem()
                 {
-                    Authority = row.Cell(COL_CS_AUTH).GetValue<String>(),
+                    Domain = row.Cell(COL_CS_AUTH).GetValue<String>(),
                     Name = row.Cell(COL_CS_NAME).GetValue<String>(),
                     Oid = row.Cell(COL_CS_OID).GetValue<String>(),
                     Url = row.Cell(COL_CS_URI).GetValue<String>(),
                     Key = Guid.Parse(row.Cell(COL_CS_UUID).GetValue<String>())
                 };
-                m_codeSystemMap.Add(cs.Authority, cs);
+                m_codeSystemMap.Add(cs.Domain, cs);
                 yield return new DataUpdate()
                 {
                     InsertIfNotExists = true,
