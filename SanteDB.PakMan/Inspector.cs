@@ -165,7 +165,6 @@ namespace SanteDB.PakMan
 
             if (this.m_applet is AppletSolution sln)
             {
-                int i = 1;
                 Console.WriteLine("-- INCLUDES --");
                 var includes = sln.Include.Select(o => new
                 {
