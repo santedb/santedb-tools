@@ -24,6 +24,7 @@ using SanteDB.AdminConsole.Shell;
 using SanteDB.Core.Diagnostics;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Tracing;
 using System.Reflection;
@@ -73,7 +74,10 @@ namespace SanteDB.AdminConsole
                 }
             }
 #if DEBUG
-            Console.ReadKey();
+            if (Debugger.IsAttached)
+            {
+                Console.ReadKey();
+            }
 #endif
         }
 

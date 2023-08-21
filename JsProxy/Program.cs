@@ -574,7 +574,11 @@ function Exception(type, message, detail, cause, stack, policyId, policyOutcome,
                 writer.WriteLine("\t */");
 
                 writer.WriteLine("\t{0} : '{1}',", fi.Name, fi.GetValue(null));
-                writer.WriteLine("\t{0}Int : '{1}',", fi.Name, (int)fi.GetValue(null));
+                try
+                {
+                    writer.WriteLine("\t{0}Int : '{1}',", fi.Name, (int)fi.GetValue(null));
+                }
+                catch { }
             }
 
             writer.WriteLine("}}  // {0} ", jobject.Id);
@@ -804,7 +808,7 @@ function Exception(type, message, detail, cause, stack, policyId, policyOutcome,
             writer.WriteLine(" * @param {{{0}}} copyData Copy constructor (if present)", jobject.Id);
 
             writer.WriteLine(" */");
-            writer.WriteLine("function {0} (copyData) {{ ", jobject.Id);
+            writer.WriteLine("function {0} (copyData) {{ ", jobject.Id ?? type.Name);
 
             writer.WriteLine("\tthis.$type = '{0}';", jobject.Id);
             writer.WriteLine("\tif(copyData) {");

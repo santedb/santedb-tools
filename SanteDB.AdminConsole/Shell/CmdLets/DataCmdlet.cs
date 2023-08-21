@@ -18,6 +18,7 @@
  * User: fyfej
  * Date: 2023-5-19
  */
+using DocumentFormat.OpenXml.Math;
 using MohawkCollege.Util.Console.Parameters;
 using SanteDB.AdminConsole.Attributes;
 using SanteDB.AdminConsole.Util;
@@ -155,8 +156,9 @@ namespace SanteDB.AdminConsole.Shell.CmdLets
             }
 
             // Get the specified lambda expression
-            var builderMethod = typeof(QueryExpressionParser).GetGenericMethod(nameof(QueryExpressionParser.BuildLinqExpression), new Type[] { type }, new Type[] { typeof(NameValueCollection) });
-            var linqExpression = builderMethod.Invoke(null, new object[] { nvc });
+            //var builderMethod = typeof(QueryExpressionParser).GetGenericMethod(nameof(QueryExpressionParser.BuildLinqExpression), new Type[] { type }, new Type[] { typeof(NameValueCollection) });
+            //var linqExpression = builderMethod.Invoke(null, new object[] { nvc });
+            var linqExpression = QueryExpressionParser.BuildLinqExpression(type, nvc);
 
             if (!parms.AsDataSet)
             {
@@ -195,7 +197,8 @@ namespace SanteDB.AdminConsole.Shell.CmdLets
                     {
                         InsertIfNotExists = true,
                         IgnoreErrors = true,
-                        Element = (IdentifiedData)(displaySelector != null ? displaySelector.DynamicInvoke(itm) : itm)
+                        //Element = (IdentifiedData)(displaySelector != null ? displaySelector.DynamicInvoke(itm) : itm)
+                        Element = itm
                     });
                 }
 
