@@ -203,7 +203,7 @@ namespace SanteDB.AdminConsole.Shell.CmdLets
                 }
 
                 m_xsz.Serialize(Console.Out, ds);
-
+                Console.WriteLine(); //End-line to put the prompt on a new line.
             }
         }
     }
