@@ -19,11 +19,12 @@
  * Date: 2023-5-19
  */
 using SanteDB.Core.Model.Query;
-using SanteDB.Core.Protocol;
+using SanteDB.Core.Cdss;
 using SanteDB.Core.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 
 namespace SanteDB.SDK.BreDebugger.Services
 {
@@ -31,7 +32,7 @@ namespace SanteDB.SDK.BreDebugger.Services
     /// <summary>
     /// Class for protocol debugging
     /// </summary>
-    internal class DebugProtocolRepository : IClinicalProtocolRepositoryService
+    internal class DebugProtocolRepository : ICdssAssetRepository
     {
         /// <summary>
         /// Get the service name
@@ -39,7 +40,7 @@ namespace SanteDB.SDK.BreDebugger.Services
         public String ServiceName => "Protocol Debugging Repository";
 
         // Protocols
-        private List<IClinicalProtocol> m_protocols = new List<IClinicalProtocol>();
+        private List<ICdssAsset> m_protocols = new List<ICdssAsset>();
 
         /// <summary>
         /// Constructor
@@ -50,43 +51,32 @@ namespace SanteDB.SDK.BreDebugger.Services
         }
 
         /// <inheritdoc/>
-        public IClinicalProtocol InsertProtocol(IClinicalProtocol data)
+        public ICdssAsset InsertOrUpdate(ICdssAsset data)
         {
             this.m_protocols.Add(data);
             return data;
         }
 
         /// <inheritdoc/>
-        public IQueryResultSet<IClinicalProtocol> FindProtocol(string protocolName = null, string protocolOid = null, string groupId = null)
+        public IQueryResultSet<ICdssAsset> Find(Expression<Func<ICdssAsset, bool>> filter)
         {
-            if (!String.IsNullOrEmpty(protocolName))
-            {
-                return this.m_protocols.Where(o => o.Name == protocolName).AsResultSet();
-            }
-            else if (!String.IsNullOrEmpty(protocolOid))
-            {
-                return this.m_protocols.Where(o => o.GetProtocolData().Oid == protocolOid).AsResultSet();
-            }
-            else if (!String.IsNullOrEmpty(groupId))
-            {
-                return this.m_protocols.Where(o => o.GetProtocolData().GroupId == groupId).AsResultSet();
-            }
-            else
-            {
-                return this.m_protocols.AsResultSet();
-            }
+            return this.m_protocols.Where(filter.Compile()).AsResultSet();
+
         }
 
         /// <inheritdoc/>
-        public IClinicalProtocol GetProtocol(Guid protocolUuid) => this.m_protocols.FirstOrDefault(o => o.Id == protocolUuid);
+        public ICdssAsset Get(Guid protocolUuid) => this.m_protocols.FirstOrDefault(o => o.Uuid == protocolUuid);
+
+        /// <inheritdoc/>
+        public ICdssAsset GetByOid(String protocolOid) => this.m_protocols.FirstOrDefault(o => o.Oid == protocolOid);
 
         /// <summary>
         /// Remove protocol
         /// </summary>
-        public IClinicalProtocol RemoveProtocol(Guid protocolUuid)
+        public ICdssAsset Remove(Guid protocolUuid)
         {
-            var protocol = this.m_protocols.Find(o => o.Id == protocolUuid);
-            this.m_protocols.RemoveAll(o => o.Id == protocolUuid);
+            var protocol = this.m_protocols.Find(o => o.Uuid == protocolUuid);
+            this.m_protocols.RemoveAll(o => o.Uuid == protocolUuid);
             return protocol;
         }
     }

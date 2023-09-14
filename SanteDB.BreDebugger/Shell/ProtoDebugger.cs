@@ -18,11 +18,12 @@
  * User: fyfej
  * Date: 2023-5-19
  */
+using ClosedXML.Excel;
 using SanteDB.Cdss.Xml;
 using SanteDB.Cdss.Xml.Model;
 using SanteDB.Core;
 using SanteDB.Core.Model.Roles;
-using SanteDB.Core.Protocol;
+using SanteDB.Core.Cdss;
 using SanteDB.Core.Services;
 using SanteDB.SDK.BreDebugger.Options;
 using SanteDB.SDK.BreDebugger.Services;
@@ -88,9 +89,20 @@ namespace SanteDB.SDK.BreDebugger.Shell
             // Add
             using (var fs = File.OpenRead(file))
             {
-                var protoSource = ProtocolDefinition.Load(fs);
-                var proto = new XmlClinicalProtocol(protoSource);
-                ApplicationServiceContext.Current.GetService<IClinicalProtocolRepositoryService>().InsertProtocol(proto);
+                ICdssAsset asset = null;
+                try
+                {
+                    var protoSource = ProtocolDefinition.Load(fs);
+                    asset = new XmlClinicalProtocol(protoSource);
+                }
+                catch
+                {
+                    fs.Seek(0, SeekOrigin.Begin);
+                    var protoSource = RulesetLibrary.Load(fs);
+                    asset = new XmlProtocolLibrary(protoSource);
+                }
+                ApplicationServiceContext.Current.GetService<ICdssAssetRepository>().InsertOrUpdate(asset); 
+                
             }
         }
 
@@ -101,7 +113,7 @@ namespace SanteDB.SDK.BreDebugger.Shell
         public void Clear()
         {
             ApplicationServiceContext.Current.GetService<IServiceManager>().RemoveServiceProvider(typeof(ICarePlanService));
-            ApplicationServiceContext.Current.GetService<IServiceManager>().RemoveServiceProvider(typeof(IClinicalProtocolRepositoryService));
+            ApplicationServiceContext.Current.GetService<IServiceManager>().RemoveServiceProvider(typeof(ICdssAssetRepository));
             ApplicationServiceContext.Current.GetService<IServiceManager>().AddServiceProvider(typeof(DebugProtocolRepository));
             ApplicationServiceContext.Current.GetService<IServiceManager>().AddServiceProvider(typeof(SimpleCarePlanService));
 
@@ -126,10 +138,19 @@ namespace SanteDB.SDK.BreDebugger.Shell
                 {
                     using (var fs = File.OpenRead(file))
                     {
-                        var protoSource = ProtocolDefinition.Load(fs);
-                        var proto = new XmlClinicalProtocol(protoSource);
-
-                        ApplicationServiceContext.Current.GetService<IClinicalProtocolRepositoryService>().InsertProtocol(proto);
+                        ICdssAsset asset = null;
+                        try
+                        {
+                            var protoSource = ProtocolDefinition.Load(fs);
+                            asset = new XmlClinicalProtocol(protoSource);
+                        }
+                        catch
+                        {
+                            fs.Seek(0, SeekOrigin.Begin);
+                            var protoSource = RulesetLibrary.Load(fs);
+                            asset = new XmlProtocolLibrary(protoSource);
+                        }
+                        ApplicationServiceContext.Current.GetService<ICdssAssetRepository>().InsertOrUpdate(asset);
                     }
                 }
                 catch (Exception e)
@@ -147,7 +168,7 @@ namespace SanteDB.SDK.BreDebugger.Shell
         public void ListProtocols()
         {
             Console.WriteLine("ID#{0}NAME", new String(' ', 38));
-            foreach (var itm in ApplicationServiceContext.Current.GetService<IClinicalProtocolRepositoryService>().FindProtocol())
+            foreach (var itm in ApplicationServiceContext.Current.GetService<ICdssAssetRepository>().Find(o=>true))
                 Console.WriteLine("{0}    {1}", itm.Id, itm.Name);
         }
 
@@ -182,10 +203,10 @@ namespace SanteDB.SDK.BreDebugger.Shell
         [Command("u", "Unload all protocols (reset the environment)")]
         public void Reset()
         {
-            var protoRepo = ApplicationServiceContext.Current.GetService<IClinicalProtocolRepositoryService>();
-            foreach (var p in protoRepo.FindProtocol().ToArray())
+            var protoRepo = ApplicationServiceContext.Current.GetService<ICdssAssetRepository>();
+            foreach (var p in protoRepo.Find(o=>true).ToArray())
             {
-                protoRepo.RemoveProtocol(p.Id);
+                protoRepo.Remove(p.Uuid);
             }
         }
 
