@@ -101,7 +101,7 @@ namespace SanteDB.SDK.BreDebugger.Shell
                     var protoSource = RulesetLibrary.Load(fs);
                     asset = new XmlProtocolLibrary(protoSource);
                 }
-                ApplicationServiceContext.Current.GetService<ICdssAssetRepository>().InsertOrUpdate(asset); 
+                ApplicationServiceContext.Current.GetService<ICdssLibraryRepository>().InsertOrUpdate(asset); 
                 
             }
         }
@@ -113,7 +113,7 @@ namespace SanteDB.SDK.BreDebugger.Shell
         public void Clear()
         {
             ApplicationServiceContext.Current.GetService<IServiceManager>().RemoveServiceProvider(typeof(ICarePlanService));
-            ApplicationServiceContext.Current.GetService<IServiceManager>().RemoveServiceProvider(typeof(ICdssAssetRepository));
+            ApplicationServiceContext.Current.GetService<IServiceManager>().RemoveServiceProvider(typeof(ICdssLibraryRepository));
             ApplicationServiceContext.Current.GetService<IServiceManager>().AddServiceProvider(typeof(DebugProtocolRepository));
             ApplicationServiceContext.Current.GetService<IServiceManager>().AddServiceProvider(typeof(SimpleCarePlanService));
 
@@ -150,7 +150,7 @@ namespace SanteDB.SDK.BreDebugger.Shell
                             var protoSource = RulesetLibrary.Load(fs);
                             asset = new XmlProtocolLibrary(protoSource);
                         }
-                        ApplicationServiceContext.Current.GetService<ICdssAssetRepository>().InsertOrUpdate(asset);
+                        ApplicationServiceContext.Current.GetService<ICdssLibraryRepository>().InsertOrUpdate(asset);
                     }
                 }
                 catch (Exception e)
@@ -168,7 +168,7 @@ namespace SanteDB.SDK.BreDebugger.Shell
         public void ListProtocols()
         {
             Console.WriteLine("ID#{0}NAME", new String(' ', 38));
-            foreach (var itm in ApplicationServiceContext.Current.GetService<ICdssAssetRepository>().Find(o=>true))
+            foreach (var itm in ApplicationServiceContext.Current.GetService<ICdssLibraryRepository>().Find(o=>true))
                 Console.WriteLine("{0}    {1}", itm.Id, itm.Name);
         }
 
@@ -203,7 +203,7 @@ namespace SanteDB.SDK.BreDebugger.Shell
         [Command("u", "Unload all protocols (reset the environment)")]
         public void Reset()
         {
-            var protoRepo = ApplicationServiceContext.Current.GetService<ICdssAssetRepository>();
+            var protoRepo = ApplicationServiceContext.Current.GetService<ICdssLibraryRepository>();
             foreach (var p in protoRepo.Find(o=>true).ToArray())
             {
                 protoRepo.Remove(p.Uuid);

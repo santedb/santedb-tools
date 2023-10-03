@@ -32,7 +32,7 @@ namespace SanteDB.SDK.BreDebugger.Services
     /// <summary>
     /// Class for protocol debugging
     /// </summary>
-    internal class DebugProtocolRepository : ICdssAssetRepository
+    internal class DebugProtocolRepository : ICdssLibraryRepository
     {
         /// <summary>
         /// Get the service name
