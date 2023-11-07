@@ -89,20 +89,17 @@ namespace SanteDB.SDK.BreDebugger.Shell
             // Add
             using (var fs = File.OpenRead(file))
             {
-                ICdssAsset asset = null;
                 try
                 {
-                    var protoSource = ProtocolDefinition.Load(fs);
-                    asset = new XmlClinicalProtocol(protoSource);
+                    var protoSource = CdssLibraryDefinition.Load(fs);
+                    var asset = new XmlProtocolLibrary(protoSource);
+                    ApplicationServiceContext.Current.GetService<ICdssLibraryRepository>().InsertOrUpdate(asset);
                 }
-                catch
+                catch (Exception e)
                 {
-                    fs.Seek(0, SeekOrigin.Begin);
-                    var protoSource = RulesetLibrary.Load(fs);
-                    asset = new XmlProtocolLibrary(protoSource);
+                    base.PrintStack(e);
                 }
-                ApplicationServiceContext.Current.GetService<ICdssLibraryRepository>().InsertOrUpdate(asset); 
-                
+
             }
         }
 
@@ -138,18 +135,8 @@ namespace SanteDB.SDK.BreDebugger.Shell
                 {
                     using (var fs = File.OpenRead(file))
                     {
-                        ICdssAsset asset = null;
-                        try
-                        {
-                            var protoSource = ProtocolDefinition.Load(fs);
-                            asset = new XmlClinicalProtocol(protoSource);
-                        }
-                        catch
-                        {
-                            fs.Seek(0, SeekOrigin.Begin);
-                            var protoSource = RulesetLibrary.Load(fs);
-                            asset = new XmlProtocolLibrary(protoSource);
-                        }
+                        var protoSource = CdssLibraryDefinition.Load(fs);
+                        var asset = new XmlProtocolLibrary(protoSource);
                         ApplicationServiceContext.Current.GetService<ICdssLibraryRepository>().InsertOrUpdate(asset);
                     }
                 }
@@ -168,7 +155,7 @@ namespace SanteDB.SDK.BreDebugger.Shell
         public void ListProtocols()
         {
             Console.WriteLine("ID#{0}NAME", new String(' ', 38));
-            foreach (var itm in ApplicationServiceContext.Current.GetService<ICdssLibraryRepository>().Find(o=>true))
+            foreach (var itm in ApplicationServiceContext.Current.GetService<ICdssLibraryRepository>().Find(o => true))
                 Console.WriteLine("{0}    {1}", itm.Id, itm.Name);
         }
 
@@ -204,7 +191,7 @@ namespace SanteDB.SDK.BreDebugger.Shell
         public void Reset()
         {
             var protoRepo = ApplicationServiceContext.Current.GetService<ICdssLibraryRepository>();
-            foreach (var p in protoRepo.Find(o=>true).ToArray())
+            foreach (var p in protoRepo.Find(o => true).ToArray())
             {
                 protoRepo.Remove(p.Uuid);
             }
