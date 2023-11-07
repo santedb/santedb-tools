@@ -112,10 +112,10 @@ namespace SanteDB.SDK.BreDebugger.Shell
         [Command("c", "Clear the protocol repository")]
         public void Clear()
         {
-            ApplicationServiceContext.Current.GetService<IServiceManager>().RemoveServiceProvider(typeof(ICarePlanService));
+            ApplicationServiceContext.Current.GetService<IServiceManager>().RemoveServiceProvider(typeof(IDecisionSupportService));
             ApplicationServiceContext.Current.GetService<IServiceManager>().RemoveServiceProvider(typeof(ICdssLibraryRepository));
             ApplicationServiceContext.Current.GetService<IServiceManager>().AddServiceProvider(typeof(DebugProtocolRepository));
-            ApplicationServiceContext.Current.GetService<IServiceManager>().AddServiceProvider(typeof(SimpleCarePlanService));
+            ApplicationServiceContext.Current.GetService<IServiceManager>().AddServiceProvider(typeof(SimpleDecisionSupportService));
 
         }
 
@@ -179,7 +179,7 @@ namespace SanteDB.SDK.BreDebugger.Shell
         public object Run()
         {
 
-            var cpService = ApplicationServiceContext.Current.GetService<ICarePlanService>();
+            var cpService = ApplicationServiceContext.Current.GetService<IDecisionSupportService>();
             if (cpService == null)
                 throw new InvalidOperationException("No care plan service is registered");
             else if (this.m_scopeObject is Patient)
@@ -217,7 +217,7 @@ namespace SanteDB.SDK.BreDebugger.Shell
         public object RunEncounter()
         {
 
-            var cpService = ApplicationServiceContext.Current.GetService<ICarePlanService>();
+            var cpService = ApplicationServiceContext.Current.GetService<IDecisionSupportService>();
             if (cpService == null)
                 throw new InvalidOperationException("No care plan service is registered");
             else if (this.m_scopeObject is Patient)

@@ -196,7 +196,7 @@ namespace SanteDB.SDK.BreDebugger.Core
                         typeof(MemoryQueryPersistenceService),
                         typeof(MemoryCacheService),
                         typeof(FileSystemDispatcherQueueService),
-                        typeof(SimpleCarePlanService),
+                        typeof(SimpleDecisionSupportService),
                         typeof(SimplePatchService),
                         typeof(DebugAppletManagerService),
             }.Select(o => new TypeReferenceConfiguration(o)));
