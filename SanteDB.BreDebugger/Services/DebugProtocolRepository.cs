@@ -40,7 +40,7 @@ namespace SanteDB.SDK.BreDebugger.Services
         public String ServiceName => "Protocol Debugging Repository";
 
         // Protocols
-        private List<ICdssAsset> m_protocols = new List<ICdssAsset>();
+        private List<ICdssLibrary> m_protocols = new List<ICdssLibrary>();
 
         /// <summary>
         /// Constructor
@@ -51,29 +51,29 @@ namespace SanteDB.SDK.BreDebugger.Services
         }
 
         /// <inheritdoc/>
-        public ICdssAsset InsertOrUpdate(ICdssAsset data)
+        public ICdssLibrary InsertOrUpdate(ICdssLibrary data)
         {
             this.m_protocols.Add(data);
             return data;
         }
 
         /// <inheritdoc/>
-        public IQueryResultSet<ICdssAsset> Find(Expression<Func<ICdssAsset, bool>> filter)
+        public IQueryResultSet<ICdssLibrary> Find(Expression<Func<ICdssLibrary, bool>> filter)
         {
             return this.m_protocols.Where(filter.Compile()).AsResultSet();
 
         }
 
         /// <inheritdoc/>
-        public ICdssAsset Get(Guid protocolUuid) => this.m_protocols.FirstOrDefault(o => o.Uuid == protocolUuid);
+        public ICdssLibrary Get(Guid protocolUuid) => this.m_protocols.FirstOrDefault(o => o.Uuid == protocolUuid);
 
         /// <inheritdoc/>
-        public ICdssAsset GetByOid(String protocolOid) => this.m_protocols.FirstOrDefault(o => o.Oid == protocolOid);
+        public ICdssLibrary GetByOid(String protocolOid) => this.m_protocols.FirstOrDefault(o => o.Oid == protocolOid);
 
         /// <summary>
         /// Remove protocol
         /// </summary>
-        public ICdssAsset Remove(Guid protocolUuid)
+        public ICdssLibrary Remove(Guid protocolUuid)
         {
             var protocol = this.m_protocols.Find(o => o.Uuid == protocolUuid);
             this.m_protocols.RemoveAll(o => o.Uuid == protocolUuid);
