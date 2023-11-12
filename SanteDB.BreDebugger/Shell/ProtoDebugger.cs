@@ -46,9 +46,6 @@ namespace SanteDB.SDK.BreDebugger.Shell
         // Loaded files
         private Dictionary<String, String> m_loadedFiles = new Dictionary<string, string>();
 
-
-
-
         /// <summary>
         /// BRE debugger
         /// </summary>
@@ -151,12 +148,31 @@ namespace SanteDB.SDK.BreDebugger.Shell
         /// <summary>
         /// List all protocols
         /// </summary>
-        [Command("pl", "Displays a list of clinical protocols that have been loaded in this session")]
-        public void ListProtocols()
+        [Command("pl", "Displays a list of all loaded libraries")]
+        public void ListLibraries()
         {
             Console.WriteLine("ID#{0}NAME", new String(' ', 38));
             foreach (var itm in ApplicationServiceContext.Current.GetService<ICdssLibraryRepository>().Find(o => true))
                 Console.WriteLine("{0}    {1}", itm.Id, itm.Name);
+        }
+
+        [Command("pl", "Display the contents of a single library")]
+        public void ListLibrary(String id)
+        {
+            var library = ApplicationServiceContext.Current.GetService<ICdssLibraryRepository>().Find(o => o.Id == id).First();
+            if(library == null)
+            {
+                throw new KeyNotFoundException(id);
+            }
+
+            Console.WriteLine("{0} - {1}", library.Id, library.Name);
+            if(library is XmlProtocolLibrary xl)
+            {
+                using(var str = Console.OpenStandardOutput())
+                {
+                    xl.Library.Save(str);
+                }
+             }
         }
 
         /// <summary>
@@ -220,7 +236,6 @@ namespace SanteDB.SDK.BreDebugger.Shell
             else
                 throw new InvalidOperationException("Current scope must be a patient");
         }
-
 
         /// <summary>
         /// Exit the specified context
