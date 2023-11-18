@@ -53,6 +53,11 @@ namespace SanteDB.SDK.BreDebugger.Services
         /// <inheritdoc/>
         public ICdssLibrary InsertOrUpdate(ICdssLibrary data)
         {
+            if(data.Uuid == Guid.Empty)
+            {
+                data.Uuid = Guid.NewGuid();
+            }
+            this.m_protocols.RemoveAll(o => o.Uuid == data.Uuid || o.Id == data.Id);
             this.m_protocols.Add(data);
             return data;
         }

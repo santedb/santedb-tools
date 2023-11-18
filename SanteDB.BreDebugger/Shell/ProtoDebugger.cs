@@ -33,6 +33,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using SanteDB.Cdss.Xml.Antlr;
 
 namespace SanteDB.SDK.BreDebugger.Shell
 {
@@ -88,9 +89,28 @@ namespace SanteDB.SDK.BreDebugger.Shell
             {
                 try
                 {
-                    var protoSource = CdssLibraryDefinition.Load(fs);
+                    CdssLibraryDefinition protoSource = null;
+                    if(Path.GetExtension(file).Equals(".cdss"))
+                    {
+                        protoSource = CdssLibraryTranspiler.Transpile(fs, true);
+                    }
+                    else
+                    {
+                        protoSource = CdssLibraryDefinition.Load(fs);
+                    }
                     var asset = new XmlProtocolLibrary(protoSource);
-                    ApplicationServiceContext.Current.GetService<ICdssLibraryRepository>().InsertOrUpdate(asset);
+                    var cdssLibraryRepository = ApplicationServiceContext.Current.GetService<ICdssLibraryRepository>();
+                    cdssLibraryRepository.InsertOrUpdate(asset);
+
+                    // WARN THE USER THEY NEED TO ADD FILES
+                    foreach(var itm in asset.Library.Include)
+                    {
+                        if(!cdssLibraryRepository.TryResolveReference(itm, out _))
+                        {
+                            Console.WriteLine("Warning!! Could not resolve {0} - Load this reference source file", itm);
+                        }
+                    }
+                    
                 }
                 catch (Exception e)
                 {
@@ -106,11 +126,11 @@ namespace SanteDB.SDK.BreDebugger.Shell
         [Command("c", "Clear the protocol repository")]
         public void Clear()
         {
-            ApplicationServiceContext.Current.GetService<IServiceManager>().RemoveServiceProvider(typeof(IDecisionSupportService));
-            ApplicationServiceContext.Current.GetService<IServiceManager>().RemoveServiceProvider(typeof(ICdssLibraryRepository));
-            ApplicationServiceContext.Current.GetService<IServiceManager>().AddServiceProvider(typeof(DebugProtocolRepository));
-            ApplicationServiceContext.Current.GetService<IServiceManager>().AddServiceProvider(typeof(SimpleDecisionSupportService));
-
+            var cdssLibraryRepository = ApplicationServiceContext.Current.GetService<ICdssLibraryRepository>();
+            foreach(var itm in cdssLibraryRepository.Find(o=>true))
+            {
+                cdssLibraryRepository.Remove(itm.Uuid);
+            }
         }
 
         /// <summary>
@@ -128,19 +148,7 @@ namespace SanteDB.SDK.BreDebugger.Shell
             foreach (var file in Directory.GetFiles(dir))
             {
                 Console.WriteLine("Add {0}", Path.GetFileName(file));
-                try
-                {
-                    using (var fs = File.OpenRead(file))
-                    {
-                        var protoSource = CdssLibraryDefinition.Load(fs);
-                        var asset = new XmlProtocolLibrary(protoSource);
-                        ApplicationServiceContext.Current.GetService<ICdssLibraryRepository>().InsertOrUpdate(asset);
-                    }
-                }
-                catch (Exception e)
-                {
-                    base.PrintStack(e);
-                }
+                this.Add(file);
             }
         }
 

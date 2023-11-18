@@ -195,7 +195,6 @@ namespace SanteDB.SDK.BreDebugger.Core
                         typeof(MemoryAdhocCacheService),
                         typeof(MemoryQueryPersistenceService),
                         typeof(MemoryCacheService),
-                        typeof(FileSystemDispatcherQueueService),
                         typeof(SimpleDecisionSupportService),
                         typeof(SimplePatchService),
                         typeof(DebugAppletManagerService),
