@@ -236,7 +236,7 @@ namespace SanteDB.SDK.BreDebugger.Shell
                 Console.WriteLine("Running care planner...");
                 Stopwatch sw = new Stopwatch();
                 sw.Start();
-                var cp = cpService.CreateCarePlan(this.m_scopeObject as Patient);
+                var cp = cpService.CreateCarePlan(this.m_scopeObject as Patient, true);
                 sw.Stop();
                 Console.WriteLine("Care plan generated in {0} and set to scope (use dj to dump)", sw.Elapsed);
                 return cp;
