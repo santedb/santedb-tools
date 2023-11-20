@@ -129,7 +129,7 @@ namespace SanteDB.SDK.BreDebugger.Shell
             var cdssLibraryRepository = ApplicationServiceContext.Current.GetService<ICdssLibraryRepository>();
             foreach(var itm in cdssLibraryRepository.Find(o=>true))
             {
-                cdssLibraryRepository.Remove(itm.Uuid);
+                cdssLibraryRepository.Remove(itm.Key.Value);
             }
         }
 
@@ -161,19 +161,19 @@ namespace SanteDB.SDK.BreDebugger.Shell
         {
             Console.WriteLine("ID#{0}NAME", new String(' ', 38));
             foreach (var itm in ApplicationServiceContext.Current.GetService<ICdssLibraryRepository>().Find(o => true))
-                Console.WriteLine("{0}    {1}", itm.Id, itm.Name);
+                Console.WriteLine("{0}    {1}", itm.Library.Id, itm.Library.Name);
         }
 
         [Command("pl", "Display the contents of a single library")]
         public void ListLibrary(String id)
         {
-            var library = ApplicationServiceContext.Current.GetService<ICdssLibraryRepository>().Find(o => o.Id == id).First();
+            var library = ApplicationServiceContext.Current.GetService<ICdssLibraryRepository>().Find(o => o.Library.Id == id).First();
             if(library == null)
             {
                 throw new KeyNotFoundException(id);
             }
 
-            Console.WriteLine("{0} - {1}", library.Id, library.Name);
+            Console.WriteLine("{0} - {1}", library.Library.Id, library.Library.Name);
             if(library is XmlProtocolLibrary xl)
             {
                 using(var str = Console.OpenStandardOutput())
@@ -217,7 +217,7 @@ namespace SanteDB.SDK.BreDebugger.Shell
             var protoRepo = ApplicationServiceContext.Current.GetService<ICdssLibraryRepository>();
             foreach (var p in protoRepo.Find(o => true).ToArray())
             {
-                protoRepo.Remove(p.Uuid);
+                protoRepo.Remove(p.Key.Value);
             }
         }
 

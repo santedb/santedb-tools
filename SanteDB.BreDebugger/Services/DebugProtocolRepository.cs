@@ -34,6 +34,35 @@ namespace SanteDB.SDK.BreDebugger.Services
     /// </summary>
     internal class DebugProtocolRepository : ICdssLibraryRepository
     {
+
+        private class DebugCdssLibraryRepositoryEntry : ICdssLibraryRepositoryMetadata
+        {
+
+            public DebugCdssLibraryRepositoryEntry(ICdssLibrary library)
+            {
+                this.Key = library.Uuid;
+            }
+
+            public long? VersionSequence { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+            public Guid? VersionKey { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+            public Guid? PreviousVersionKey { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+            public bool IsHeadVersion { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
+            public Guid? CreatedByKey => throw new NotImplementedException();
+
+            public Guid? ObsoletedByKey => throw new NotImplementedException();
+
+            public DateTimeOffset CreationTime => throw new NotImplementedException();
+
+            public DateTimeOffset? ObsoletionTime => throw new NotImplementedException();
+
+            public Guid? Key { get; set; }
+
+            public string Tag => throw new NotImplementedException();
+
+            public DateTimeOffset ModifiedOn => throw new NotImplementedException();
+        }
+
         /// <summary>
         /// Get the service name
         /// </summary>
@@ -58,6 +87,7 @@ namespace SanteDB.SDK.BreDebugger.Services
                 data.Uuid = Guid.NewGuid();
             }
             this.m_protocols.RemoveAll(o => o.Uuid == data.Uuid || o.Id == data.Id);
+            var entry = new DebugCdssLibraryRepositoryEntry(data);
             this.m_protocols.Add(data);
             return data;
         }
@@ -70,10 +100,7 @@ namespace SanteDB.SDK.BreDebugger.Services
         }
 
         /// <inheritdoc/>
-        public ICdssLibrary Get(Guid protocolUuid) => this.m_protocols.FirstOrDefault(o => o.Uuid == protocolUuid);
-
-        /// <inheritdoc/>
-        public ICdssLibrary GetByOid(String protocolOid) => this.m_protocols.FirstOrDefault(o => o.Oid == protocolOid);
+        public ICdssLibrary Get(Guid protocolUuid, Guid? versionUuid) => this.m_protocols.FirstOrDefault(o => o.Uuid == protocolUuid);
 
         /// <summary>
         /// Remove protocol
