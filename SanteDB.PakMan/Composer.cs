@@ -71,11 +71,11 @@ namespace SanteDB.PakMan
                     AppletPackage pkg = null;
                     if (!String.IsNullOrEmpty(pfile.Version)) // specific version
                     {
-                        pkg = PackageRepositoryUtil.GetFromAny(pfile.Id, new Version(pfile.Version));
+                        pkg = PackageRepositoryUtil.GetFromAny(pfile.Id, pfile.Version.ParseVersion(out _));
                     }
                     else if (!String.IsNullOrEmpty(m_parms.Version))
                     {
-                        pkg = PackageRepositoryUtil.GetFromAny(pfile.Id, new Version(m_parms.Version))
+                        pkg = PackageRepositoryUtil.GetFromAny(pfile.Id, m_parms.Version.ParseVersion(out _))
                             ?? PackageRepositoryUtil.GetFromAny(pfile.Id, null);
                     }
                     else

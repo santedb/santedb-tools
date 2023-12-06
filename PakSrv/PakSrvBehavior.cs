@@ -143,7 +143,7 @@ namespace SanteDB.PakSrv
 
             try
             {
-                this.m_configuration.Repository.GetRepository().Get(package.Meta.Id, new Version(package.Meta.Version), true);
+                this.m_configuration.Repository.GetRepository().Get(package.Meta.Id, package.Meta.Version.ParseVersion(out _), true);
                 throw new FaultException(HttpStatusCode.Conflict, $"Package {package.Meta.Id} version {package.Meta.Version} already exists");
             }
             catch (KeyNotFoundException)

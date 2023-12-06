@@ -122,7 +122,7 @@ namespace SanteDB.PakMan
 
             // Next setup the android manifest
             var manifest = new XmlDocument();
-            var versionCode = new Version(this.m_package.Meta.Version);
+            var versionCode = this.m_package.Meta.Version.ParseVersion(out _);
             manifest.Load(Path.Combine(workingDir, "SanteDB.DisconnectedClient.Android", "Properties", "AndroidManifest.xml"));
             manifest.DocumentElement.SetAttribute("versionCode", "http://schemas.android.com/apk/res/android", $"{versionCode.Major:00}{versionCode.Minor:00}{versionCode.Build:000}");
             manifest.DocumentElement.SetAttribute("versionName", "http://schemas.android.com/apk/res/android", this.m_package.Meta.Version);
