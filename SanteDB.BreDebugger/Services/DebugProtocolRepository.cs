@@ -19,11 +19,12 @@
  * Date: 2023-5-19
  */
 using SanteDB.Core.Model.Query;
-using SanteDB.Core.Protocol;
+using SanteDB.Core.Cdss;
 using SanteDB.Core.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 
 namespace SanteDB.SDK.BreDebugger.Services
 {
@@ -31,15 +32,44 @@ namespace SanteDB.SDK.BreDebugger.Services
     /// <summary>
     /// Class for protocol debugging
     /// </summary>
-    internal class DebugProtocolRepository : IClinicalProtocolRepositoryService
+    internal class DebugProtocolRepository : ICdssLibraryRepository
     {
+
+        private class DebugCdssLibraryRepositoryEntry : ICdssLibraryRepositoryMetadata
+        {
+
+            public DebugCdssLibraryRepositoryEntry(ICdssLibrary library)
+            {
+                this.Key = library.Uuid;
+            }
+
+            public long? VersionSequence { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+            public Guid? VersionKey { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+            public Guid? PreviousVersionKey { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+            public bool IsHeadVersion { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
+            public Guid? CreatedByKey => throw new NotImplementedException();
+
+            public Guid? ObsoletedByKey => throw new NotImplementedException();
+
+            public DateTimeOffset CreationTime => throw new NotImplementedException();
+
+            public DateTimeOffset? ObsoletionTime => throw new NotImplementedException();
+
+            public Guid? Key { get; set; }
+
+            public string Tag => throw new NotImplementedException();
+
+            public DateTimeOffset ModifiedOn => throw new NotImplementedException();
+        }
+
         /// <summary>
         /// Get the service name
         /// </summary>
         public String ServiceName => "Protocol Debugging Repository";
 
         // Protocols
-        private List<IClinicalProtocol> m_protocols = new List<IClinicalProtocol>();
+        private List<ICdssLibrary> m_protocols = new List<ICdssLibrary>();
 
         /// <summary>
         /// Constructor
@@ -50,43 +80,35 @@ namespace SanteDB.SDK.BreDebugger.Services
         }
 
         /// <inheritdoc/>
-        public IClinicalProtocol InsertProtocol(IClinicalProtocol data)
+        public ICdssLibrary InsertOrUpdate(ICdssLibrary data)
         {
+            if(data.Uuid == Guid.Empty)
+            {
+                data.Uuid = Guid.NewGuid();
+            }
+            this.m_protocols.RemoveAll(o => o.Uuid == data.Uuid || o.Id == data.Id);
+            var entry = new DebugCdssLibraryRepositoryEntry(data);
             this.m_protocols.Add(data);
             return data;
         }
 
         /// <inheritdoc/>
-        public IQueryResultSet<IClinicalProtocol> FindProtocol(string protocolName = null, string protocolOid = null, string groupId = null)
+        public IQueryResultSet<ICdssLibrary> Find(Expression<Func<ICdssLibrary, bool>> filter)
         {
-            if (!String.IsNullOrEmpty(protocolName))
-            {
-                return this.m_protocols.Where(o => o.Name == protocolName).AsResultSet();
-            }
-            else if (!String.IsNullOrEmpty(protocolOid))
-            {
-                return this.m_protocols.Where(o => o.GetProtocolData().Oid == protocolOid).AsResultSet();
-            }
-            else if (!String.IsNullOrEmpty(groupId))
-            {
-                return this.m_protocols.Where(o => o.GetProtocolData().GroupId == groupId).AsResultSet();
-            }
-            else
-            {
-                return this.m_protocols.AsResultSet();
-            }
+            return this.m_protocols.Where(filter.Compile()).AsResultSet();
+
         }
 
         /// <inheritdoc/>
-        public IClinicalProtocol GetProtocol(Guid protocolUuid) => this.m_protocols.FirstOrDefault(o => o.Id == protocolUuid);
+        public ICdssLibrary Get(Guid protocolUuid, Guid? versionUuid) => this.m_protocols.FirstOrDefault(o => o.Uuid == protocolUuid);
 
         /// <summary>
         /// Remove protocol
         /// </summary>
-        public IClinicalProtocol RemoveProtocol(Guid protocolUuid)
+        public ICdssLibrary Remove(Guid protocolUuid)
         {
-            var protocol = this.m_protocols.Find(o => o.Id == protocolUuid);
-            this.m_protocols.RemoveAll(o => o.Id == protocolUuid);
+            var protocol = this.m_protocols.Find(o => o.Uuid == protocolUuid);
+            this.m_protocols.RemoveAll(o => o.Uuid == protocolUuid);
             return protocol;
         }
     }

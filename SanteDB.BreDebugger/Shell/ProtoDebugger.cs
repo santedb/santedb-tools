@@ -18,11 +18,12 @@
  * User: fyfej
  * Date: 2023-5-19
  */
+using ClosedXML.Excel;
 using SanteDB.Cdss.Xml;
 using SanteDB.Cdss.Xml.Model;
 using SanteDB.Core;
 using SanteDB.Core.Model.Roles;
-using SanteDB.Core.Protocol;
+using SanteDB.Core.Cdss;
 using SanteDB.Core.Services;
 using SanteDB.SDK.BreDebugger.Options;
 using SanteDB.SDK.BreDebugger.Services;
@@ -32,6 +33,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using SanteDB.Cdss.Xml.Antlr;
 
 namespace SanteDB.SDK.BreDebugger.Shell
 {
@@ -44,9 +46,6 @@ namespace SanteDB.SDK.BreDebugger.Shell
 
         // Loaded files
         private Dictionary<String, String> m_loadedFiles = new Dictionary<string, string>();
-
-
-
 
         /// <summary>
         /// BRE debugger
@@ -88,9 +87,36 @@ namespace SanteDB.SDK.BreDebugger.Shell
             // Add
             using (var fs = File.OpenRead(file))
             {
-                var protoSource = ProtocolDefinition.Load(fs);
-                var proto = new XmlClinicalProtocol(protoSource);
-                ApplicationServiceContext.Current.GetService<IClinicalProtocolRepositoryService>().InsertProtocol(proto);
+                try
+                {
+                    CdssLibraryDefinition protoSource = null;
+                    if(Path.GetExtension(file).Equals(".cdss"))
+                    {
+                        protoSource = CdssLibraryTranspiler.Transpile(fs, true);
+                    }
+                    else
+                    {
+                        protoSource = CdssLibraryDefinition.Load(fs);
+                    }
+                    var asset = new XmlProtocolLibrary(protoSource);
+                    var cdssLibraryRepository = ApplicationServiceContext.Current.GetService<ICdssLibraryRepository>();
+                    cdssLibraryRepository.InsertOrUpdate(asset);
+
+                    // WARN THE USER THEY NEED TO ADD FILES
+                    foreach(var itm in asset.Library.Include)
+                    {
+                        if(!cdssLibraryRepository.TryResolveReference(itm, out _))
+                        {
+                            Console.WriteLine("Warning!! Could not resolve {0} - Load this reference source file", itm);
+                        }
+                    }
+                    
+                }
+                catch (Exception e)
+                {
+                    base.PrintStack(e);
+                }
+
             }
         }
 
@@ -100,11 +126,11 @@ namespace SanteDB.SDK.BreDebugger.Shell
         [Command("c", "Clear the protocol repository")]
         public void Clear()
         {
-            ApplicationServiceContext.Current.GetService<IServiceManager>().RemoveServiceProvider(typeof(ICarePlanService));
-            ApplicationServiceContext.Current.GetService<IServiceManager>().RemoveServiceProvider(typeof(IClinicalProtocolRepositoryService));
-            ApplicationServiceContext.Current.GetService<IServiceManager>().AddServiceProvider(typeof(DebugProtocolRepository));
-            ApplicationServiceContext.Current.GetService<IServiceManager>().AddServiceProvider(typeof(SimpleCarePlanService));
-
+            var cdssLibraryRepository = ApplicationServiceContext.Current.GetService<ICdssLibraryRepository>();
+            foreach(var itm in cdssLibraryRepository.Find(o=>true))
+            {
+                cdssLibraryRepository.Remove(itm.Uuid);
+            }
         }
 
         /// <summary>
@@ -122,20 +148,7 @@ namespace SanteDB.SDK.BreDebugger.Shell
             foreach (var file in Directory.GetFiles(dir))
             {
                 Console.WriteLine("Add {0}", Path.GetFileName(file));
-                try
-                {
-                    using (var fs = File.OpenRead(file))
-                    {
-                        var protoSource = ProtocolDefinition.Load(fs);
-                        var proto = new XmlClinicalProtocol(protoSource);
-
-                        ApplicationServiceContext.Current.GetService<IClinicalProtocolRepositoryService>().InsertProtocol(proto);
-                    }
-                }
-                catch (Exception e)
-                {
-                    base.PrintStack(e);
-                }
+                this.Add(file);
             }
         }
 
@@ -143,12 +156,31 @@ namespace SanteDB.SDK.BreDebugger.Shell
         /// <summary>
         /// List all protocols
         /// </summary>
-        [Command("pl", "Displays a list of clinical protocols that have been loaded in this session")]
-        public void ListProtocols()
+        [Command("pl", "Displays a list of all loaded libraries")]
+        public void ListLibraries()
         {
             Console.WriteLine("ID#{0}NAME", new String(' ', 38));
-            foreach (var itm in ApplicationServiceContext.Current.GetService<IClinicalProtocolRepositoryService>().FindProtocol())
+            foreach (var itm in ApplicationServiceContext.Current.GetService<ICdssLibraryRepository>().Find(o => true))
                 Console.WriteLine("{0}    {1}", itm.Id, itm.Name);
+        }
+
+        [Command("pl", "Display the contents of a single library")]
+        public void ListLibrary(String id)
+        {
+            var library = ApplicationServiceContext.Current.GetService<ICdssLibraryRepository>().Find(o => o.Id == id).First();
+            if(library == null)
+            {
+                throw new KeyNotFoundException(id);
+            }
+
+            Console.WriteLine("{0} - {1}", library.Id, library.Name);
+            if(library is XmlProtocolLibrary xl)
+            {
+                using(var str = Console.OpenStandardOutput())
+                {
+                    xl.Library.Save(str);
+                }
+             }
         }
 
         /// <summary>
@@ -158,7 +190,7 @@ namespace SanteDB.SDK.BreDebugger.Shell
         public object Run()
         {
 
-            var cpService = ApplicationServiceContext.Current.GetService<ICarePlanService>();
+            var cpService = ApplicationServiceContext.Current.GetService<IDecisionSupportService>();
             if (cpService == null)
                 throw new InvalidOperationException("No care plan service is registered");
             else if (this.m_scopeObject is Patient)
@@ -182,10 +214,10 @@ namespace SanteDB.SDK.BreDebugger.Shell
         [Command("u", "Unload all protocols (reset the environment)")]
         public void Reset()
         {
-            var protoRepo = ApplicationServiceContext.Current.GetService<IClinicalProtocolRepositoryService>();
-            foreach (var p in protoRepo.FindProtocol().ToArray())
+            var protoRepo = ApplicationServiceContext.Current.GetService<ICdssLibraryRepository>();
+            foreach (var p in protoRepo.Find(o => true).ToArray())
             {
-                protoRepo.RemoveProtocol(p.Id);
+                protoRepo.Remove(p.Uuid);
             }
         }
 
@@ -196,7 +228,7 @@ namespace SanteDB.SDK.BreDebugger.Shell
         public object RunEncounter()
         {
 
-            var cpService = ApplicationServiceContext.Current.GetService<ICarePlanService>();
+            var cpService = ApplicationServiceContext.Current.GetService<IDecisionSupportService>();
             if (cpService == null)
                 throw new InvalidOperationException("No care plan service is registered");
             else if (this.m_scopeObject is Patient)
@@ -204,7 +236,7 @@ namespace SanteDB.SDK.BreDebugger.Shell
                 Console.WriteLine("Running care planner...");
                 Stopwatch sw = new Stopwatch();
                 sw.Start();
-                var cp = cpService.CreateCarePlan(this.m_scopeObject as Patient);
+                var cp = cpService.CreateCarePlan(this.m_scopeObject as Patient, true);
                 sw.Stop();
                 Console.WriteLine("Care plan generated in {0} and set to scope (use dj to dump)", sw.Elapsed);
                 return cp;
@@ -212,7 +244,6 @@ namespace SanteDB.SDK.BreDebugger.Shell
             else
                 throw new InvalidOperationException("Current scope must be a patient");
         }
-
 
         /// <summary>
         /// Exit the specified context

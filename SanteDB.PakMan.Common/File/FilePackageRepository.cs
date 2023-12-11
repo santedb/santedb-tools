@@ -78,7 +78,7 @@ namespace SanteDB.PakMan.Repository.File
             IEnumerable<KeyValuePair<String, AppletInfo>> candidates = null;
             lock (this.m_lockObject)
                 candidates = this.m_packageInfos.Where(o => o.Value.Id == id && (version == null || new Version(o.Value.Version).Major == version.Major)).ToArray(); // take a copy
-            var match = candidates.OrderByDescending(o => new Version(o.Value.Version)).FirstOrDefault(o => version == null || o.Value.Version == version.ToString());
+            var match = candidates.OrderByDescending(o => o.Value.Version.ParseVersion(out _)).FirstOrDefault(o => version == null || o.Value.Version == version.ToString());
             if (match.Key != null)
             {
                 return this.OpenPackage(match.Key);
@@ -88,9 +88,9 @@ namespace SanteDB.PakMan.Repository.File
                 match = candidates.OrderByDescending(o => o.Value.Version)
                         .FirstOrDefault(o =>
                         {
-                            var v = new Version(o.Value.Version);
+                            var v = o.Value.Version.ParseVersion(out _);
                             if (v.Revision == -1)
-                                v = new Version(o.Value.Version + ".0");
+                                v = (o.Value.Version + ".0").ParseVersion(out _);
                             return v >= version;
                         }); // higher version
                 if (match.Key != null)

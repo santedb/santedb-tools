@@ -31,7 +31,7 @@ using SanteDB.Core.Configuration;
 using SanteDB.Core.Configuration.Data;
 using SanteDB.Core.Data;
 using SanteDB.Core.Diagnostics;
-using SanteDB.Core.Protocol;
+using SanteDB.Core.Cdss;
 using SanteDB.Core.Security;
 using SanteDB.Core.Security.Configuration;
 using SanteDB.Core.Services.Impl;
@@ -195,8 +195,7 @@ namespace SanteDB.SDK.BreDebugger.Core
                         typeof(MemoryAdhocCacheService),
                         typeof(MemoryQueryPersistenceService),
                         typeof(MemoryCacheService),
-                        typeof(FileSystemDispatcherQueueService),
-                        typeof(SimpleCarePlanService),
+                        typeof(SimpleDecisionSupportService),
                         typeof(SimplePatchService),
                         typeof(DebugAppletManagerService),
             }.Select(o => new TypeReferenceConfiguration(o)));
