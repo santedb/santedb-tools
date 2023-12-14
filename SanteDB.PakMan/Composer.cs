@@ -62,6 +62,11 @@ namespace SanteDB.PakMan
                 sln.PublicKey = slnPak.PublicKey;
                 sln.Manifest = slnPak.Manifest;
 
+                if(!String.IsNullOrEmpty(m_parms.Version))
+                {
+                    sln.Version = m_parms.Version;
+                }
+
                 if (sln.Meta.Uuid == Guid.Empty)
                     Emit.Message("WARN", "The package does not carry a UUID! You should add a UUID to your solution manifest");
                 sln.Include = new List<AppletPackage>();

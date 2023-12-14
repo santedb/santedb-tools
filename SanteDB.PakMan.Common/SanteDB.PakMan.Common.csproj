@@ -15,6 +15,9 @@
   <ItemGroup>
     <PackageReference Include="MimeMapping" Version="2.0.0" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\santedb-cdss\SanteDB.Cdss.Xml\SanteDB.Cdss.Xml.csproj" />
+  </ItemGroup>
 
   <Choose>
     <When Condition="$(SolutionName.Contains('-ext'))">
