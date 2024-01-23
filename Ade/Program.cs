@@ -126,7 +126,7 @@ namespace SanteDB.SDK.AppletDebugger
                     var configurationFile = Path.Combine(appConfigDirectory, "santedb.config");
                     if (File.Exists(configurationFile))
                     {
-                        configurationManager = new FileConfigurationService(configurationFile, true);
+                        configurationManager = new FileConfigurationService(configurationFile, false);
                     }
                     else
                     {
