@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2021 - 2023, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
+ * Copyright (C) 2021 - 2024, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
  * Copyright (C) 2019 - 2021, Fyfe Software Inc. and the SanteSuite Contributors
  * Portions Copyright (C) 2015-2018 Mohawk College of Applied Arts and Technology
  * 
@@ -16,7 +16,7 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2023-5-19
+ * Date: 2023-6-21
  */
 using Newtonsoft.Json;
 using RestSrvr;
@@ -53,13 +53,21 @@ namespace SanteDB.PakSrv
         public bool ProvideFault(Exception error, RestResponseMessage response)
         {
             if (error is SecurityException)
+            {
                 response.StatusCode = System.Net.HttpStatusCode.Forbidden;
+            }
             else if (error is FileNotFoundException || error is KeyNotFoundException)
+            {
                 response.StatusCode = System.Net.HttpStatusCode.NotFound;
+            }
             else if (error is DuplicateNameException)
+            {
                 response.StatusCode = System.Net.HttpStatusCode.Conflict;
+            }
             else
+            {
                 response.StatusCode = System.Net.HttpStatusCode.InternalServerError;
+            }
 
             var errorResponse = new ErrorResult(error);
             response.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(errorResponse)));

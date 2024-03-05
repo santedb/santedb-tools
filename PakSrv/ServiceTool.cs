@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2021 - 2023, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
+ * Copyright (C) 2021 - 2024, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
  * Copyright (C) 2019 - 2021, Fyfe Software Inc. and the SanteSuite Contributors
  * Portions Copyright (C) 2015-2018 Mohawk College of Applied Arts and Technology
  * 
@@ -16,7 +16,7 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2023-5-19
+ * Date: 2023-6-21
  */
 using System;
 using System.Runtime.InteropServices;
@@ -335,7 +335,10 @@ namespace ServiceTools
         /// <param name="ServiceName">The windows service name to uninstall</param>
         public static void Uninstall(string ServiceName)
         {
-            if (Environment.OSVersion.Platform != PlatformID.Win32NT) return;
+            if (Environment.OSVersion.Platform != PlatformID.Win32NT)
+            {
+                return;
+            }
 
             IntPtr scman = OpenSCManager(ServiceManagerRights.Connect);
             try
@@ -375,13 +378,21 @@ namespace ServiceTools
         /// <returns>True if that service exists false otherwise</returns>
         public static bool ServiceIsInstalled(string ServiceName)
         {
-            if (Environment.OSVersion.Platform != PlatformID.Win32NT) return true;
+            if (Environment.OSVersion.Platform != PlatformID.Win32NT)
+            {
+                return true;
+            }
+
             IntPtr scman = OpenSCManager(ServiceManagerRights.Connect);
             try
             {
                 IntPtr service = OpenService(scman, ServiceName,
                 ServiceRights.QueryStatus);
-                if (service == IntPtr.Zero) return false;
+                if (service == IntPtr.Zero)
+                {
+                    return false;
+                }
+
                 CloseServiceHandle(service);
                 return true;
             }
@@ -395,18 +406,24 @@ namespace ServiceTools
         {
 
             if (Environment.OSVersion.Platform != PlatformID.Win32NT)
+            {
                 return new ServiceConfigInformation()
                 {
                     dwStartType = (int)ServiceTools.ServiceBootFlag.Disabled,
                     lpServiceStartName = "root"
                 };
+            }
 
             IntPtr scman = OpenSCManager(ServiceManagerRights.Connect);
             try
             {
                 IntPtr service = OpenService(scman, ServiceName,
                 ServiceRights.AllAccess);
-                if (service == IntPtr.Zero) return null;
+                if (service == IntPtr.Zero)
+                {
+                    return null;
+                }
+
                 UInt32 dwBytesNeeded = 0;
                 IntPtr ptr = Marshal.AllocHGlobal(4096);
                 bool success = QueryServiceConfig(service, ptr, 4096, out dwBytesNeeded);
@@ -428,7 +445,10 @@ namespace ServiceTools
         public static void Install(string serviceName, string displayName,
         string fileName, string accountName, string accountPassword, ServiceBootFlag bootFlag)
         {
-            if (Environment.OSVersion.Platform != PlatformID.Win32NT) return;
+            if (Environment.OSVersion.Platform != PlatformID.Win32NT)
+            {
+                return;
+            }
 
             IntPtr scman = OpenSCManager(ServiceManagerRights.Connect |
             ServiceManagerRights.CreateService);
@@ -444,7 +464,10 @@ namespace ServiceTools
                     null, accountName, accountPassword);
                 }
                 else
+                {
                     throw new InvalidOperationException("Service already exists");
+                }
+
                 if (service == IntPtr.Zero)
                 {
                     throw new ApplicationException("Failed to install service.");
@@ -463,7 +486,10 @@ namespace ServiceTools
         /// <param name="Name">The service name</param>
         public static void StartService(string Name)
         {
-            if (Environment.OSVersion.Platform != PlatformID.Win32NT) return;
+            if (Environment.OSVersion.Platform != PlatformID.Win32NT)
+            {
+                return;
+            }
 
             IntPtr scman = OpenSCManager(ServiceManagerRights.Connect);
             try
@@ -495,7 +521,10 @@ namespace ServiceTools
         /// <param name="Name">The service name that will be stopped</param>
         public static void StopService(string Name)
         {
-            if (Environment.OSVersion.Platform != PlatformID.Win32NT) return;
+            if (Environment.OSVersion.Platform != PlatformID.Win32NT)
+            {
+                return;
+            }
 
             IntPtr scman = OpenSCManager(ServiceManagerRights.Connect);
             try
@@ -550,7 +579,10 @@ namespace ServiceTools
         /// <returns>The ServiceState of the service we wanted to check</returns>
         public static ServiceState GetServiceStatus(string ServiceName)
         {
-            if (Environment.OSVersion.Platform != PlatformID.Win32NT) return ServiceState.Unknown;
+            if (Environment.OSVersion.Platform != PlatformID.Win32NT)
+            {
+                return ServiceState.Unknown;
+            }
 
             IntPtr scman = OpenSCManager(ServiceManagerRights.Connect);
             try
@@ -584,7 +616,9 @@ namespace ServiceTools
         private static ServiceState GetServiceStatus(IntPtr hService)
         {
             if (Environment.OSVersion.Platform != PlatformID.Win32NT)
+            {
                 return ServiceState.Unknown;
+            }
 
             SERVICE_STATUS ssStatus = new SERVICE_STATUS();
             if (QueryServiceStatus(hService, ssStatus) == 0)
@@ -610,7 +644,11 @@ namespace ServiceTools
             int dwStartTickCount;
 
             QueryServiceStatus(hService, ssStatus);
-            if (ssStatus.dwCurrentState == DesiredStatus) return true;
+            if (ssStatus.dwCurrentState == DesiredStatus)
+            {
+                return true;
+            }
+
             dwStartTickCount = Environment.TickCount;
             dwOldCheckPoint = ssStatus.dwCheckPoint;
 
@@ -622,14 +660,23 @@ namespace ServiceTools
 
                 int dwWaitTime = ssStatus.dwWaitHint / 10;
 
-                if (dwWaitTime < 1000) dwWaitTime = 1000;
-                else if (dwWaitTime > 10000) dwWaitTime = 10000;
+                if (dwWaitTime < 1000)
+                {
+                    dwWaitTime = 1000;
+                }
+                else if (dwWaitTime > 10000)
+                {
+                    dwWaitTime = 10000;
+                }
 
                 System.Threading.Thread.Sleep(dwWaitTime);
 
                 // Check the status again.
 
-                if (QueryServiceStatus(hService, ssStatus) == 0) break;
+                if (QueryServiceStatus(hService, ssStatus) == 0)
+                {
+                    break;
+                }
 
                 if (ssStatus.dwCheckPoint > dwOldCheckPoint)
                 {

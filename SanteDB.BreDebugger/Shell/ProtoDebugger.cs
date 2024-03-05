@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2021 - 2023, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
+ * Copyright (C) 2021 - 2024, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
  * Copyright (C) 2019 - 2021, Fyfe Software Inc. and the SanteSuite Contributors
  * Portions Copyright (C) 2015-2018 Mohawk College of Applied Arts and Technology
  * 
@@ -16,14 +16,14 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2023-5-19
+ * Date: 2023-6-21
  */
-using ClosedXML.Excel;
 using SanteDB.Cdss.Xml;
+using SanteDB.Cdss.Xml.Antlr;
 using SanteDB.Cdss.Xml.Model;
 using SanteDB.Core;
-using SanteDB.Core.Model.Roles;
 using SanteDB.Core.Cdss;
+using SanteDB.Core.Model.Roles;
 using SanteDB.Core.Services;
 using SanteDB.SDK.BreDebugger.Options;
 using SanteDB.SDK.BreDebugger.Services;
@@ -33,7 +33,6 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using SanteDB.Cdss.Xml.Antlr;
 
 namespace SanteDB.SDK.BreDebugger.Shell
 {
@@ -56,21 +55,29 @@ namespace SanteDB.SDK.BreDebugger.Shell
             Console.WriteLine("Starting debugger...");
 
             if (!String.IsNullOrEmpty(parms.WorkingDirectory))
+            {
                 ApplicationServiceContext.Current.GetService<FileSystemResolver>().RootDirectory = parms.WorkingDirectory;
+            }
+
             var rootPath = ApplicationServiceContext.Current.GetService<FileSystemResolver>().RootDirectory;
 
             // Load debug targets
             Console.WriteLine("Loading debuggees...");
             if (parms.Sources != null)
+            {
                 foreach (var rf in parms.Sources)
                 {
                     var f = rf.Replace("~", rootPath);
                     if (!File.Exists(f))
+                    {
                         Console.Error.WriteLine("Can't find file {0}", f);
+                    }
                     else
+                    {
                         this.Add(f);
+                    }
                 }
-
+            }
         }
 
         /// <summary>
@@ -80,9 +87,14 @@ namespace SanteDB.SDK.BreDebugger.Shell
         public void Add(String file)
         {
             if (!Path.IsPathRooted(file))
+            {
                 file = Path.Combine(this.m_workingDirectory, file);
+            }
+
             if (!File.Exists(file))
+            {
                 throw new FileNotFoundException(file);
+            }
 
             // Add
             using (var fs = File.OpenRead(file))
@@ -90,7 +102,7 @@ namespace SanteDB.SDK.BreDebugger.Shell
                 try
                 {
                     CdssLibraryDefinition protoSource = null;
-                    if(Path.GetExtension(file).Equals(".cdss"))
+                    if (Path.GetExtension(file).Equals(".cdss"))
                     {
                         protoSource = CdssLibraryTranspiler.Transpile(fs, true);
                     }
@@ -103,14 +115,14 @@ namespace SanteDB.SDK.BreDebugger.Shell
                     cdssLibraryRepository.InsertOrUpdate(asset);
 
                     // WARN THE USER THEY NEED TO ADD FILES
-                    foreach(var itm in asset.Library.Include)
+                    foreach (var itm in asset.Library.Include)
                     {
-                        if(!cdssLibraryRepository.TryResolveReference(itm, out _))
+                        if (!cdssLibraryRepository.TryResolveReference(itm, out _))
                         {
                             Console.WriteLine("Warning!! Could not resolve {0} - Load this reference source file", itm);
                         }
                     }
-                    
+
                 }
                 catch (Exception e)
                 {
@@ -127,7 +139,7 @@ namespace SanteDB.SDK.BreDebugger.Shell
         public void Clear()
         {
             var cdssLibraryRepository = ApplicationServiceContext.Current.GetService<ICdssLibraryRepository>();
-            foreach(var itm in cdssLibraryRepository.Find(o=>true))
+            foreach (var itm in cdssLibraryRepository.Find(o => true))
             {
                 cdssLibraryRepository.Remove(itm.Uuid);
             }
@@ -140,9 +152,14 @@ namespace SanteDB.SDK.BreDebugger.Shell
         public void AddDir(String dir)
         {
             if (!Path.IsPathRooted(dir))
+            {
                 dir = Path.Combine(this.m_workingDirectory, dir);
+            }
+
             if (!Directory.Exists(dir))
+            {
                 throw new FileNotFoundException(dir);
+            }
 
             // Add
             foreach (var file in Directory.GetFiles(dir))
@@ -161,26 +178,28 @@ namespace SanteDB.SDK.BreDebugger.Shell
         {
             Console.WriteLine("ID#{0}NAME", new String(' ', 38));
             foreach (var itm in ApplicationServiceContext.Current.GetService<ICdssLibraryRepository>().Find(o => true))
+            {
                 Console.WriteLine("{0}    {1}", itm.Id, itm.Name);
+            }
         }
 
         [Command("pl", "Display the contents of a single library")]
         public void ListLibrary(String id)
         {
             var library = ApplicationServiceContext.Current.GetService<ICdssLibraryRepository>().Find(o => o.Id == id).First();
-            if(library == null)
+            if (library == null)
             {
                 throw new KeyNotFoundException(id);
             }
 
             Console.WriteLine("{0} - {1}", library.Id, library.Name);
-            if(library is XmlProtocolLibrary xl)
+            if (library is XmlProtocolLibrary xl)
             {
-                using(var str = Console.OpenStandardOutput())
+                using (var str = Console.OpenStandardOutput())
                 {
                     xl.Library.Save(str);
                 }
-             }
+            }
         }
 
         /// <summary>
@@ -192,7 +211,9 @@ namespace SanteDB.SDK.BreDebugger.Shell
 
             var cpService = ApplicationServiceContext.Current.GetService<IDecisionSupportService>();
             if (cpService == null)
+            {
                 throw new InvalidOperationException("No care plan service is registered");
+            }
             else if (this.m_scopeObject is Patient)
             {
                 Console.WriteLine("Running care planner...");
@@ -204,7 +225,9 @@ namespace SanteDB.SDK.BreDebugger.Shell
                 return cp;
             }
             else
+            {
                 throw new InvalidOperationException("Scope must be a patient object");
+            }
         }
 
 
@@ -230,7 +253,9 @@ namespace SanteDB.SDK.BreDebugger.Shell
 
             var cpService = ApplicationServiceContext.Current.GetService<IDecisionSupportService>();
             if (cpService == null)
+            {
                 throw new InvalidOperationException("No care plan service is registered");
+            }
             else if (this.m_scopeObject is Patient)
             {
                 Console.WriteLine("Running care planner...");
@@ -242,7 +267,9 @@ namespace SanteDB.SDK.BreDebugger.Shell
                 return cp;
             }
             else
+            {
                 throw new InvalidOperationException("Current scope must be a patient");
+            }
         }
 
         /// <summary>

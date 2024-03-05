@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2021 - 2023, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
+ * Copyright (C) 2021 - 2024, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
  * Copyright (C) 2019 - 2021, Fyfe Software Inc. and the SanteSuite Contributors
  * Portions Copyright (C) 2015-2018 Mohawk College of Applied Arts and Technology
  * 
@@ -16,7 +16,7 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2023-5-19
+ * Date: 2023-6-21
  */
 using MohawkCollege.Util.Console.Parameters;
 using SanteDB.Client.Configuration;
@@ -74,8 +74,16 @@ namespace SanteDB.SDK.AppletDebugger
 
                 if (consoleArgs.Reset)
                 {
-                    if (Directory.Exists(appDataDirectory)) Directory.Delete(appDataDirectory, true);
-                    if (Directory.Exists(appConfigDirectory)) Directory.Delete(appConfigDirectory, true);
+                    if (Directory.Exists(appDataDirectory))
+                    {
+                        Directory.Delete(appDataDirectory, true);
+                    }
+
+                    if (Directory.Exists(appConfigDirectory))
+                    {
+                        Directory.Delete(appConfigDirectory, true);
+                    }
+
                     Console.WriteLine("Environment Reset Successful");
                     return;
                 }

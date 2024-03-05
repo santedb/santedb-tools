@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2021 - 2023, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
+ * Copyright (C) 2021 - 2024, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
  * Copyright (C) 2019 - 2021, Fyfe Software Inc. and the SanteSuite Contributors
  * Portions Copyright (C) 2015-2018 Mohawk College of Applied Arts and Technology
  * 
@@ -16,7 +16,7 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2023-5-19
+ * Date: 2023-6-21
  */
 using SanteDB.Core.Diagnostics;
 using System;
@@ -66,9 +66,14 @@ namespace SanteDB.SDK.BreDebugger.Shell
             {
                 case EventLevel.Verbose:
                     if (format.Contains("PERF"))
+                    {
                         color = ConsoleColor.Green;
+                    }
                     else
+                    {
                         color = ConsoleColor.Magenta;
+                    }
+
                     break;
                 case EventLevel.Informational:
                     color = ConsoleColor.Cyan;
@@ -99,10 +104,20 @@ namespace SanteDB.SDK.BreDebugger.Shell
                 try
                 {
                     Monitor.Enter(this.m_logBacklog);
-                    if (this.m_disposing) return; // shutdown dispatch
+                    if (this.m_disposing)
+                    {
+                        return; // shutdown dispatch
+                    }
+
                     while (this.m_logBacklog.Count == 0)
+                    {
                         Monitor.Wait(this.m_logBacklog);
-                    if (this.m_disposing) return;
+                    }
+
+                    if (this.m_disposing)
+                    {
+                        return;
+                    }
 
                     while (this.m_logBacklog.Count > 0)
                     {
@@ -133,7 +148,10 @@ namespace SanteDB.SDK.BreDebugger.Shell
             {
                 this.m_disposing = true;
                 lock (this.m_logBacklog)
+                {
                     Monitor.PulseAll(this.m_logBacklog);
+                }
+
                 this.m_dispatchThread.Join(); // Abort thread
                 this.m_dispatchThread = null;
             }

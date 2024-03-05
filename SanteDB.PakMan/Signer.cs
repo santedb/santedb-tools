@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2021 - 2023, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
+ * Copyright (C) 2021 - 2024, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
  * Copyright (C) 2019 - 2021, Fyfe Software Inc. and the SanteSuite Contributors
  * Portions Copyright (C) 2015-2018 Mohawk College of Applied Arts and Technology
  * 
@@ -16,7 +16,7 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2023-5-19
+ * Date: 2023-6-21
  */
 using SanteDB.Core.Applets.Model;
 using System;
@@ -55,12 +55,17 @@ namespace SanteDB.PakMan
             {
                 AppletPackage pkg = null;
                 using (FileStream fs = File.OpenRead(this.m_parms.Source))
+                {
                     pkg = AppletPackage.Load(fs);
+                }
 
                 Emit.Message("INFO", "Will sign package {0}", pkg.Meta);
                 pkg = this.CreateSignedPackage(pkg);
                 using (FileStream fs = File.Create(this.m_parms.Output ?? Path.ChangeExtension(this.m_parms.Source, ".signed.pak")))
+                {
                     pkg.Save(fs);
+                }
+
                 return 0;
             }
             catch (Exception e)
@@ -107,10 +112,15 @@ namespace SanteDB.PakMan
                 sln.Meta.PublicKeyToken = signCert.Thumbprint;
 
                 if (this.m_parms.EmbedCertificate)
+                {
                     sln.PublicKey = signCert.Export(X509ContentType.Cert);
+                }
 
                 if (!signCert.HasPrivateKey)
+                {
                     throw new SecurityException($"Provided key {this.m_parms.SignKeyFile} has no private key");
+                }
+
                 RSACryptoServiceProvider rsa = signCert.PrivateKey as RSACryptoServiceProvider;
                 sln.Meta.Signature = rsa.SignData(sln.Include.SelectMany(o => o.Manifest).ToArray(), CryptoConfig.MapNameToOID("SHA1"));
                 return sln;

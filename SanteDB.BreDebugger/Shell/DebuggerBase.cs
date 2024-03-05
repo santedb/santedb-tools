@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2021 - 2023, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
+ * Copyright (C) 2021 - 2024, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
  * Copyright (C) 2019 - 2021, Fyfe Software Inc. and the SanteSuite Contributors
  * Portions Copyright (C) 2015-2018 Mohawk College of Applied Arts and Technology
  * 
@@ -16,7 +16,7 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2023-5-19
+ * Date: 2023-6-21
  */
 using Jint.Native;
 using Jint.Runtime.Descriptors;
@@ -166,7 +166,9 @@ namespace SanteDB.SDK.BreDebugger.Shell
                 }
             }
             else
+            {
                 Console.WriteLine(e.ToString());
+            }
         }
 
         /// <summary>
@@ -234,18 +236,25 @@ namespace SanteDB.SDK.BreDebugger.Shell
         {
             var t = Type.GetType(type);
             if (t == null)
+            {
                 t = new SanteDB.Core.Model.Serialization.ModelSerializationBinder().BindToType(typeof(IdentifiedData).Assembly.FullName, type);
+            }
+
             if (t == null)
             {
                 t = typeof(Int32).Assembly.GetExportedTypesSafe().FirstOrDefault(tr => tr.Namespace == "System" && tr.Name == type);
                 if (t == null)
+                {
                     throw new MissingMethodException(type, (string)null);
+                }
             }
 
             var idp = typeof(IDataPersistenceService<>).MakeGenericType(t);
             var ids = ApplicationServiceContext.Current.GetService(idp) as IDataPersistenceService;
             if (ids == null)
+            {
                 throw new InvalidOperationException($"Persistence service for {type} not found");
+            }
 
             var qd = QueryExpressionParser.BuildLinqExpression(t, qry.ParseQueryString());
 
@@ -265,17 +274,24 @@ namespace SanteDB.SDK.BreDebugger.Shell
         public void ChangeWorkingDirectory(String dir)
         {
             if (dir == "..")
+            {
                 dir = Path.GetDirectoryName(this.m_workingDirectory);
+            }
 
             if (!Path.IsPathRooted(dir))
+            {
                 dir = Path.Combine(this.m_workingDirectory, dir);
+            }
+
             if (Directory.Exists(dir))
             {
                 this.m_workingDirectory = dir;
                 Console.WriteLine("INF: {0}", this.m_workingDirectory);
             }
             else
+            {
                 throw new InvalidOperationException($"Directory {dir} not found");
+            }
         }
 
         /// <summary>
@@ -302,9 +318,19 @@ namespace SanteDB.SDK.BreDebugger.Shell
             while (true)
             {
                 var key = Console.ReadKey(true);
-                if (key.Key == ConsoleKey.Enter) break;
-                if (key.Key == ConsoleKey.Backspace && input.Length > 0) input.Remove(input.Length - 1, 1);
-                else if (key.Key != ConsoleKey.Backspace) input.Append(key.KeyChar);
+                if (key.Key == ConsoleKey.Enter)
+                {
+                    break;
+                }
+
+                if (key.Key == ConsoleKey.Backspace && input.Length > 0)
+                {
+                    input.Remove(input.Length - 1, 1);
+                }
+                else if (key.Key != ConsoleKey.Backspace)
+                {
+                    input.Append(key.KeyChar);
+                }
             }
             return input.ToString();
         }
@@ -328,12 +354,19 @@ namespace SanteDB.SDK.BreDebugger.Shell
             if (dir != null)
             {
                 if (!Path.IsPathRooted(dir))
+                {
                     dir = Path.Combine(this.m_workingDirectory, dir);
+                }
+
                 if (!Directory.Exists(dir))
+                {
                     throw new InvalidOperationException($"Directory {dir} not found");
+                }
             }
             else
+            {
                 dir = this.m_workingDirectory;
+            }
 
             Console.WriteLine("INF: {0}", dir);
 
@@ -341,7 +374,10 @@ namespace SanteDB.SDK.BreDebugger.Shell
             {
                 var disp = Path.GetFileName(d);
                 if (disp.Length > 35)
+                {
                     disp = disp.Substring(0, 32) + "...";
+                }
+
                 Console.WriteLine("{0}{1}[DIRECTORY]", disp, new String(' ', 35 - disp.Length));
             }
 
@@ -349,7 +385,9 @@ namespace SanteDB.SDK.BreDebugger.Shell
             {
                 var disp = Path.GetFileName(f);
                 if (disp.Length > 35)
+                {
                     disp = disp.Substring(0, 32) + "...";
+                }
 
                 var fi = new FileInfo(f);
                 Console.WriteLine("{0}{1}{2:###,###} b\t{3:yyyy-MMM-dd}", disp, new String(' ', 35 - disp.Length), fi.Length, fi.LastWriteTime);
@@ -373,7 +411,9 @@ namespace SanteDB.SDK.BreDebugger.Shell
         public void BreakpointList()
         {
             foreach (var itm in this.Breakpoints)
+            {
                 Console.WriteLine(itm);
+            }
         }
 
         /// <summary>
@@ -412,15 +452,24 @@ namespace SanteDB.SDK.BreDebugger.Shell
         {
             var t = Type.GetType(type);
             if (t == null)
+            {
                 t = new SanteDB.Core.Model.Serialization.ModelSerializationBinder().BindToType(typeof(IdentifiedData).Assembly.FullName, type);
+            }
+
             if (t == null)
             {
                 t = typeof(Int32).Assembly.GetExportedTypesSafe().FirstOrDefault(o => o.Namespace == "System" && o.Name == type);
                 if (t == null)
+                {
                     throw new MissingMethodException(type, (string)null);
+                }
+
                 object res = null;
                 if (!MapUtil.TryConvert(data, t, out res))
+                {
                     throw new ArgumentOutOfRangeException(nameof(data));
+                }
+
                 return res;
             }
             else
@@ -457,21 +506,29 @@ namespace SanteDB.SDK.BreDebugger.Shell
 
             var filePath = file;
             if (!Path.IsPathRooted(filePath))
+            {
                 filePath = Path.Combine(this.m_workingDirectory, file);
+            }
 
             var t = Type.GetType(type);
             if (t == null)
+            {
                 t = new SanteDB.Core.Model.Serialization.ModelSerializationBinder().BindToType(typeof(IdentifiedData).Assembly.FullName, type);
+            }
+
             if (t == null)
             {
                 t = typeof(Int32).Assembly.GetExportedTypesSafe().FirstOrDefault(o => o.Namespace == "System" && o.Name == type);
                 if (t == null)
+                {
                     throw new MissingMethodException(type, (string)null);
+                }
             }
 
             using (var str = File.OpenText(file))
+            {
                 return new JsonViewModelSerializer().DeSerialize(str, t);
-
+            }
         }
         /// <summary>
         /// Set scope json
@@ -481,7 +538,9 @@ namespace SanteDB.SDK.BreDebugger.Shell
         {
             var filePath = file;
             if (!Path.IsPathRooted(filePath))
+            {
                 filePath = Path.Combine(this.m_workingDirectory, file);
+            }
 
             return JsonConvert.DeserializeObject(File.ReadAllText(filePath), new JsonSerializerSettings()
             {
@@ -499,22 +558,30 @@ namespace SanteDB.SDK.BreDebugger.Shell
         {
             var filePath = file;
             if (!Path.IsPathRooted(filePath))
+            {
                 filePath = Path.Combine(this.m_workingDirectory, file);
+            }
 
             var t = Type.GetType(type);
             if (t == null)
+            {
                 t = new SanteDB.Core.Model.Serialization.ModelSerializationBinder().BindToType(typeof(IdentifiedData).Assembly.FullName, type);
+            }
+
             if (t == null)
             {
                 t = typeof(Int32).Assembly.GetExportedTypesSafe().FirstOrDefault(o => o.Namespace == "System" && o.Name == type);
                 if (t == null)
+                {
                     throw new MissingMethodException(type, (string)null);
+                }
             }
 
             XmlSerializer xsz = new XmlSerializer(t);
             using (var fs = File.OpenRead(filePath))
+            {
                 return xsz.Deserialize(fs);
-
+            }
         }
 
         /// <summary>
@@ -543,7 +610,9 @@ namespace SanteDB.SDK.BreDebugger.Shell
         public void PrintScope()
         {
             if (this.m_scopeObject == null)
+            {
                 Console.WriteLine("null");
+            }
             else
             {
                 Console.WriteLine("Type: {0}", this.m_scopeObject.GetType().FullName);
@@ -596,12 +665,16 @@ namespace SanteDB.SDK.BreDebugger.Shell
         protected void DumpObject(object obj, String path)
         {
             if (obj == null)
+            {
                 Console.WriteLine("null");
+            }
             else
             {
 
                 if (obj is System.Dynamic.ExpandoObject)
+                {
                     obj = new Dictionary<String, Object>(obj as System.Dynamic.ExpandoObject);
+                }
 
                 obj = this.GetScopeObject(obj, path);
 
@@ -614,7 +687,10 @@ namespace SanteDB.SDK.BreDebugger.Shell
                     foreach (var itm in list)
                     {
                         Console.WriteLine("[{0}] {1}", i, list[i++]);
-                        if (i > 99) break;
+                        if (i > 99)
+                        {
+                            break;
+                        }
                     }
                 }
                 else if (obj is IDictionary dict)
@@ -626,11 +702,16 @@ namespace SanteDB.SDK.BreDebugger.Shell
                         var k = dict.Keys.OfType<Object>().Skip(i++).First();
                         Console.WriteLine("[{0}] {1}", k, dict[k]);
 
-                        if (i > 99) break;
+                        if (i > 99)
+                        {
+                            break;
+                        }
                     }
                 }
                 else if (primitives.Contains(obj.GetType()))
+                {
                     Console.WriteLine(obj);
+                }
                 else if (obj is IEnumerable enu)
                 {
                     foreach (var itm in enu)
@@ -654,11 +735,19 @@ namespace SanteDB.SDK.BreDebugger.Shell
                             valStr = itm.GetValue(obj)?.ToString();
 
                         if (nameStr.Length > maxWidth - 4)
+                        {
                             nameStr = nameStr.Substring(0, maxWidth - 4) + "...";
+                        }
+
                         if (typeStr.Length > maxWidth - 4)
+                        {
                             typeStr = typeStr.Substring(0, maxWidth - 4) + "...";
+                        }
+
                         if (valStr?.Length > (maxWidth * 4))
+                        {
                             valStr = valStr.Substring(0, (maxWidth * 4) - 4) + "...";
+                        }
 
                         Console.WriteLine("{0}{1}{2}{3}{4}",
                             nameStr, new String(' ', maxWidth - nameStr.Length),
@@ -721,7 +810,10 @@ namespace SanteDB.SDK.BreDebugger.Shell
                 Indent = true,
                 OmitXmlDeclaration = true
             }))
+            {
                 xsz.Serialize(xw, obj);
+            }
+
             Console.WriteLine();
         }
 
@@ -763,10 +855,15 @@ namespace SanteDB.SDK.BreDebugger.Shell
                 {
                     var p = pp;
                     if (p.Contains("["))
+                    {
                         p = p.Substring(0, p.IndexOf("["));
+                    }
 
                     if (!String.IsNullOrEmpty(p))
+                    {
                         obj = obj?.GetType().GetProperty(p).GetValue(obj);
+                    }
+
                     p = pp;
                     while (p.Contains("[") && p.Contains("]") && (obj is IList || obj is IDictionary))
                     {
@@ -778,11 +875,16 @@ namespace SanteDB.SDK.BreDebugger.Shell
                             obj = (obj as IDictionary)[key ?? idx];
                         }
                         else
+                        {
                             obj = (obj as IList)[Int32.Parse(idx)];
+                        }
+
                         p = p.Substring(p.IndexOf("]") + 1);
 
                         if (obj is ExpandoObject)
+                        {
                             obj = new Dictionary<String, Object>(obj as ExpandoObject);
+                        }
                     }
                 }
             }
@@ -813,10 +915,15 @@ namespace SanteDB.SDK.BreDebugger.Shell
                 {
                     var svcDisplay = itm.GetType().Name;
                     if (svcDisplay.Length > 20)
+                    {
                         svcDisplay = svcDisplay.Substring(0, 17) + "...";
+                    }
+
                     var services = String.Join(",", itm.GetType().GetInterfaces().Where(o => o.Namespace.StartsWith("SanteDB") || o.Namespace.StartsWith("MARC")).Select(o => o.Name));
                     if (name == null && services.Length > Console.WindowWidth - 20)
+                    {
                         services = services.Substring(0, Console.WindowWidth - 24) + "...";
+                    }
 
                     Console.WriteLine("{0}{1}{2}", svcDisplay, new String(' ', 20 - svcDisplay.Length), services);
                 }
@@ -832,18 +939,25 @@ namespace SanteDB.SDK.BreDebugger.Shell
         {
             var t = Type.GetType(type);
             if (t == null)
+            {
                 t = new SanteDB.Core.Model.Serialization.ModelSerializationBinder().BindToType(typeof(IdentifiedData).Assembly.FullName, type);
+            }
+
             if (t == null)
             {
                 t = typeof(Int32).Assembly.GetExportedTypesSafe().FirstOrDefault(o => o.Namespace == "System" && o.Name == type);
                 if (t == null)
+                {
                     throw new MissingMethodException(type, (string)null);
+                }
             }
 
             var idp = typeof(IDataPersistenceService<>).MakeGenericType(t);
             var ids = ApplicationServiceContext.Current.GetService(idp) as IDataPersistenceService;
             if (ids == null)
+            {
                 throw new InvalidOperationException($"Persistence service for {type} not found");
+            }
 
             Guid gd = Guid.Parse(id);
             return ids.Get(gd);
@@ -859,7 +973,9 @@ namespace SanteDB.SDK.BreDebugger.Shell
             var ids = ApplicationServiceContext.Current.GetService(idp) as IDataPersistenceService;
 
             if (ids == null)
+            {
                 throw new InvalidOperationException($"Cannot find persister {idp}");
+            }
 
             return ids?.Insert(this.m_scopeObject);
         }
@@ -881,18 +997,25 @@ namespace SanteDB.SDK.BreDebugger.Shell
         {
             var t = Type.GetType(type);
             if (t == null)
+            {
                 t = new SanteDB.Core.Model.Serialization.ModelSerializationBinder().BindToType(typeof(IdentifiedData).Assembly.FullName, type);
+            }
+
             if (t == null)
             {
                 t = typeof(Int32).Assembly.GetExportedTypesSafe().FirstOrDefault(tr => tr.Namespace == "System" && tr.Name == type);
                 if (t == null)
+                {
                     throw new MissingMethodException(type, (string)null);
+                }
             }
 
             var idp = typeof(IDataPersistenceService<>).MakeGenericType(t);
             var ids = ApplicationServiceContext.Current.GetService(idp) as IDataPersistenceService;
             if (ids == null)
+            {
                 throw new InvalidOperationException($"Persistence service for {type} not found");
+            }
 
             var qd = QueryExpressionParser.BuildLinqExpression(t, qry.ParseQueryString());
 
@@ -930,7 +1053,10 @@ namespace SanteDB.SDK.BreDebugger.Shell
                                  .Select(x => Convert.ToByte(uuid.Substring(x, 2), 16)).ToArray());
             }
             else
+            {
                 g = Guid.Parse(uuid);
+            }
+
             Console.WriteLine("UUID: {0}", g);
             Console.WriteLine("HEX: {0}", BitConverter.ToString(g.ToByteArray()).Replace("-", ""));
             Console.WriteLine("DEC: {0}", new BigInteger(g.ToByteArray()));

@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2021 - 2023, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
+ * Copyright (C) 2021 - 2024, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
  * Copyright (C) 2019 - 2021, Fyfe Software Inc. and the SanteSuite Contributors
  * Portions Copyright (C) 2015-2018 Mohawk College of Applied Arts and Technology
  * 
@@ -16,7 +16,7 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2023-5-19
+ * Date: 2023-6-21
  */
 using SanteDB.Core.Applets.Model;
 using SanteDB.PakMan.Packers;
@@ -67,17 +67,23 @@ namespace SanteDB.PakMan
         {
             var ext = Path.GetExtension(file);
             if (m_packers == null)
+            {
                 m_packers = AppDomain.CurrentDomain.GetAllTypes()
                     .Where(t => typeof(IFilePacker).IsAssignableFrom(t) && !t.IsAbstract && !t.IsInterface)
                     .Select(t => Activator.CreateInstance(t))
                     .OfType<IFilePacker>()
                     .SelectMany(i => i.Extensions.Select(e => new { Ext = e, Pakr = i }))
                     .ToDictionary(o => o.Ext, o => o.Pakr);
-
+            }
 
             if (m_packers.TryGetValue(ext, out IFilePacker retVal))
+            {
                 return retVal;
-            else return m_packers["*"];
+            }
+            else
+            {
+                return m_packers["*"];
+            }
         }
 
         /// <summary>
@@ -100,10 +106,15 @@ namespace SanteDB.PakMan
             retVal.Meta.PublicKeyToken = signCert.Thumbprint;
 
             if (embedCert)
+            {
                 retVal.PublicKey = signCert.Export(X509ContentType.Cert);
+            }
 
             if (!signCert.HasPrivateKey)
+            {
                 throw new SecurityException($"Provided key {signCert} has no private key");
+            }
+
             RSACryptoServiceProvider rsa = signCert.PrivateKey as RSACryptoServiceProvider;
             retVal.Meta.Signature = rsa.SignData(retVal.Manifest, CryptoConfig.MapNameToOID("SHA1"));
             return retVal;

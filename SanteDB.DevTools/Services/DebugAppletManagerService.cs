@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2021 - 2023, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
+ * Copyright (C) 2021 - 2024, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
  * Copyright (C) 2019 - 2021, Fyfe Software Inc. and the SanteSuite Contributors
  * Portions Copyright (C) 2015-2018 Mohawk College of Applied Arts and Technology
  * 
@@ -16,7 +16,7 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2023-5-19
+ * Date: 2023-6-21
  */
 using SanteDB.Client.Services;
 using SanteDB.Client.UserInterface;
@@ -225,7 +225,10 @@ namespace SanteDB.Tools.Debug.Services
             {
                 var baseDirectory = Path.GetDirectoryName(manifestFile);
                 if (!baseDirectory.EndsWith(Path.DirectorySeparatorChar.ToString()))
+                {
                     baseDirectory += Path.DirectorySeparatorChar.ToString();
+                }
+
                 applet.Assets.AddRange(this.ProcessDirectory(baseDirectory, baseDirectory));
 
                 // Watch for changes
@@ -240,7 +243,9 @@ namespace SanteDB.Tools.Debug.Services
 
                 applet.Initialize();
                 if (applet.Info.Version.Contains("*"))
+                {
                     applet.Info.Version = applet.Info.Version.Replace("*", "0000");
+                }
             }
             else if (applet.Assets.Any(a => a.Name.Contains("santedb.js"))) // Inject SHIM
             {
@@ -278,16 +283,23 @@ namespace SanteDB.Tools.Debug.Services
             {
                 var asset = this.ProcessItem(itm, path);
                 if (asset != null)
+                {
                     retVal.Add(asset);
-
+                }
             }
 
             // Process sub directories
             foreach (var dir in Directory.GetDirectories(source))
+            {
                 if (!Path.GetFileName(dir).StartsWith("."))
+                {
                     retVal.AddRange(ProcessDirectory(dir, path));
+                }
                 else
+                {
                     Console.WriteLine("Skipping directory {0}", dir);
+                }
+            }
 
             return retVal;
 
@@ -337,19 +349,26 @@ namespace SanteDB.Tools.Debug.Services
                     case WatcherChangeTypes.Created: // file has been created
                     case WatcherChangeTypes.Changed:
 
-                        if (!File.Exists(e.FullPath)) return;
+                        if (!File.Exists(e.FullPath))
+                        {
+                            return;
+                        }
                         // Wait until file is not locked so we can process it
                         bool isEmpty = false;
                         while (this.IsFileLocked(e.FullPath, out isEmpty))
                         {
                             Thread.Sleep(100);
                         }
-                        if (isEmpty) return;
+                        if (isEmpty)
+                        {
+                            return;
+                        }
 
                         // Manifest has changed so re-process
                         if (e.Name.ToLower() == "manifest.xml")
                         {
                             if (!IsFileLocked(e.FullPath, out isEmpty) && !isEmpty)
+                            {
                                 try
                                 {
                                     using (var fs = File.OpenRead(e.FullPath))
@@ -372,6 +391,7 @@ namespace SanteDB.Tools.Debug.Services
                                 {
                                     this.m_tracer.TraceError("Error re-reading manifest: {0}", ex);
                                 }
+                            }
                         }
                         else
                         {
@@ -380,7 +400,10 @@ namespace SanteDB.Tools.Debug.Services
                             {
                                 // Add? 
                                 if (asset != null)
+                                {
                                     applet.Assets.Remove(asset);
+                                }
+
                                 applet.Assets.Add(newAsset);
                             }
                         }
@@ -392,7 +415,11 @@ namespace SanteDB.Tools.Debug.Services
                         break;
                     case WatcherChangeTypes.Renamed:
                         asset = applet.Assets.FirstOrDefault(o => o.Name == (e as RenamedEventArgs).OldFullPath.Replace(fsWatcherInfo.Value.Path, ""));
-                        if (asset != null) asset.Name = e.Name;
+                        if (asset != null)
+                        {
+                            asset.Name = e.Name;
+                        }
+
                         break;
                 }
                 AppletCollection.ClearCaches();
@@ -421,14 +448,18 @@ namespace SanteDB.Tools.Debug.Services
 
             var manifestSource = navigateAsset.Manifest.GetSetting(APPLET_SOURCE);
             if (String.IsNullOrEmpty(manifestSource))
+            {
                 return null;
+            }
 
             String itmPath = System.IO.Path.Combine(
                                         Path.GetDirectoryName(manifestSource),
                                         navigateAsset.Name).Replace('/', Path.DirectorySeparatorChar);
 
             if (!File.Exists(itmPath))
+            {
                 return navigateAsset.Content;
+            }
             else if (navigateAsset.MimeType == "text/html")
             {
                 XElement xe = XElement.Load(itmPath);
@@ -503,9 +534,15 @@ namespace SanteDB.Tools.Debug.Services
                 {
                     String assetName = inc.Value.Trim().Substring(18); // HACK: Should be a REGEX
                     if (assetName.EndsWith("\""))
+                    {
                         assetName = assetName.Substring(0, assetName.Length - 1);
+                    }
+
                     if (assetName == "content")
+                    {
                         continue;
+                    }
+
                     var includeAsset = this.CorrectAppletName(assetName);
                     inc.AddAfterSelf(new XComment(String.Format("#include virtual=\"{0}\"", includeAsset)));
                     inc.Remove();
@@ -513,8 +550,13 @@ namespace SanteDB.Tools.Debug.Services
 
                 var xel = xe.Descendants().OfType<XElement>().Where(o => o.Name.Namespace == xs_santedb).ToList();
                 if (xel != null)
+                {
                     foreach (var x in xel)
+                    {
                         x.Remove();
+                    }
+                }
+
                 htmlAsset.Html = xe;
                 return htmlAsset;
             }
@@ -526,11 +568,16 @@ namespace SanteDB.Tools.Debug.Services
             {
                 var script = File.ReadAllText(itmPath);
                 if (itmPath.Contains("santedb.js") || itmPath.Contains("santedb.min.js"))
+                {
                     script += this.m_hostBridgeProvider?.GetBridgeScript();
+                }
+
                 return script;
             }
             else
+            {
                 return File.ReadAllBytes(itmPath);
+            }
         }
 
         /// <summary>
@@ -556,7 +603,9 @@ namespace SanteDB.Tools.Debug.Services
             finally
             {
                 if (stream != null)
+                {
                     stream.Close();
+                }
             }
 
             //file is not locked
