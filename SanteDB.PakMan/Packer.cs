@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2021 - 2023, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
+ * Copyright (C) 2021 - 2024, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
  * Copyright (C) 2019 - 2021, Fyfe Software Inc. and the SanteSuite Contributors
  * Portions Copyright (C) 2015-2018 Mohawk College of Applied Arts and Technology
  * 
@@ -16,7 +16,7 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2023-5-19
+ * Date: 2023-6-21
  */
 using SanteDB.Core.Applets.Model;
 using SanteDB.PakMan.Repository;
@@ -48,16 +48,22 @@ namespace SanteDB.PakMan
             int retVal = 0;
             // First is there a Manifest.xml?
             if (!Path.IsPathRooted(this.m_parms.Source))
+            {
                 this.m_parms.Source = Path.Combine(Environment.CurrentDirectory, this.m_parms.Source);
-
+            }
 
             Console.WriteLine("Processing {0}...", this.m_parms.Source);
 
             String manifestFile = this.m_parms.Source;
             if (!File.Exists(manifestFile) && Directory.Exists(manifestFile))
+            {
                 manifestFile = Path.Combine(this.m_parms.Source, "manifest.xml");
+            }
+
             if (!File.Exists(manifestFile))
+            {
                 throw new InvalidOperationException($"Directory {this.m_parms.Source} must have manifest.xml");
+            }
             else
             {
                 var packer = new AppletPackager(manifestFile, this.m_parms.Optimize);
@@ -72,11 +78,15 @@ namespace SanteDB.PakMan
                 }
 
                 if (!Directory.Exists(Path.GetDirectoryName(this.m_parms.Output)) && !String.IsNullOrEmpty(Path.GetDirectoryName(this.m_parms.Output)))
+                {
                     Directory.CreateDirectory(Path.GetDirectoryName(this.m_parms.Output));
+                }
 
                 var outFile = this.m_parms.Output ?? pkg.Meta.Id + ".pak";
                 using (var ofs = File.Create(outFile))
+                {
                     pkg.Save(ofs);
+                }
 
                 if (this.m_parms.Install)
                 {

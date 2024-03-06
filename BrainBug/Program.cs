@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2021 - 2023, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
+ * Copyright (C) 2021 - 2024, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
  * Copyright (C) 2019 - 2021, Fyfe Software Inc. and the SanteSuite Contributors
  * Portions Copyright (C) 2015-2018 Mohawk College of Applied Arts and Technology
  * 
@@ -16,7 +16,7 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2023-5-19
+ * Date: 2023-6-21
  */
 using MohawkCollege.Util.Console.Parameters;
 using SharpCompress.Readers.Tar;
@@ -63,7 +63,10 @@ namespace SanteDB.SDK.BrainBug
                 StringBuilder argStr = new StringBuilder();
 
                 if (!String.IsNullOrEmpty(parameters.DeviceId))
+                {
                     argStr.AppendFormat(" -s {0} ", parameters.DeviceId);
+                }
+
                 argStr.Append("backup ");
 
                 argStr.AppendFormat("-f \"backup.ab\"", parameters.BackupFile);
@@ -84,7 +87,10 @@ namespace SanteDB.SDK.BrainBug
                 pi.WaitForExit();
 
                 if (File.Exists(parameters.BackupFile))
+                {
                     File.Delete(parameters.BackupFile);
+                }
+
                 File.Move("backup.ab", parameters.BackupFile);
             }
 
@@ -121,20 +127,32 @@ namespace SanteDB.SDK.BrainBug
                 if (parameters.ExtractDir != null)
                 {
                     if (!Directory.Exists(parameters.ExtractDir))
+                    {
                         Directory.CreateDirectory(parameters.ExtractDir);
+                    }
+
                     using (var fs = File.OpenRead(parameters.TargetFile))
                     using (var tar = TarReader.Open(fs))
+                    {
                         while (tar.MoveToNextEntry())
                         {
                             string outName = Path.Combine(parameters.ExtractDir, tar.Entry.Key);
                             if (!Directory.Exists(Path.GetDirectoryName(outName)))
+                            {
                                 Directory.CreateDirectory(Path.GetDirectoryName(outName));
+                            }
+
                             Console.WriteLine("{0} > {1}", tar.Entry.Key, outName);
 
                             if (!tar.Entry.IsDirectory)
+                            {
                                 using (var ofs = File.Create(outName))
+                                {
                                     tar.WriteEntryTo(ofs);
+                                }
+                            }
                         }
+                    }
                 }
             }
             catch (Exception e)

@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2021 - 2023, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
+ * Copyright (C) 2021 - 2024, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
  * Copyright (C) 2019 - 2021, Fyfe Software Inc. and the SanteSuite Contributors
  * Portions Copyright (C) 2015-2018 Mohawk College of Applied Arts and Technology
  * 
@@ -16,7 +16,7 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2023-5-19
+ * Date: 2023-6-21
  */
 using Newtonsoft.Json;
 using SanteDB.Core.Applets.ViewModel.Json;
@@ -69,7 +69,10 @@ namespace SanteDB.SDK.JsProxy
         {
             var retVal = new CodeMethodInvokeExpression(new CodeMethodReferenceExpression(new CodeTypeReferenceExpression(typeof(String)), "Format"), new CodePrimitiveExpression(formatString));
             foreach (var p in parms)
+            {
                 retVal.Parameters.Add(p);
+            }
+
             return retVal;
         }
 
@@ -112,7 +115,10 @@ namespace SanteDB.SDK.JsProxy
         {
             var retVal = new CodeMethodInvokeExpression(new CodeMethodReferenceExpression(target, methodName));
             foreach (var p in simpleParameters)
+            {
                 retVal.Parameters.Add(new CodePrimitiveExpression(p));
+            }
+
             return retVal;
         }
 
@@ -158,7 +164,9 @@ namespace SanteDB.SDK.JsProxy
 
                 var ctdecl = this.CreateViewModelSerializer(t);
                 if (ctdecl != null)
+                {
                     retVal.Types.Add(ctdecl);
+                }
             }
             return retVal;
         }
@@ -171,7 +179,9 @@ namespace SanteDB.SDK.JsProxy
             // Cannot process this type
             if (forType.IsGenericType && !forType.ContainsGenericParameters || forType.IsGenericTypeDefinition || forType.IsAbstract ||
                 !forType.Assembly.GetType(typeof(IdentifiedData).FullName).IsAssignableFrom(forType))
+            {
                 return null;
+            }
 
             // Generate the type definition
             CodeTypeDeclaration retVal = new CodeTypeDeclaration(String.Format("{0}ViewModelSerializer", forType.GetCustomAttribute<JsonObjectAttribute>()?.Id ?? forType.Name));
@@ -256,7 +266,9 @@ namespace SanteDB.SDK.JsProxy
 
             // For type has simple value?
             if (forType.GetCustomAttribute<SimpleValueAttribute>() == null)
+            {
                 retVal.Statements.Add(new CodeMethodReturnStatement(s_null));
+            }
             else
             {
                 // Value is null ? return null
@@ -287,7 +299,9 @@ namespace SanteDB.SDK.JsProxy
 
             // This has a simple value attribute?
             if (forType.GetCustomAttribute<SimpleValueAttribute>() == null)
+            {
                 retVal.Statements.Add(new CodeMethodReturnStatement(s_null));
+            }
             else
             {
                 // Does this match the property type?
@@ -297,9 +311,14 @@ namespace SanteDB.SDK.JsProxy
                 // Ensure not null
                 retVal.Statements.Add(new CodeConditionStatement(new CodeBinaryOperatorExpression(_o, CodeBinaryOperatorType.IdentityEquality, s_null), new CodeMethodReturnStatement(s_null)));
                 if (propertyType.PropertyType == typeof(String))
+                {
                     retVal.Statements.Add(this.CreateToStringTryCatch(_strongType, _o, new CodeMethodReturnStatement(s_null)));
+                }
                 else
+                {
                     retVal.Statements.Add(this.CreateCastTryCatch(propertyType.PropertyType, _strongType, _o, new CodeMethodReturnStatement(s_null)));
+                }
+
                 retVal.Statements.Add(new CodeVariableDeclarationStatement(forType, "_retVal", new CodeObjectCreateExpression(forType)));
                 // Set the property value
                 retVal.Statements.Add(new CodeAssignStatement(new CodePropertyReferenceExpression(s_retVal, propertyType.Name), _strongType));
@@ -365,7 +384,11 @@ namespace SanteDB.SDK.JsProxy
             foreach (var pi in forType.GetProperties(BindingFlags.Public | BindingFlags.Instance))
             {
                 var jsonName = this.GetPropertyName(pi, true);
-                if (jsonName == null || jsonName.StartsWith("$") || !pi.CanWrite) continue;
+                if (jsonName == null || jsonName.StartsWith("$") || !pi.CanWrite)
+                {
+                    continue;
+                }
+
                 propertyCondition = new CodeConditionStatement(this.CreateEqualsStatement(new CodePrimitiveExpression(jsonName), readerValue), new CodeStatement[] { }, new CodeStatement[] { propertyCondition });
                 propertyCondition.TrueStatements.Add(new CodeMethodInvokeExpression(new CodeMethodReferenceExpression(_reader, "Read")));
                 propertyCondition.TrueStatements.Add(new CodeVariableDeclarationStatement(typeof(Object), "_instance", new CodeMethodInvokeExpression(new CodeMethodReferenceExpression(_jsonContext, "ReadElementUtil"), _reader, new CodeTypeOfExpression(pi.PropertyType), new CodeObjectCreateExpression(typeof(JsonSerializationContext), new CodePrimitiveExpression(jsonName), _jsonContext, s_retVal, _context))));
@@ -415,7 +438,10 @@ namespace SanteDB.SDK.JsProxy
             foreach (var pi in forType.GetProperties(BindingFlags.Public | BindingFlags.Instance))
             {
                 var jsonName = this.GetPropertyName(pi, true);
-                if (jsonName == null || jsonName.StartsWith("$") || !pi.CanRead) continue;
+                if (jsonName == null || jsonName.StartsWith("$") || !pi.CanRead)
+                {
+                    continue;
+                }
 
                 // Create an if statement that represents whether we should serialize
                 var shouldSerializeCondition = new CodeConditionStatement(new CodeMethodInvokeExpression(new CodeMethodReferenceExpression(_context, "ShouldSerialize"), new CodePrimitiveExpression(jsonName)));
@@ -429,7 +455,10 @@ namespace SanteDB.SDK.JsProxy
                 {
                     CodeBinaryOperatorExpression isNullCondition = new CodeBinaryOperatorExpression(_propertyReference, CodeBinaryOperatorType.IdentityEquality, s_null);
                     if (typeof(IList).IsAssignableFrom(pi.PropertyType) && !pi.PropertyType.IsArray)
+                    {
                         isNullCondition = new CodeBinaryOperatorExpression(isNullCondition, CodeBinaryOperatorType.BooleanOr, new CodeBinaryOperatorExpression(new CodePropertyReferenceExpression(_propertyReference, "Count"), CodeBinaryOperatorType.IdentityEquality, new CodePrimitiveExpression(0)));
+                    }
+
                     var nullPropertyValueCondition = new CodeConditionStatement(isNullCondition);
                     shouldSerializeCondition.TrueStatements.Add(nullPropertyValueCondition);
 

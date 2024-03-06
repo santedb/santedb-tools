@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2021 - 2023, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
+ * Copyright (C) 2021 - 2024, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
  * Copyright (C) 2019 - 2021, Fyfe Software Inc. and the SanteSuite Contributors
  * Portions Copyright (C) 2015-2018 Mohawk College of Applied Arts and Technology
  * 
@@ -16,7 +16,7 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2023-5-19
+ * Date: 2023-6-21
  */
 using SanteDB.Core.Applets.Model;
 using SanteDB.PakMan.Configuration;
@@ -55,7 +55,10 @@ namespace SanteDB.PakMan.Repository
             if (!System.IO.File.Exists(configFile))
             {
                 if (!Directory.Exists(Path.GetDirectoryName(configFile)))
+                {
                     Directory.CreateDirectory(Path.GetDirectoryName(configFile));
+                }
+
                 using (var fs = System.IO.File.Create(configFile))
                 {
                     s_configuration = new PakManConfig()
@@ -68,10 +71,13 @@ namespace SanteDB.PakMan.Repository
                     s_configuration.Save(fs);
                 }
             }
-            else using (var fs = System.IO.File.OpenRead(configFile))
+            else
+            {
+                using (var fs = System.IO.File.OpenRead(configFile))
                 {
                     s_configuration = PakManConfig.Load(fs);
                 }
+            }
 
             s_localCache = s_configuration.Repository.Find(o => o.Path == LocalCachePath);
             if (s_localCache == null)
@@ -94,14 +100,20 @@ namespace SanteDB.PakMan.Repository
                 if (String.IsNullOrEmpty(serverUrl))
                 {
                     foreach (var c in s_configuration.Repository)
+                    {
                         c.GetRepository().Put(package);
+                    }
+
                     return package.Meta;
                 }
                 else
                 {
                     var config = s_configuration.Repository.Find(o => o.Path == serverUrl);
                     if (config == null)
+                    {
                         throw new KeyNotFoundException($"Configuration for {serverUrl} not found");
+                    }
+
                     return config.GetRepository().Put(package);
                 }
             }
@@ -134,12 +146,18 @@ namespace SanteDB.PakMan.Repository
                     try
                     {
                         retVal = rep.GetRepository().Get(packageId, packageVersion);
-                        if (retVal == null) continue;
+                        if (retVal == null)
+                        {
+                            continue;
+                        }
 
                         if (packageVersion == null || retVal.Version == packageVersion.ToString())
                         {
                             if (!LocalCachePath.Equals(rep.Path))
+                            {
                                 PackageRepositoryUtil.InstallCache(retVal);
+                            }
+
                             break;
                         }
                     }
@@ -168,9 +186,13 @@ namespace SanteDB.PakMan.Repository
                     var retVal = rep.GetRepository().Find(query, offset, count, out int _);
 
                     if (results == null)
+                    {
                         results = retVal;
+                    }
                     else
+                    {
                         results = results.Union(retVal);
+                    }
                 }
                 catch
                 {

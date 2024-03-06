@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2021 - 2023, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
+ * Copyright (C) 2021 - 2024, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
  * Copyright (C) 2019 - 2021, Fyfe Software Inc. and the SanteSuite Contributors
  * Portions Copyright (C) 2015-2018 Mohawk College of Applied Arts and Technology
  * 
@@ -16,7 +16,7 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2023-5-19
+ * Date: 2023-6-21
  */
 using SanteDB.Core.Applets;
 using SanteDB.Core.Applets.Model;
@@ -60,15 +60,21 @@ namespace SanteDB.PakMan
         {
 
             using (FileStream fs = File.OpenRead(this.m_parameters.Output))
+            {
                 this.m_package = AppletSolution.Load(fs);
+            }
 
             // Package the android APK project
             if (this.m_parameters.DcdrAssets.Contains("android"))
+            {
                 this.PackageApk();
+            }
 
             // Package the DCG project
             if (this.m_parameters.DcdrAssets.Contains("gateway"))
+            {
                 this.PackageDcg();
+            }
 
             return 1;
         }
@@ -90,9 +96,14 @@ namespace SanteDB.PakMan
 
             var workingDir = Path.Combine(Path.GetTempPath(), "dcg-apk", this.m_package.Meta.Id);
             if (!String.IsNullOrEmpty(this.m_parameters.DcdrAssetOutput))
+            {
                 workingDir = Path.Combine(this.m_parameters.DcdrAssetOutput, "dcg-apk");
+            }
+
             if (!Directory.Exists(workingDir))
+            {
                 Directory.CreateDirectory(workingDir);
+            }
 
             this.CloneTarget("https://github.com/santedb/santedb-dc-android", workingDir, this.m_parameters.SourceBranch);
 
@@ -153,7 +164,9 @@ namespace SanteDB.PakMan
                 File.WriteAllBytes(Path.Combine(workingDir, "SanteDB.DisconnectedClient.Android", "Resources", "drawable", "logo_lg.png"), imageData);
 
                 foreach (var dir in Directory.GetDirectories(Path.Combine(workingDir, "SanteDB.DisconnectedClient.Android", "Resources"), "mipmap-*"))
+                {
                     File.WriteAllBytes(Path.Combine(dir, "Icon.png"), imageData);
+                }
             }
 
             // Swap out the translation
@@ -167,7 +180,9 @@ namespace SanteDB.PakMan
             {
                 var vsDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Microsoft Visual Studio");
                 if (Directory.Exists(vsDir))
+                {
                     this.m_parameters.MsBuild = Directory.GetFiles(vsDir, "msbuild.exe", SearchOption.AllDirectories).LastOrDefault();
+                }
             }
 
             if (!File.Exists(this.m_parameters.MsBuild))
@@ -247,7 +262,10 @@ namespace SanteDB.PakMan
                     {
                         var remoteBranch = repo.Branches[$"origin/{branch}"];
                         if (remoteBranch == null)
+                        {
                             throw new InvalidOperationException($"Cannot find branch {branch}");
+                        }
+
                         localBranch = repo.Branches.Add(branch, remoteBranch.Tip);
                         repo.Branches.Update(localBranch, b => b.UpstreamBranch = $"refs/heads/{branch}");
                         repo.Branches.Update(localBranch, b => b.Remote = $"origin");
@@ -272,7 +290,9 @@ namespace SanteDB.PakMan
 
             // Add the file
             using (var fs = File.Create(Path.Combine(target, pkg.Meta.Id) + ".pak"))
+            {
                 pkg.Save(fs);
+            }
 
             // Save the CSPROJ info
             if (!String.IsNullOrEmpty(csproj))
@@ -304,24 +324,38 @@ namespace SanteDB.PakMan
         {
             var qualifiedFile = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "distribution", fileName);
             if (!File.Exists(qualifiedFile))
+            {
                 throw new FileNotFoundException(qualifiedFile);
+            }
+
             if (!Directory.Exists(output))
+            {
                 Directory.CreateDirectory(output);
+            }
 
             using (var fs = File.OpenRead(qualifiedFile))
             using (var tar = ZipReader.Open(fs))
+            {
                 while (tar.MoveToNextEntry())
                 {
 
                     string outName = Path.Combine(output, tar.Entry.Key);
                     if (!Directory.Exists(Path.GetDirectoryName(outName)))
+                    {
                         Directory.CreateDirectory(Path.GetDirectoryName(outName));
+                    }
+
                     Emit.Message("INFO", " {0} > {1}", tar.Entry.Key, outName);
 
                     if (!tar.Entry.IsDirectory)
+                    {
                         using (var ofs = File.Create(outName))
+                        {
                             tar.WriteEntryTo(ofs);
+                        }
+                    }
                 }
+            }
         }
     }
 }

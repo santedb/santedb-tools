@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2021 - 2023, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
+ * Copyright (C) 2021 - 2024, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
  * Copyright (C) 2019 - 2021, Fyfe Software Inc. and the SanteSuite Contributors
  * Portions Copyright (C) 2015-2018 Mohawk College of Applied Arts and Technology
  * 
@@ -16,7 +16,7 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2023-5-19
+ * Date: 2023-6-21
  */
 using ClosedXML.Excel;
 using MohawkCollege.Util.Console.Parameters;
@@ -154,6 +154,7 @@ namespace SanteDB.VocabImport
                     }
 
                     if (parms.CreateConcept)
+                    {
                         retVal.Action.Add(new DataUpdate()
                         {
                             InsertIfNotExists = true,
@@ -165,13 +166,19 @@ namespace SanteDB.VocabImport
                                 Oid = ""
                             }
                         });
+                    }
+
                     if (parms.OutputFile == "-")
+                    {
                         new XmlSerializer(typeof(Dataset)).Serialize(Console.Out, retVal);
+                    }
                     else
+                    {
                         using (var fs = File.Create(parms.OutputFile))
                         {
                             new XmlSerializer(typeof(Dataset)).Serialize(fs, retVal);
                         }
+                    }
                 }
                 else
                 {
@@ -245,7 +252,9 @@ namespace SanteDB.VocabImport
             }
 
             if (row.Cell(COL_TERM).GetString() == "Reference Term")
+            {
                 yield break;
+            }
 
             // Create an instruction for the concept
             if (parms.CreateConcept)

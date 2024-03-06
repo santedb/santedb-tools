@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2021 - 2023, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
+ * Copyright (C) 2021 - 2024, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
  * Copyright (C) 2019 - 2021, Fyfe Software Inc. and the SanteSuite Contributors
  * Portions Copyright (C) 2015-2018 Mohawk College of Applied Arts and Technology
  * 
@@ -16,7 +16,7 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2023-5-19
+ * Date: 2023-6-21
  */
 using RestSrvr;
 using RestSrvr.Message;
@@ -57,21 +57,29 @@ namespace SanteDB.PakSrv
             {
                 // Validate the auth header
                 if (String.IsNullOrEmpty(authHeader) && !"GET".Equals(request.Method, StringComparison.OrdinalIgnoreCase) && !"HEAD".Equals(request.Method, StringComparison.OrdinalIgnoreCase))
+                {
                     throw new SecurityException("Request is not authorized");
+                }
                 else if (!String.IsNullOrEmpty(authHeader))
                 {
                     var tokenized = authHeader.Split(' ');
                     if (!"basic".Equals(tokenized[0], StringComparison.OrdinalIgnoreCase))
+                    {
                         throw new SecurityException("Invalid authorization scheme");
+                    }
 
                     var authData = Encoding.UTF8.GetString(Convert.FromBase64String(tokenized[1])).Split(':');
                     if (!2.Equals(authData.Length))
+                    {
                         throw new SecurityException("Invalid authorization header");
+                    }
 
                     // attempt auth using config
                     var authn = this.Authorize(authData[0], authData[1]);
                     if (authn == null)
+                    {
                         throw new SecurityException("Authorization failure");
+                    }
 
                     RestOperationContext.Current.Data.Add("auth", authn);
                 }

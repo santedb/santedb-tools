@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2021 - 2023, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
+ * Copyright (C) 2021 - 2024, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
  * Copyright (C) 2019 - 2021, Fyfe Software Inc. and the SanteSuite Contributors
  * Portions Copyright (C) 2015-2018 Mohawk College of Applied Arts and Technology
  * 
@@ -16,7 +16,7 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2023-5-19
+ * Date: 2023-6-21
  */
 using Microsoft.CSharp;
 using MohawkCollege.Util.Console.Parameters;
@@ -111,10 +111,14 @@ namespace SanteDB.SDK.JsProxy
 
                         List<Type> alreadyGenerated = new List<Type>();
                         foreach (var type in Assembly.LoadFile(asm).GetTypes().Where(o => o.GetCustomAttribute<JsonObjectAttribute>() != null))
+                        {
                             GenerateTypeDocumentation(output, type, xmlDoc, parms, enumerationTypes, alreadyGenerated, metaData);
+                        }
                         // Generate type documentation for each of the binding enumerations
                         foreach (var typ in enumerationTypes.Distinct())
+                        {
                             GenerateEnumerationDocumentation(output, typ, xmlDoc, parms);
+                        }
 
                         GenerateEnumerationDocumentation(output, typeof(NullReasonKeys), xmlDoc, parms);
                     }
@@ -235,7 +239,9 @@ function Exception(type, message, detail, cause, stack, policyId, policyOutcome,
                         var fileName = Path.GetTempFileName();
                         String topicTitle = String.Empty;
                         using (TextWriter output = File.CreateText(fileName))
+                        {
                             topicTitle = GenerateServiceDocumentation(output, type, xmlDoc).Replace("<", "{").Replace(">", "}");
+                        }
 
                         var wikiFile = topicTitle.ToLower();
                         foreach (var np in nonprint)
@@ -243,7 +249,10 @@ function Exception(type, message, detail, cause, stack, policyId, policyOutcome,
                             wikiFile = wikiFile.Replace(np, '-');
                         }
                         if (wikiFile.EndsWith("-"))
+                        {
                             wikiFile = wikiFile.Substring(0, wikiFile.Length - 1);
+                        }
+
                         wikiFile = wikiFile.Replace("--", "-");
                         var targetName = Path.Combine(parms.Output ?? "out", (wikiFile + ".md").ToLower());
                         Console.WriteLine("{0} -> {1}", fileName, targetName);
@@ -278,7 +287,10 @@ function Exception(type, message, detail, cause, stack, policyId, policyOutcome,
             if (typeDoc != null)
             {
                 if (typeDoc.SelectSingleNode(".//*[local-name() = 'summary']") != null)
+                {
                     writer.WriteLine(TransformXDocToMd(typeDoc.SelectSingleNode(".//*[local-name() = 'summary']")));
+                }
+
                 if (typeDoc.SelectSingleNode(".//*[local-name() = 'remarks']") != null)
                 {
                     writer.WriteLine("\r\n## Description");
@@ -306,9 +318,13 @@ function Exception(type, message, detail, cause, stack, policyId, policyOutcome,
 
                     writer.Write("|{0}|{1}|", itm.Name, GenerateCSName(itm.EventHandlerType).Replace("<", "&lt;"));
                     if (!String.IsNullOrEmpty(docText))
+                    {
                         writer.WriteLine("{0}|", docText);
+                    }
                     else
+                    {
                         writer.WriteLine("TODO|");
+                    }
                 }
             }
 
@@ -331,9 +347,13 @@ function Exception(type, message, detail, cause, stack, policyId, policyOutcome,
 
                     writer.Write("|{0}|{1}|{2}{3}|", itm.Name, GenerateCSName(itm.PropertyType).Replace("<", "&lt;"), itm.CanRead ? "R" : "", itm.CanWrite ? "W" : "");
                     if (!String.IsNullOrEmpty(docText))
+                    {
                         writer.WriteLine("{0}|", docText);
+                    }
                     else
+                    {
                         writer.WriteLine("TODO|");
+                    }
                 }
             }
 
@@ -344,7 +364,10 @@ function Exception(type, message, detail, cause, stack, policyId, policyOutcome,
                 writer.WriteLine("|-|-|-|-|");
                 foreach (var itm in type.GetRuntimeMethods())
                 {
-                    if (ignores.Contains(itm)) continue;
+                    if (ignores.Contains(itm))
+                    {
+                        continue;
+                    }
 
                     var docText = xmlDoc
                         .SelectSingleNode(String.Format("//*[local-name() = 'member'][contains(@name, '{0}')]", GenerateXName(itm)))?
@@ -355,9 +378,13 @@ function Exception(type, message, detail, cause, stack, policyId, policyOutcome,
 
                     writer.Write("|{0}|{1}|{2}|", itm.Name, GenerateCSName(itm.ReturnType).Replace("<", "&lt;"), !itm.GetParameters().Any() ? "*none*" : String.Join("<br/>", itm.GetParameters().Select(p => $"*{GenerateCSName(p.ParameterType).Replace("<", "&lt;")}* **{p.Name}**")));
                     if (!String.IsNullOrEmpty(docText))
+                    {
                         writer.WriteLine("{0}|", docText);
+                    }
                     else
+                    {
                         writer.WriteLine("TODO|");
+                    }
                 }
             }
 
@@ -367,6 +394,7 @@ function Exception(type, message, detail, cause, stack, policyId, policyOutcome,
             bool hasImpl = false;
             var impls = new List<Type>();
             foreach (var itm in Directory.GetFiles(Path.GetDirectoryName(type.Assembly.Location), "*.dll"))
+            {
                 try
                 {
                     var asm = Assembly.LoadFile(itm);
@@ -385,9 +413,13 @@ function Exception(type, message, detail, cause, stack, policyId, policyOutcome,
                         writer.WriteLine("\r\n## {0} - ({1})", spa?.Name ?? GenerateCSName(impl).Replace("<", "&lt;"), impl.Assembly.GetName().Name);
 
                         if (typeDoc?.SelectSingleNode(".//*[local-name() = 'summary']") != null)
+                        {
                             writer.WriteLine(TransformXDoc(typeDoc?.SelectSingleNode(".//*[local-name() = 'summary']")));
+                        }
                         else
+                        {
                             writer.WriteLine("TODO: Document this");
+                        }
 
                         if (typeDoc?.SelectSingleNode(".//*[local-name() = 'remarks']") != null)
                         {
@@ -410,9 +442,12 @@ function Exception(type, message, detail, cause, stack, policyId, policyOutcome,
                     }
                 }
                 catch { }
+            }
 
             if (!hasImpl)
+            {
                 writer.WriteLine("None\r\n");
+            }
 
             if (typeDoc?.SelectSingleNode(".//*[local-name() = 'example']") != null)
             {
@@ -428,9 +463,13 @@ function Exception(type, message, detail, cause, stack, policyId, policyOutcome,
             writer.WriteLine("using {0};", type.Namespace);
             writer.WriteLine("/// Other usings here");
             if (!type.IsGenericTypeDefinition)
+            {
                 writer.WriteLine("public class My{0} : {1} {{ ", type.Name.Substring(1), type.FullName);
+            }
             else
+            {
                 writer.WriteLine("public class My{0}<{2}> : {1}<{2}> {{ ", type.Name.Substring(1, type.Name.Length - 3), type.FullName.Substring(0, type.FullName.Length - 2), String.Join(",", type.GetGenericArguments().Select(o => o.Name)));
+            }
 
             // Get all properties
             writer.WriteLine("\tpublic String ServiceName => \"My own {0} service\";", type.Name);
@@ -441,7 +480,10 @@ function Exception(type, message, detail, cause, stack, policyId, policyOutcome,
                 {
                     writer.WriteLine("\t/// <summary>");
                     if (typeDoc.SelectSingleNode(".//*[local-name() = 'summary']") != null)
+                    {
                         writer.WriteLine("\t/// {0}", typeDoc.SelectSingleNode(".//*[local-name() = 'summary']").InnerText.Replace("\r\n", "").Trim());
+                    }
+
                     writer.WriteLine("\t/// </summary>");
                 }
 
@@ -456,34 +498,52 @@ function Exception(type, message, detail, cause, stack, policyId, policyOutcome,
                 {
                     writer.WriteLine("\t/// <summary>");
                     if (typeDoc.SelectSingleNode(".//*[local-name() = 'summary']") != null)
+                    {
                         writer.WriteLine("\t/// {0}", typeDoc.SelectSingleNode(".//*[local-name() = 'summary']").InnerText.Replace("\r\n", "").Trim());
+                    }
+
                     writer.WriteLine("\t/// </summary>");
                 }
 
                 writer.WriteLine("\tpublic {0} {1} {{", GenerateCSName(itm.PropertyType), itm.Name); ;
 
                 if (itm.CanRead)
+                {
                     writer.WriteLine("\t\tget;");
+                }
+
                 if (itm.CanWrite)
+                {
                     writer.WriteLine("\t\tset;");
+                }
+
                 writer.WriteLine("\t}");
             }
 
             foreach (var itm in type.GetRuntimeMethods())
             {
-                if (ignores.Contains(itm)) continue;
+                if (ignores.Contains(itm))
+                {
+                    continue;
+                }
                 // Output documentation
                 typeDoc = xmlDoc.SelectSingleNode(String.Format("//*[local-name() = 'member'][contains(@name, '{0}')]", GenerateXName(itm)));
                 if (typeDoc != null)
                 {
                     writer.WriteLine("\t/// <summary>");
                     if (typeDoc.SelectSingleNode(".//*[local-name() = 'summary']") != null)
+                    {
                         writer.WriteLine("\t/// {0}", typeDoc.SelectSingleNode(".//*[local-name() = 'summary']").InnerText.Replace("\r\n", "").Trim());
+                    }
+
                     writer.WriteLine("\t/// </summary>");
                 }
                 writer.Write("\tpublic {0} {1}", GenerateCSName(itm.ReturnType), itm.Name);
                 if (itm.IsGenericMethodDefinition)
+                {
                     writer.Write("<{0}>", String.Join(",", itm.GetGenericArguments().Select(o => GenerateCSName(o))));
+                }
+
                 writer.Write("({0})", String.Join(",", itm.GetParameters().Select(p => $"{GenerateCSName(p.ParameterType)} {p.Name}")));
                 writer.WriteLine("{");
                 writer.WriteLine("\t\tthrow new System.NotImplementedException();");
@@ -506,13 +566,21 @@ function Exception(type, message, detail, cause, stack, policyId, policyOutcome,
         private static string GenerateCSName(Type type)
         {
             if (type == typeof(void))
+            {
                 return "void";
+            }
             else if (type.IsGenericParameter)
+            {
                 return type.Name;
+            }
             else if (type.IsGenericType || type.IsGenericTypeDefinition)
+            {
                 return $"{type.Name.Substring(0, type.Name.Length - 2)}<{String.Join(",", type.GetGenericArguments().Select(n => GenerateCSName(n)))}>";
+            }
             else
+            {
                 return type.Name;
+            }
         }
 
         private static string GenerateXName(MethodInfo method)
@@ -522,7 +590,10 @@ function Exception(type, message, detail, cause, stack, policyId, policyOutcome,
             sb.Append(".");
             sb.Append(method.Name);
             if (method.IsGenericMethodDefinition)
+            {
                 sb.AppendFormat("``{0}", method.GetGenericArguments().Length);
+            }
+
             sb.Append("(");
 
             return sb.ToString();
@@ -535,7 +606,9 @@ function Exception(type, message, detail, cause, stack, policyId, policyOutcome,
         {
             var jobject = type.GetCustomAttribute<JsonObjectAttribute>();
             if (jobject == null)
+            {
                 jobject = new JsonObjectAttribute(type.Name);
+            }
 
             writer.WriteLine("// {0}", type.AssemblyQualifiedName);
             writer.WriteLine("// if(!{0})", jobject.Id);
@@ -550,11 +623,19 @@ function Exception(type, message, detail, cause, stack, policyId, policyOutcome,
             if (typeDoc != null)
             {
                 if (typeDoc.SelectSingleNode(".//*[local-name() = 'summary']") != null)
+                {
                     writer.WriteLine(" * @summary {0}", typeDoc.SelectSingleNode(".//*[local-name() = 'summary']").InnerText.Replace("\r\n", ""));
+                }
+
                 if (typeDoc.SelectSingleNode(".//*[local-name() = 'remarks']") != null)
+                {
                     writer.WriteLine(" * @description {0}", typeDoc.SelectSingleNode(".//*[local-name() = 'remarks']").InnerText.Replace("\r\n", ""));
+                }
+
                 if (typeDoc.SelectSingleNode(".//*[local-name() = 'example']") != null)
+                {
                     writer.WriteLine(" * @example {0}", typeDoc.SelectSingleNode(".//*[local-name() = 'example']").InnerText.Replace("\r\n", ""));
+                }
             }
             writer.WriteLine(" */");
             writer.WriteLine("const {0} = {{ ", jobject.Id);
@@ -568,7 +649,9 @@ function Exception(type, message, detail, cause, stack, policyId, policyOutcome,
                 if (typeDoc != null)
                 {
                     if (typeDoc.SelectSingleNode(".//*[local-name() = 'summary']") != null)
+                    {
                         writer.Write(typeDoc.SelectSingleNode(".//*[local-name() = 'summary']").InnerText.Replace("\r\n", ""));
+                    }
                 }
                 writer.WriteLine();
                 writer.WriteLine("\t */");
@@ -589,7 +672,10 @@ function Exception(type, message, detail, cause, stack, policyId, policyOutcome,
         /// </summary>
         private static void GenerateTypeDocumentation(TextWriter writer, Type type, XmlDocument xmlDoc, ConsoleParameters parms, List<Type> enumerationTypes, List<Type> alreadyGenerated, Dictionary<String, object> metaData)
         {
-            if (parms.NoAbstract && type.IsAbstract) return;
+            if (parms.NoAbstract && type.IsAbstract)
+            {
+                return;
+            }
 
             var propertyData = new Dictionary<String, object>();
 
@@ -599,9 +685,14 @@ function Exception(type, message, detail, cause, stack, policyId, policyOutcome,
             }
 
             if (alreadyGenerated.Contains(type))
+            {
                 return;
+            }
             else
+            {
                 alreadyGenerated.Add(type);
+            }
+
             writer.WriteLine("// {0}", type.AssemblyQualifiedName);
             writer.WriteLine("//if(!{0})", type.GetCustomAttribute<JsonObjectAttribute>().Id);
             writer.WriteLine("/**");
@@ -609,22 +700,35 @@ function Exception(type, message, detail, cause, stack, policyId, policyOutcome,
             writer.WriteLine(" * @constructor");
             writer.WriteLine(" * @public");
             if (type.IsAbstract)
+            {
                 writer.WriteLine(" * @abstract");
+            }
+
             var jobject = type.GetCustomAttribute<JsonObjectAttribute>();
             if (type.BaseType != typeof(Object) &&
                 (!type.BaseType.IsAbstract ^ !parms.NoAbstract))
+            {
                 writer.WriteLine(" * @extends {0}", type.BaseType.GetCustomAttribute<JsonObjectAttribute>().Id);
+            }
 
             // Lookup the summary information
             var typeDoc = xmlDoc.SelectSingleNode(String.Format("//*[local-name() = 'member'][@name = 'T:{0}']", type.FullName));
             if (typeDoc != null)
             {
                 if (typeDoc.SelectSingleNode(".//*[local-name() = 'summary']") != null)
+                {
                     writer.WriteLine(" * @summary {0}", TransformXDoc(typeDoc.SelectSingleNode(".//*[local-name() = 'summary']")));
+                }
+
                 if (typeDoc.SelectSingleNode(".//*[local-name() = 'remarks']") != null)
+                {
                     writer.WriteLine(" * @description {0}", TransformXDoc(typeDoc.SelectSingleNode(".//*[local-name() = 'remarks']")));
+                }
+
                 if (typeDoc.SelectSingleNode(".//*[local-name() = 'example']") != null)
+                {
                     writer.WriteLine(" * @example {0}", typeDoc.SelectSingleNode(".//*[local-name() = 'example']").InnerText.Replace("\r\n", ""));
+                }
             }
 
             List<KeyValuePair<String, String>> copyCommands = new List<KeyValuePair<string, string>>();
@@ -633,28 +737,41 @@ function Exception(type, message, detail, cause, stack, policyId, policyOutcome,
             foreach (var itm in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
             {
                 if (itm.GetCustomAttribute<JsonPropertyAttribute>() == null && itm.GetCustomAttribute<SerializationReferenceAttribute>() == null)
+                {
                     continue;
+                }
 
                 Type itmType = itm.PropertyType;
-                if (itmType.IsGenericType) itmType = itmType.GetGenericArguments()[0];
+                if (itmType.IsGenericType)
+                {
+                    itmType = itmType.GetGenericArguments()[0];
+                }
 
                 var itmJobject = itmType.GetCustomAttribute<JsonObjectAttribute>();
                 if (itmJobject == null)
                 {
                     if (itmType.StripNullable().IsEnum)
+                    {
                         itmJobject = new JsonObjectAttribute(String.Format("{0}", itmType.Name));
+                    }
                     else if (!primitives.TryGetValue(itmType, out itmJobject))
+                    {
                         itmJobject = new JsonObjectAttribute(itmType.Name);
+                    }
                 }
                 else
+                {
                     itmJobject = new JsonObjectAttribute(String.Format("{0}", itmJobject.Id));
+                }
 
                 var simpleAtt = itmType.GetCustomAttribute<SimpleValueAttribute>();
                 if (simpleAtt != null)
                 {
                     var simpleProperty = itmType.GetProperty(simpleAtt.ValueProperty);
                     if (!primitives.TryGetValue(simpleProperty.PropertyType, out itmJobject))
+                    {
                         itmJobject = new JsonObjectAttribute(simpleProperty.PropertyType.Name);
+                    }
                 }
 
                 var originalType = itmJobject.Id;
@@ -666,7 +783,9 @@ function Exception(type, message, detail, cause, stack, policyId, policyOutcome,
                     itmJobject = new JsonObjectAttribute("object");
                 }
                 else if (itm.Name.Contains("TimeXml") || itm.Name.Contains("DateXml")) // XML Representations of offsets
+                {
                     itmJobject = new JsonObjectAttribute("Date");
+                }
 
                 writer.Write(" * @property {{{0}}} ", itmJobject.Id);
                 var jprop = itm.GetCustomAttribute<JsonPropertyAttribute>();
@@ -762,7 +881,9 @@ function Exception(type, message, detail, cause, stack, policyId, policyOutcome,
 
                 var bindAttr = itm.GetCustomAttribute<BindingAttribute>();
                 if (itmType.StripNullable().IsEnum)
+                {
                     bindAttr = new BindingAttribute(itmType.StripNullable());
+                }
 
                 if (bindAttr != null)
                 {
@@ -777,7 +898,10 @@ function Exception(type, message, detail, cause, stack, policyId, policyOutcome,
                     // Does the classifier have a binding
                     var classProperty = itmType.GetProperty(classAttr.ClassifierProperty);
                     if (classProperty.GetCustomAttribute<SerializationReferenceAttribute>() != null)
+                    {
                         classProperty = itmType.GetProperty(classProperty.GetCustomAttribute<SerializationReferenceAttribute>().RedirectProperty);
+                    }
+
                     bindAttr = classProperty.GetCustomAttribute<BindingAttribute>();
                     if (bindAttr != null)
                     {
@@ -791,7 +915,9 @@ function Exception(type, message, detail, cause, stack, policyId, policyOutcome,
                             if (typeDoc != null)
                             {
                                 if (typeDoc.SelectSingleNode(".//*[local-name() = 'summary']") != null)
+                                {
                                     writer.Write(typeDoc.SelectSingleNode(".//*[local-name() = 'summary']").InnerText.Replace("\r\n", ""));
+                                }
                             }
                             writer.WriteLine();
                         }

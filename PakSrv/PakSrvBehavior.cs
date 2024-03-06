@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2021 - 2023, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
+ * Copyright (C) 2021 - 2024, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
  * Copyright (C) 2019 - 2021, Fyfe Software Inc. and the SanteSuite Contributors
  * Portions Copyright (C) 2015-2018 Mohawk College of Applied Arts and Technology
  * 
@@ -16,7 +16,7 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2023-5-19
+ * Date: 2023-6-21
  */
 using RestSrvr;
 using RestSrvr.Attributes;
@@ -89,7 +89,10 @@ namespace SanteDB.PakSrv
             MemoryStream retVal = new MemoryStream();
             var pkg = this.m_configuration.Repository.GetRepository().Get(id, null);
             if (pkg == null)
+            {
                 throw new KeyNotFoundException($"Pakcage {id} not found");
+            }
+
             this.AddHeaders(pkg);
             pkg.Save(retVal);
             retVal.Seek(0, SeekOrigin.Begin);
@@ -114,7 +117,10 @@ namespace SanteDB.PakSrv
             MemoryStream retVal = new MemoryStream();
             var pkg = this.m_configuration.Repository.GetRepository().Get(id, new System.Version(version), true);
             if (pkg == null)
+            {
                 throw new KeyNotFoundException($"Package {id} verison {version} not found");
+            }
+
             this.AddHeaders(pkg);
             pkg.Save(retVal);
             retVal.Seek(0, SeekOrigin.Begin);
@@ -130,7 +136,10 @@ namespace SanteDB.PakSrv
         {
             var pkg = this.m_configuration.Repository.GetRepository().Get(id, null);
             if (pkg == null)
+            {
                 throw new KeyNotFoundException($"Package {id} not found");
+            }
+
             this.AddHeaders(pkg);
         }
 
@@ -202,7 +211,9 @@ namespace SanteDB.PakSrv
             try
             {
                 if (string.IsNullOrWhiteSpace(content))
+                {
                     content = "index.html";
+                }
 
                 string filename = content.Contains("?")
                     ? content.Substring(0, content.IndexOf("?", StringComparison.Ordinal))
@@ -246,28 +257,41 @@ namespace SanteDB.PakSrv
         {
             var pkg = this.m_configuration.Repository.GetRepository().Get(id, null);
             if (pkg == null)
+            {
                 throw new KeyNotFoundException($"Package {id} not found");
+            }
 
             // Open the package
             var unpack = pkg.Unpack();
             var assetObject = unpack.Assets.FirstOrDefault(o => o.Name == $"{assetPath}");
 
             if (assetObject == null)
+            {
                 throw new FileNotFoundException();
-
+            }
 
             RestOperationContext.Current.OutgoingResponse.ContentType = assetObject.MimeType;
             byte[] content;
             if (assetObject.Content is byte[] bytea)
+            {
                 content = bytea;
+            }
             else if (assetObject.Content is String stra)
+            {
                 content = System.Text.Encoding.UTF8.GetBytes(stra);
+            }
             else if (assetObject.Content is XElement xela)
+            {
                 content = System.Text.Encoding.UTF8.GetBytes(xela.ToString());
+            }
             else if (assetObject.Content is AppletAssetHtml html)
+            {
                 content = System.Text.Encoding.UTF8.GetBytes(html.Html.ToString());
+            }
             else
+            {
                 throw new InvalidOperationException("Cannot render this type of data");
+            }
 
             if (Encoding.UTF8.GetString(content as byte[], 0, 4) == "LZIP")
             {
@@ -281,7 +305,9 @@ namespace SanteDB.PakSrv
                 }
             }
             else
+            {
                 return new MemoryStream(content);
+            }
         }
     }
 }

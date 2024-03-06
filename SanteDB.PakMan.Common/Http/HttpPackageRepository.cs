@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2021 - 2023, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
+ * Copyright (C) 2021 - 2024, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
  * Copyright (C) 2019 - 2021, Fyfe Software Inc. and the SanteSuite Contributors
  * Portions Copyright (C) 2015-2018 Mohawk College of Applied Arts and Technology
  * 
@@ -16,7 +16,7 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2023-5-19
+ * Date: 2023-6-21
  */
 using SanteDB.Core.Applets.Model;
 using SanteDB.Core.Model.Query;
@@ -80,10 +80,14 @@ namespace SanteDB.PakMan.Http
             {
                 var path = $"pak/{id}";
                 if (version != null)
+                {
                     path += $"/{version}";
+                }
 
                 using (var inStream = this.m_client.Get<MemoryStream>(path))
+                {
                     return AppletPackage.Load(inStream);
+                }
             }
             catch (RestClientException e)
             {
@@ -100,8 +104,9 @@ namespace SanteDB.PakMan.Http
             this.m_client = new SimpleRestClient(basePath);
 
             if (configuration != null && configuration.TryGetValue("username", out string userName) && configuration.TryGetValue("password", out string password))
+            {
                 this.m_client.SetCredentials(userName, password);
-
+            }
         }
 
         /// <summary>

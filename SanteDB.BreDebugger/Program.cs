@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2021 - 2023, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
+ * Copyright (C) 2021 - 2024, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
  * Copyright (C) 2019 - 2021, Fyfe Software Inc. and the SanteSuite Contributors
  * Portions Copyright (C) 2015-2018 Mohawk College of Applied Arts and Technology
  * 
@@ -16,7 +16,7 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2023-5-19
+ * Date: 2023-6-21
  */
 using MohawkCollege.Util.Console.Parameters;
 using SanteDB.SDK.BreDebugger.Options;
@@ -37,13 +37,21 @@ namespace SanteDB.SDK.BreDebugger
             var parameters = parser.Parse(args);
 
             if (parameters.Help || args.Length == 0)
+            {
                 parser.WriteHelp(Console.Out);
+            }
             else if (parameters.Protocol)
+            {
                 new ProtoDebugger(parameters).Debug();
+            }
             else if (parameters.BusinessRule)
+            {
                 new Shell.BreDebugger(parameters).Debug();
+            }
             else
+            {
                 Console.WriteLine("Nothing to do!");
+            }
         }
     }
 }

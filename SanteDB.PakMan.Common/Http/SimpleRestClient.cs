@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2021 - 2023, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
+ * Copyright (C) 2021 - 2024, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
  * Copyright (C) 2019 - 2021, Fyfe Software Inc. and the SanteSuite Contributors
  * Portions Copyright (C) 2015-2018 Mohawk College of Applied Arts and Technology
  * 
@@ -16,7 +16,7 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2023-5-19
+ * Date: 2023-6-21
  */
 using Newtonsoft.Json;
 using SanteDB.PakMan.Exceptions;
@@ -61,7 +61,9 @@ namespace SanteDB.PakMan.Http
             this.m_baseUri = baseUri;
 
             if (!this.m_baseUri.LocalPath.EndsWith("/"))
+            {
                 this.m_baseUri = new Uri(baseUri.ToString() + "/");
+            }
         }
 
         /// <summary>
@@ -155,8 +157,13 @@ namespace SanteDB.PakMan.Http
         {
             NameValueCollection parmCollection = new NameValueCollection();
             if (parms != null)
+            {
                 foreach (var kv in parms)
+                {
                     parmCollection[kv.Key] = kv.Value;
+                }
+            }
+
             return this.Invoke<TBody, TReturn>(verb, new Uri(this.m_baseUri, resourcePath), body, parmCollection);
         }
 
@@ -169,11 +176,18 @@ namespace SanteDB.PakMan.Http
         {
             String queryString = String.Empty;
             foreach (var kv in query.AllKeys)
+            {
                 queryString += String.Format("{0}={1}&", kv, Uri.EscapeDataString(query[kv]));
+            }
+
             if (queryString.Length > 0)
+            {
                 return queryString.Substring(0, queryString.Length - 1);
+            }
             else
+            {
                 return queryString;
+            }
         }
 
         /// <summary>
@@ -194,11 +208,16 @@ namespace SanteDB.PakMan.Http
             try
             {
                 if (String.IsNullOrEmpty(requestUri.Query))
+                {
                     requestUri = new Uri($"{requestUri}?{this.CreateQueryString(parms)}");
+                }
+
                 var client = (HttpWebRequest)WebRequest.Create(requestUri);
 
                 if (this.m_proxyUri != null)
+                {
                     client.Proxy = new WebProxy(this.m_proxyUri, false) { UseDefaultCredentials = true };
+                }
 
                 client.Method = verb;
 
@@ -224,7 +243,9 @@ namespace SanteDB.PakMan.Http
                         client.ContentType = "application/json";
                         using (var tw = new StreamWriter(client.GetRequestStream()))
                         using (var jw = new JsonTextWriter(tw))
+                        {
                             this.m_serializer.Serialize(jw, body);
+                        }
                     }
                 }
 
@@ -245,11 +266,15 @@ namespace SanteDB.PakMan.Http
                         {
                             using (var tr = new StreamReader(response.GetResponseStream()))
                             using (var jr = new JsonTextReader(tr))
+                            {
                                 return this.m_serializer.Deserialize<TReturn>(jr);
+                            }
                         }
                     }
                     else
+                    {
                         return default(TReturn);
+                    }
                 }
             }
             catch (WebException e)
@@ -265,7 +290,9 @@ namespace SanteDB.PakMan.Http
                     {
                         using (var tr = new StreamReader(httpResponse.GetResponseStream()))
                         using (var jr = new JsonTextReader(tr))
+                        {
                             result = this.m_serializer.Deserialize<ErrorResult>(jr);
+                        }
                     }
                     catch { }
                     throw new RestClientException(verb, requestUri, parms, httpResponse.StatusCode, result, e);
