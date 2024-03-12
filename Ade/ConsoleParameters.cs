@@ -161,7 +161,7 @@ namespace SanteDB.SDK.AppletDebugger
         /// Gets or sets the base url of the debugger
         /// </summary>
         [Parameter("base")]
-        [Description("Allows for the changing of the base URL (default is http://127.0.0.1)")]
+        [Description("Allows for the changing of the base URL (default is http://127.0.0.1:9200)")]
         public string BaseUrl { get; set; }
     }
 }
