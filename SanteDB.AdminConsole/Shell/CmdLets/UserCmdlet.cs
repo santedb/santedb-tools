@@ -461,7 +461,7 @@ namespace SanteDB.AdminConsole.Shell.CmdLets
                     throw new KeyNotFoundException($"User {un} not found");
                 }
                 string mfaMethod = String.Empty;
-                if (user.Entity.TwoFactorMechnaismKey != Guid.Empty)
+                if (user.Entity.TwoFactorEnabled && user.Entity.TwoFactorMechnaismKey.GetValueOrDefault() != Guid.Empty)
                 {
                     var query = new NameValueCollection();
                     query.Add("id", user.Entity.TwoFactorMechnaismKey.ToString());
