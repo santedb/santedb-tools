@@ -25,6 +25,7 @@ using SanteDB.Messaging.AMI.Client;
 using System;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 
 namespace SanteDB.AdminConsole.Shell.CmdLets
 {
@@ -48,6 +49,9 @@ namespace SanteDB.AdminConsole.Shell.CmdLets
             {
                 var diagReport = m_client.Options();
                 Console.WriteLine("* {0} -> v.{1} ({2})", m_client.Client.Description.Endpoint[0].Address, diagReport.InterfaceVersion, diagReport.ServerVersion);
+                String welcomeMessage = diagReport.Settings.Find(o => o.Key == "$welcome")?.Value, motd = diagReport.Settings.Find(o=>o.Key == "$motd")?.Value;
+                Console.WriteLine("* {0}", welcomeMessage ?? $"Welcome to {m_client.Client.Description.Endpoint[0].Address}");
+                Console.WriteLine("* {0}", motd ?? "Administration console actions can be dangerous, especially on the iCDR - please exercise caution");
             }
             catch { }
         }
