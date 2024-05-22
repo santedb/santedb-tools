@@ -23,6 +23,7 @@ using SanteDB.Core.Applets.ViewModel.Json;
 using SanteDB.Core.Diagnostics;
 using SanteDB.Core.Model;
 using SanteDB.Core.Model.Attributes;
+using SanteDB.Core.Model.DataTypes;
 using SanteDB.Core.Model.Interfaces;
 using SanteDB.Core.Model.Serialization;
 using System;
@@ -74,6 +75,34 @@ namespace SanteDB.SDK.JsProxy
             }
 
             return retVal;
+        }
+
+        private CodeStatement CreateCastOrBase64Decode(CodeExpression targetObject, CodeExpression sourceObject, CodeStatement failExpression)
+        {
+            return new CodeTryCatchFinallyStatement(
+                new CodeStatement[]
+                {
+                    new CodeConditionStatement(
+                        new CodeBinaryOperatorExpression(this.CreateGetTypeExpression(sourceObject), CodeBinaryOperatorType.ValueEquality, new CodeTypeOfExpression(typeof(String))),
+                        new CodeStatement[]
+                        {
+                            new CodeVariableDeclarationStatement(typeof(String), "_str"),
+                            this.CreateToStringTryCatch(new CodeVariableReferenceExpression("_str"), sourceObject, failExpression),
+                            new CodeAssignStatement(targetObject, new CodeMethodInvokeExpression(new CodeTypeReferenceExpression(typeof(Convert)), nameof(Convert.FromBase64String), new CodeVariableReferenceExpression("_str")))
+                        },
+                        new CodeStatement[]
+                        {
+                            new CodeAssignStatement(targetObject, new CodeCastExpression(new CodeTypeReference(typeof(byte[])), sourceObject))
+
+                        }
+                    )
+                },
+                 new CodeCatchClause[] {
+                    new CodeCatchClause("e", new CodeTypeReference(typeof(Exception)),
+                        new CodeExpressionStatement(new CodeMethodInvokeExpression(s_traceError, this.CreateStringFormatExpression("Casting Error: {0}", new CodeVariableReferenceExpression("e")))),
+                            failExpression)
+                    }
+                 );
         }
 
         /// <summary>
@@ -313,6 +342,10 @@ namespace SanteDB.SDK.JsProxy
                 if (propertyType.PropertyType == typeof(String))
                 {
                     retVal.Statements.Add(this.CreateToStringTryCatch(_strongType, _o, new CodeMethodReturnStatement(s_null)));
+                }
+                else if(propertyType.PropertyType == typeof(byte[]))
+                {
+                    retVal.Statements.Add(this.CreateCastOrBase64Decode(_strongType, _o, new CodeMethodReturnStatement(s_null)));
                 }
                 else
                 {

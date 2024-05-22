@@ -29,6 +29,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using System.Threading;
 
@@ -127,7 +128,9 @@ namespace SanteDB.SDK.AppletDebugger
                         consoleArgs.BaseUrl = "http://127.0.0.1:9200";
                     }
 
+                    // Configure defaults
                     AppDomain.CurrentDomain.SetData(RestServiceInitialConfigurationProvider.BINDING_BASE_DATA, consoleArgs.BaseUrl);
+                    ServicePointManager.DefaultConnectionLimit = Environment.ProcessorCount ;
 
                     // Establish a configuration environment 
                     IConfigurationManager configurationManager = null;

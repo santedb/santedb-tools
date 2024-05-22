@@ -75,7 +75,7 @@ namespace SanteDB.PakMan.Packers
                             ViewType = (AppletWidgetViewType)Enum.Parse(typeof(AppletWidgetViewType), o.Attribute("type")?.Value ?? "None"),
                             Policies = o.Elements().Where(d => d.Name == (XNamespace)PakManTool.XS_APPLET + "demand")?.Select(d => d?.Value).ToList()
                         }).ToList(),
-                        ColorClass = viewElement.Attribute("headerClass")?.Value ?? "bg-light",
+                        ColorClass = viewElement.Attribute("headerClass")?.Value,
                         Priority = Int32.Parse(viewElement.Attribute("priority")?.Value ?? "0"),
                         MaxStack = Int32.Parse(viewElement.Attribute("maxStack")?.Value ?? "2"),
                         Order = Int32.Parse(viewElement.Attribute("order")?.Value ?? "0"),

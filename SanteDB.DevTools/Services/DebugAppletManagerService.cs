@@ -475,7 +475,7 @@ namespace SanteDB.Tools.Debug.Services
                         Icon = widgetEle.Element(xs_santedb + "icon")?.Value,
                         Type = (AppletWidgetType)Enum.Parse(typeof(AppletWidgetType), widgetEle.Attribute("type")?.Value),
                         Size = (AppletWidgetSize)Enum.Parse(typeof(AppletWidgetSize), widgetEle.Attribute("size")?.Value ?? "Medium"),
-                        ColorClass = widgetEle.Attribute("headerClass")?.Value ?? "bg-light",
+                        ColorClass = widgetEle.Attribute("headerClass")?.Value,
                         Priority = Int32.Parse(widgetEle.Attribute("priority")?.Value ?? "0"),
                         MaxStack = Int32.Parse(widgetEle.Attribute("maxStack")?.Value ?? "2"),
                         Order = Int32.Parse(widgetEle.Attribute("order")?.Value ?? "0"),
