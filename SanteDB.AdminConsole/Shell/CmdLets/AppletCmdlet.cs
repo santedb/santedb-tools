@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2021 - 2023, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
+ * Copyright (C) 2021 - 2024, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
  * Copyright (C) 2019 - 2021, Fyfe Software Inc. and the SanteSuite Contributors
  * Portions Copyright (C) 2015-2018 Mohawk College of Applied Arts and Technology
  * 
@@ -16,7 +16,7 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2023-5-19
+ * Date: 2023-6-21
  */
 using MohawkCollege.Util.Console.Parameters;
 using SanteDB.AdminConsole.Attributes;
@@ -140,7 +140,7 @@ namespace SanteDB.AdminConsole.Shell.CmdLets
                         package.Save(ms);
                         ms.Seek(0, SeekOrigin.Begin);
                         var result = m_client.Client.Invoke<Stream, Object>("POST", endpointName, "application/octet-stream", ms);
-                        if(result is AppletSolutionInfo asi)
+                        if (result is AppletSolutionInfo asi)
                         {
                             Console.WriteLine("OK - {0}", asi.AppletInfo.Id);
                         }

@@ -16,47 +16,46 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2023-6-21
+ * Date: 2023-12-11
  */
+using SanteDB.Cdss.Xml.Antlr;
+using SanteDB.Cdss.Xml.Exceptions;
 using SanteDB.Core.Applets.Model;
 using System;
 using System.IO;
-using System.Text.RegularExpressions;
 
 namespace SanteDB.PakMan.Packers
 {
-    public class JavaScriptPacker : IFilePacker
+    /// <summary>
+    /// A packer which transpiles CDSS definitions
+    /// </summary>
+    public class CdssPacker : IFilePacker
     {
-        /// <summary>
-        /// Extensions to be packaged
-        /// </summary>
-        public string[] Extensions => new String[] { ".js" };
+        /// <inheritdoc/>
+        public string[] Extensions => new string[] { ".cdss" };
 
-        /// <summary>
-        /// Process the file
-        /// </summary>
+        /// <inheritdoc/>
         public AppletAsset Process(string file, bool optimize)
         {
             try
             {
-                String content = File.ReadAllText(file);
-                if (optimize && !file.Contains("rules") && !file.Contains(".min.js"))
+                using (var fs = System.IO.File.OpenRead(file))
                 {
-                    var minifier = new Ext.Net.Utilities.JSMin();
-                    // HACK : JSMIN Hates /// Reference 
-                    content = new Regex(@"\/\/\/\s?\<Reference.*", RegexOptions.IgnoreCase).Replace(content, "");
-                    content = minifier.Minify(content);
+                    var tps = CdssLibraryTranspiler.Transpile(fs, true);
+                    using (var ms = new MemoryStream())
+                    {
+                        tps.Save(ms);
+                        return new AppletAsset()
+                        {
+                            Content = PakManTool.CompressContent(ms.ToArray()),
+                            MimeType = "application/xml"
+                        };
+                    }
                 }
-                return new AppletAsset()
-                {
-                    MimeType = "text/javascript",
-                    Content = PakManTool.CompressContent(content)
-                };
-
             }
-            catch (Exception e)
+            catch (CdssTranspilationException e)
             {
-                throw new InvalidOperationException($"Cannot process JavaScript {file}", e);
+                throw new Exception($"Could not transpile {file}", e);
             }
         }
     }

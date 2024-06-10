@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2021 - 2023, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
+ * Copyright (C) 2021 - 2024, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
  * Copyright (C) 2019 - 2021, Fyfe Software Inc. and the SanteSuite Contributors
  * Portions Copyright (C) 2015-2018 Mohawk College of Applied Arts and Technology
  * 
@@ -16,7 +16,7 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2023-5-19
+ * Date: 2023-6-21
  */
 using SanteDB.Core.Applets.Model;
 using System;
@@ -26,7 +26,6 @@ using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Xml.Linq;
@@ -71,7 +70,7 @@ namespace SanteDB.PakMan
 
             foreach (var col in columns)
             {
-                
+
 
                 var body = (col as LambdaExpression).Body;
                 if (body.NodeType == ExpressionType.Convert)
@@ -179,9 +178,9 @@ namespace SanteDB.PakMan
                 var mfst = this.m_applet.Unpack();
 
                 Console.WriteLine("MENUS: {0}", String.Join(" , ", mfst.Menus.OrderBy(o => o.Order).Select(o => $"{o.Text[0].Value} ({o.Context} - {o.Menus.Count()} sub-items)")));
-                Console.WriteLine("TEMPLATES: {0}", String.Join(" , ", mfst.Templates.Select(o=>o.Oid)));
-                Console.WriteLine("LOCALES: {0}", String.Join(" , ", mfst.Locales.Select(o=>o.Code)));
-                Console.WriteLine("I18N STRINGS: {0}", String.Join(" , ", mfst.Strings.Select(o=>$"{o.Language} ({o.String.Count()} strings - Refer: {o.Reference})")));
+                Console.WriteLine("TEMPLATES: {0}", String.Join(" , ", mfst.Templates.Select(o => o.Oid)));
+                Console.WriteLine("LOCALES: {0}", String.Join(" , ", mfst.Locales.Select(o => o.Code)));
+                Console.WriteLine("I18N STRINGS: {0}", String.Join(" , ", mfst.Strings.Select(o => $"{o.Language} ({o.String.Count()} strings - Refer: {o.Reference})")));
                 Console.WriteLine("-- CONTENTS --");
                 var contents = mfst.Assets.Select(itm =>
                 {
@@ -222,7 +221,7 @@ namespace SanteDB.PakMan
                         Type = typeName,
                         MimeType = mimeType,
                         Name = name,
-                        Size = szContent 
+                        Size = szContent
                     };
                 });
                 TablePrint(contents, o => o.Type, o => o.MimeType, o => o.Name, o => $"{o.Size / 1024f:#,##0.#} kb");

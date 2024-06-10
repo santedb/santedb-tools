@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2021 - 2023, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
+ * Copyright (C) 2021 - 2024, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
  * Copyright (C) 2019 - 2021, Fyfe Software Inc. and the SanteSuite Contributors
  * Portions Copyright (C) 2015-2018 Mohawk College of Applied Arts and Technology
  * 
@@ -16,7 +16,7 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2023-5-19
+ * Date: 2023-6-21
  */
 using MohawkCollege.Util.Console.Parameters;
 using SanteDB.Client.Configuration;
@@ -29,6 +29,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using System.Threading;
 
@@ -74,8 +75,16 @@ namespace SanteDB.SDK.AppletDebugger
 
                 if (consoleArgs.Reset)
                 {
-                    if (Directory.Exists(appDataDirectory)) Directory.Delete(appDataDirectory, true);
-                    if (Directory.Exists(appConfigDirectory)) Directory.Delete(appConfigDirectory, true);
+                    if (Directory.Exists(appDataDirectory))
+                    {
+                        Directory.Delete(appDataDirectory, true);
+                    }
+
+                    if (Directory.Exists(appConfigDirectory))
+                    {
+                        Directory.Delete(appConfigDirectory, true);
+                    }
+
                     Console.WriteLine("Environment Reset Successful");
                     return;
                 }
@@ -119,14 +128,16 @@ namespace SanteDB.SDK.AppletDebugger
                         consoleArgs.BaseUrl = "http://127.0.0.1:9200";
                     }
 
+                    // Configure defaults
                     AppDomain.CurrentDomain.SetData(RestServiceInitialConfigurationProvider.BINDING_BASE_DATA, consoleArgs.BaseUrl);
+                    ServicePointManager.DefaultConnectionLimit = Environment.ProcessorCount ;
 
                     // Establish a configuration environment 
                     IConfigurationManager configurationManager = null;
                     var configurationFile = Path.Combine(appConfigDirectory, "santedb.config");
                     if (File.Exists(configurationFile))
                     {
-                        configurationManager = new FileConfigurationService(configurationFile, true);
+                        configurationManager = new FileConfigurationService(configurationFile, false);
                     }
                     else
                     {

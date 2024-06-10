@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2021 - 2023, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
+ * Copyright (C) 2021 - 2024, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
  * Copyright (C) 2019 - 2021, Fyfe Software Inc. and the SanteSuite Contributors
  * Portions Copyright (C) 2015-2018 Mohawk College of Applied Arts and Technology
  * 
@@ -16,7 +16,7 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2023-5-19
+ * Date: 2023-6-21
  */
 using SanteDB.Core.Applets.Model;
 using System;
@@ -54,7 +54,9 @@ namespace SanteDB.PakMan.Packers
 
                 // Optimizing?
                 if (optimize)
+                {
                     xe.DescendantNodesAndSelf().OfType<XComment>().Where(o => !o.Value.Contains("#include")).Remove();
+                }
 
                 // Now we have to iterate throuh and add the asset\
                 AppletAssetHtml htmlAsset = null;
@@ -73,7 +75,7 @@ namespace SanteDB.PakMan.Packers
                             ViewType = (AppletWidgetViewType)Enum.Parse(typeof(AppletWidgetViewType), o.Attribute("type")?.Value ?? "None"),
                             Policies = o.Elements().Where(d => d.Name == (XNamespace)PakManTool.XS_APPLET + "demand")?.Select(d => d?.Value).ToList()
                         }).ToList(),
-                        ColorClass = viewElement.Attribute("headerClass")?.Value ?? "bg-light",
+                        ColorClass = viewElement.Attribute("headerClass")?.Value,
                         Priority = Int32.Parse(viewElement.Attribute("priority")?.Value ?? "0"),
                         MaxStack = Int32.Parse(viewElement.Attribute("maxStack")?.Value ?? "2"),
                         Order = Int32.Parse(viewElement.Attribute("order")?.Value ?? "0"),
@@ -130,9 +132,15 @@ namespace SanteDB.PakMan.Packers
                 {
                     String assetName = inc.Value.Trim().Substring(18); // HACK: Should be a REGEX
                     if (assetName.EndsWith("\""))
+                    {
                         assetName = assetName.Substring(0, assetName.Length - 1);
+                    }
+
                     if (assetName == "content")
+                    {
                         continue;
+                    }
+
                     var includeAsset = PakManTool.TranslatePath(assetName);
                     inc.AddAfterSelf(new XComment(String.Format("#include virtual=\"{0}\"", includeAsset)));
                     inc.Remove();
@@ -140,8 +148,13 @@ namespace SanteDB.PakMan.Packers
 
                 var xel = xe.Descendants().OfType<XElement>().Where(o => o.Name.Namespace == (XNamespace)PakManTool.XS_APPLET).ToList();
                 if (xel != null)
+                {
                     foreach (var x in xel)
+                    {
                         x.Remove();
+                    }
+                }
+
                 htmlAsset.Html = xe;
 
                 return new AppletAsset()

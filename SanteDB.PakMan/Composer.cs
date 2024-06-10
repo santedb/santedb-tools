@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2021 - 2023, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
+ * Copyright (C) 2021 - 2024, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
  * Copyright (C) 2019 - 2021, Fyfe Software Inc. and the SanteSuite Contributors
  * Portions Copyright (C) 2015-2018 Mohawk College of Applied Arts and Technology
  * 
@@ -16,7 +16,7 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2023-5-19
+ * Date: 2023-6-21
  */
 using SanteDB.Core.Applets.Model;
 using SanteDB.PakMan.Repository;
@@ -53,7 +53,9 @@ namespace SanteDB.PakMan
             {
                 AppletManifest mfst = null;
                 using (FileStream fs = File.OpenRead(this.m_parms.Source))
+                {
                     mfst = AppletManifest.Load(fs);
+                }
 
                 var slnPak = mfst.CreatePackage();
 
@@ -62,8 +64,16 @@ namespace SanteDB.PakMan
                 sln.PublicKey = slnPak.PublicKey;
                 sln.Manifest = slnPak.Manifest;
 
+                if (!String.IsNullOrEmpty(m_parms.Version))
+                {
+                    sln.Version = m_parms.Version;
+                }
+
                 if (sln.Meta.Uuid == Guid.Empty)
+                {
                     Emit.Message("WARN", "The package does not carry a UUID! You should add a UUID to your solution manifest");
+                }
+
                 sln.Include = new List<AppletPackage>();
 
                 foreach (var pfile in sln.Meta.Dependencies.ToArray())
@@ -84,7 +94,9 @@ namespace SanteDB.PakMan
                     }
 
                     if (pkg == null)
+                    {
                         throw new KeyNotFoundException($"Package {pfile.Id} ({pfile.Version ?? m_parms.Version ?? "latest"}) not found");
+                    }
                     else
                     {
                         Emit.Message("INFO", "Including {0} version {1}..", pkg.Meta.Id, pkg.Meta.Version);
@@ -129,11 +141,15 @@ namespace SanteDB.PakMan
                 sln.Meta.Hash = SHA256.Create().ComputeHash(sln.Include.SelectMany(o => o.Manifest).ToArray());
                 // Sign the signature package
                 if (this.m_parms.Sign)
+                {
                     new Signer(this.m_parms).CreateSignedSolution(sln);
+                }
 
                 // Now save
                 using (FileStream fs = File.Create(this.m_parms.Output ?? Path.ChangeExtension(sln.Meta.Id, ".sln.pak")))
+                {
                     sln.Save(fs);
+                }
 
                 return 0;
             }

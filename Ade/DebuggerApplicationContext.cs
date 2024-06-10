@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2021 - 2023, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
+ * Copyright (C) 2021 - 2024, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
  * Copyright (C) 2019 - 2021, Fyfe Software Inc. and the SanteSuite Contributors
  * Portions Copyright (C) 2015-2018 Mohawk College of Applied Arts and Technology
  * 
@@ -16,10 +16,13 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2023-5-19
+ * Date: 2023-6-21
  */
 using SanteDB.Client;
+using SanteDB.Client.Configuration;
+using SanteDB.Client.UserInterface;
 using SanteDB.Core;
+using SanteDB.Core.i18n;
 using SanteDB.Core.Services;
 using SanteDB.DevTools.Configuration;
 using SanteDB.Tools.Debug.Services;
@@ -76,10 +79,21 @@ namespace SanteDB.SDK.AppletDebugger
         protected override void OnRestartRequested(object sender)
         {
             // Delay fire - allow other objects to finish up on the restart request event
-            Thread.Sleep(1000);
-            ServiceUtil.Stop();
-            var pi = new ProcessStartInfo(typeof(Program).Assembly.Location, string.Join(" ", this.m_consoleParameters.ToArgumentList()));
-            Process.Start(pi);
+            var uiInteraction = this.GetService<IUserInterfaceInteractionProvider>();
+            if (this.GetService<IConfigurationManager>() is InitialConfigurationManager || uiInteraction.Confirm(UserMessages.RESTART_REQUESTED_CONFIRM))
+            {
+                try
+                {
+                    Thread.Sleep(1000);
+                    ServiceUtil.Stop();
+                }
+                catch
+                {
+                }
+
+                var pi = new ProcessStartInfo(typeof(Program).Assembly.Location, string.Join(" ", this.m_consoleParameters.ToArgumentList()));
+                Process.Start(pi);
+            }
         }
     }
 }

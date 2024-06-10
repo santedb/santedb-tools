@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2021 - 2023, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
+ * Copyright (C) 2021 - 2024, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
  * Copyright (C) 2019 - 2021, Fyfe Software Inc. and the SanteSuite Contributors
  * Portions Copyright (C) 2015-2018 Mohawk College of Applied Arts and Technology
  * 
@@ -16,7 +16,7 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2023-5-19
+ * Date: 2023-6-21
  */
 using SanteDB.Core.Security;
 using System;
@@ -52,9 +52,13 @@ namespace SanteDB.SDK.BreDebugger.Shell
         protected ConsoleColor GetResponseColor()
         {
             if (Console.BackgroundColor == ConsoleColor.Black)
+            {
                 return Console.ForegroundColor != ConsoleColor.Cyan ? ConsoleColor.Cyan : ConsoleColor.Magenta;
+            }
             else
+            {
                 return Console.ForegroundColor != ConsoleColor.Blue ? ConsoleColor.Blue : ConsoleColor.Red;
+            }
         }
 
         /// <summary>
@@ -99,7 +103,10 @@ namespace SanteDB.SDK.BreDebugger.Shell
                 var cmd = Console.ReadLine();
 
                 Console.ForegroundColor = this.GetResponseColor();
-                if (String.IsNullOrEmpty(cmd)) continue;
+                if (String.IsNullOrEmpty(cmd))
+                {
+                    continue;
+                }
 
                 // Get tokens / parms
                 var tokens = cmd.Split(' ').ToArray();
@@ -108,9 +115,13 @@ namespace SanteDB.SDK.BreDebugger.Shell
                 foreach (var tkn in tokens.Skip(1))
                 {
                     if (tkn.StartsWith("'") && tkn.EndsWith("'"))
+                    {
                         tToken.Add(tkn.Substring(1, tkn.Length - 2));
+                    }
                     else if (tkn.StartsWith("'"))
+                    {
                         sstr = tkn.Substring(1);
+                    }
                     else if (sstr != String.Empty && tkn.EndsWith("'"))
                     {
                         sstr += " " + tkn.Substring(0, tkn.Length - 1);
@@ -118,16 +129,22 @@ namespace SanteDB.SDK.BreDebugger.Shell
                         sstr = String.Empty;
                     }
                     else if (sstr != String.Empty)
+                    {
                         sstr += " " + tkn;
+                    }
                     else
+                    {
                         tToken.Add(tkn);
+                    }
                 }
                 tokens = tToken.ToArray();
 
                 // Get tokens
                 var cmdMi = this.GetType().GetMethods().Where(o => o.GetCustomAttribute<CommandAttribute>()?.Command == tokens[0] && o.GetParameters().Length == tokens.Length - 1).FirstOrDefault();
                 if (cmdMi == null)
+                {
                     Console.Error.WriteLine("ERR: Command {0} with {1} parms not found", tokens[0], tokens.Length - 1);
+                }
                 else
                 {
                     var parmValues = tokens.Length > 1 ? tokens.OfType<Object>().Skip(1).ToArray() : null;
@@ -135,9 +152,13 @@ namespace SanteDB.SDK.BreDebugger.Shell
                     try
                     {
                         if (cmdMi.ReturnType == typeof(void))
+                        {
                             cmdMi.Invoke(this, parmValues);
+                        }
                         else
+                        {
                             this.m_scopeObject = cmdMi.Invoke(this, parmValues);
+                        }
                     }
                     catch (Exception e)
                     {
@@ -157,10 +178,14 @@ namespace SanteDB.SDK.BreDebugger.Shell
 
 
             foreach (var itm in bubble)
+            {
                 Console.WriteLine(itm);
-            foreach (var itm in beaver)
-                Console.WriteLine(itm);
+            }
 
+            foreach (var itm in beaver)
+            {
+                Console.WriteLine(itm);
+            }
         }
 
         /// <summary>
@@ -173,7 +198,11 @@ namespace SanteDB.SDK.BreDebugger.Shell
             foreach (var mi in this.GetType().GetMethods().OrderBy(o => o.Name))
             {
                 var itm = mi.GetCustomAttribute<CommandAttribute>();
-                if (itm == null || String.IsNullOrEmpty(itm.Description)) continue;
+                if (itm == null || String.IsNullOrEmpty(itm.Description))
+                {
+                    continue;
+                }
+
                 Console.Write("{0:2} {1}", itm.Command, String.Join(" ", mi.GetParameters().Select(o => $"[{o.Name}]")));
                 Console.WriteLine("{0}{1}", new String(' ', 50 - Console.CursorLeft), itm.Description);
 

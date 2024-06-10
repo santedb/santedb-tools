@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2021 - 2023, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
+ * Copyright (C) 2021 - 2024, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
  * Copyright (C) 2019 - 2021, Fyfe Software Inc. and the SanteSuite Contributors
  * Portions Copyright (C) 2015-2018 Mohawk College of Applied Arts and Technology
  * 
@@ -16,7 +16,7 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2023-5-19
+ * Date: 2023-6-21
  */
 using SanteDB.Core.Applets.Model;
 using System;
@@ -60,9 +60,15 @@ namespace SanteDB.PakMan.Repository.File
             // Get confifuration for repository
             var scanDir = this.m_basePath.LocalPath.Replace("~", Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)).Replace("/", Path.DirectorySeparatorChar.ToString());
             if (scanDir.StartsWith("\\"))
+            {
                 scanDir = scanDir.Substring(1);
+            }
+
             if (!Directory.Exists(scanDir))
+            {
                 Directory.CreateDirectory(scanDir);
+            }
+
             return scanDir;
         }
 
@@ -72,12 +78,17 @@ namespace SanteDB.PakMan.Repository.File
         public AppletPackage Get(string id, Version version, bool exactVersion = false)
         {
             if (this.m_packageInfos == null)
+            {
                 throw new InvalidOperationException("Package repository has not been initialized");
+            }
 
             // Now we want to look for the package
             IEnumerable<KeyValuePair<String, AppletInfo>> candidates = null;
             lock (this.m_lockObject)
+            {
                 candidates = this.m_packageInfos.Where(o => o.Value.Id == id && (version == null || new Version(o.Value.Version).Major == version.Major)).ToArray(); // take a copy
+            }
+
             var match = candidates.OrderByDescending(o => o.Value.Version.ParseVersion(out _)).FirstOrDefault(o => version == null || o.Value.Version == version.ToString());
             if (match.Key != null)
             {
@@ -90,16 +101,25 @@ namespace SanteDB.PakMan.Repository.File
                         {
                             var v = o.Value.Version.ParseVersion(out _);
                             if (v.Revision == -1)
+                            {
                                 v = (o.Value.Version + ".0").ParseVersion(out _);
+                            }
+
                             return v >= version;
                         }); // higher version
                 if (match.Key != null)
+                {
                     return this.OpenPackage(match.Key);
+                }
                 else
+                {
                     throw new KeyNotFoundException($"Package {id}-{version} not found");
+                }
             }
             else
+            {
                 throw new KeyNotFoundException($"Package {id}-{version} not found");
+            }
         }
 
         /// <summary>
@@ -108,7 +128,9 @@ namespace SanteDB.PakMan.Repository.File
         private AppletPackage OpenPackage(string filePath)
         {
             using (var s = System.IO.File.OpenRead(filePath))
+            {
                 return AppletPackage.Load(s);
+            }
         }
 
         /// <summary>
@@ -122,15 +144,19 @@ namespace SanteDB.PakMan.Repository.File
         public IEnumerable<AppletInfo> Find(Expression<Func<AppletInfo, bool>> query, int offset, int count, out int totalResults)
         {
             if (this.m_packageInfos == null)
+            {
                 throw new InvalidOperationException("Package repository is not initialized");
+            }
 
             IEnumerable<AppletInfo> matches = null;
             var queryPredicate = query.Compile();
             lock (this.m_lockObject)
+            {
                 matches = this.m_packageInfos
                     .Select(o => o.Value)
                     .Where(o => queryPredicate(o))
                     .ToArray();
+            }
 
             totalResults = matches.Count();
             return matches.Skip(offset).Take(count);
@@ -142,24 +168,40 @@ namespace SanteDB.PakMan.Repository.File
         public AppletInfo Put(AppletPackage package)
         {
             if (this.m_packageInfos == null)
+            {
                 throw new InvalidOperationException("Package repository is not initialized");
+            }
             else if (String.IsNullOrEmpty(package.Meta?.Id))
+            {
                 throw new ArgumentNullException("Package must have ID");
+            }
             else if (String.IsNullOrEmpty(package.Meta?.Version))
+            {
                 throw new ArgumentNullException("Package must have version");
+            }
 
             try
             {
                 var targetPath = Path.Combine(this.GetRepositoryPath(), $"{package.Meta.Id}-{package.Meta.Version}.pak");
                 if (!Directory.Exists(Path.GetDirectoryName(targetPath)))
+                {
                     Directory.CreateDirectory(Path.GetDirectoryName(targetPath));
+                }
+
                 using (var fs = System.IO.File.Create(targetPath))
+                {
                     package.Save(fs);
+                }
 
                 // Add the file to the repository
                 lock (this.m_lockObject)
+                {
                     if (!this.m_packageInfos.ContainsKey(targetPath))
+                    {
                         this.m_packageInfos.Add(targetPath, package.Meta);
+                    }
+                }
+
                 return package.Meta;
             }
             catch (System.Exception e)
@@ -176,20 +218,26 @@ namespace SanteDB.PakMan.Repository.File
         public void Initialize(Uri basePath, IDictionary<string, string> configuration)
         {
             if (this.m_packageInfos != null)
+            {
                 throw new InvalidOperationException("Repository is already initialized");
+            }
 
             this.m_basePath = basePath;
             this.m_packageInfos = new Dictionary<String, AppletInfo>();
             foreach (var f in Directory.GetFiles(this.GetRepositoryPath(), "*.pak"))
+            {
                 try
                 {
                     lock (this.m_lockObject)
+                    {
                         this.m_packageInfos.Add(f, this.OpenPackage(f).Meta);
+                    }
                 }
                 catch (System.Exception e)
                 {
                     this.m_traceSource.TraceEvent(TraceEventType.Error, e.HResult, "Error loading {0} - {1}", f, e);
                 }
+            }
         }
     }
 }

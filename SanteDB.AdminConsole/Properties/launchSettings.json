@@ -6,6 +6,10 @@
     "Secured - Default - Local": {
       "commandName": "Project",
       "commandLineArgs": "--tls --port=8443"
+    },
+    "Local SDB ADE": {
+      "commandName": "Project",
+      "commandLineArgs": "--realm=127.0.0.1 --port=9200 --user=localadmin --appId=org.santedb.debug"
     }
   }
 }

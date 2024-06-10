@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2021 - 2023, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
+ * Copyright (C) 2021 - 2024, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
  * Copyright (C) 2019 - 2021, Fyfe Software Inc. and the SanteSuite Contributors
  * Portions Copyright (C) 2015-2018 Mohawk College of Applied Arts and Technology
  * 
@@ -16,7 +16,7 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2023-5-19
+ * Date: 2023-6-21
  */
 using MohawkCollege.Util.Console.Parameters;
 using System;
@@ -161,7 +161,7 @@ namespace SanteDB.SDK.AppletDebugger
         /// Gets or sets the base url of the debugger
         /// </summary>
         [Parameter("base")]
-        [Description("Allows for the changing of the base URL (default is http://127.0.0.1)")]
+        [Description("Allows for the changing of the base URL (default is http://127.0.0.1:9200)")]
         public string BaseUrl { get; set; }
     }
 }

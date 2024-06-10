@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2021 - 2023, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
+ * Copyright (C) 2021 - 2024, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
  * Copyright (C) 2019 - 2021, Fyfe Software Inc. and the SanteSuite Contributors
  * Portions Copyright (C) 2015-2018 Mohawk College of Applied Arts and Technology
  * 
@@ -16,7 +16,7 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2023-5-19
+ * Date: 2023-6-21
  */
 using SanteDB.AdminConsole.Attributes;
 using SanteDB.AdminConsole.Util;
@@ -25,6 +25,7 @@ using SanteDB.Messaging.AMI.Client;
 using System;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 
 namespace SanteDB.AdminConsole.Shell.CmdLets
 {
@@ -48,6 +49,9 @@ namespace SanteDB.AdminConsole.Shell.CmdLets
             {
                 var diagReport = m_client.Options();
                 Console.WriteLine("* {0} -> v.{1} ({2})", m_client.Client.Description.Endpoint[0].Address, diagReport.InterfaceVersion, diagReport.ServerVersion);
+                String welcomeMessage = diagReport.Settings.Find(o => o.Key == "$welcome")?.Value, motd = diagReport.Settings.Find(o=>o.Key == "$motd")?.Value;
+                Console.WriteLine("* {0}", welcomeMessage ?? $"Welcome to {m_client.Client.Description.Endpoint[0].Address}");
+                Console.WriteLine("* {0}", motd ?? "Administration console actions can be dangerous, especially on the iCDR - please exercise caution");
             }
             catch { }
         }

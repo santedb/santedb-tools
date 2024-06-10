@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2021 - 2023, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
+ * Copyright (C) 2021 - 2024, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
  * Copyright (C) 2019 - 2021, Fyfe Software Inc. and the SanteSuite Contributors
  * Portions Copyright (C) 2015-2018 Mohawk College of Applied Arts and Technology
  * 
@@ -16,7 +16,7 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2023-5-19
+ * Date: 2023-6-21
  */
 using SanteDB.Core.Applets.Model;
 using System.IO;
@@ -47,6 +47,7 @@ namespace SanteDB.PakMan.Packers
                 xe.Load(file);
 
                 if (optimize)
+                {
                     using (var ms = new MemoryStream())
                     using (var xw = XmlWriter.Create(ms, new XmlWriterSettings() { Indent = false, OmitXmlDeclaration = true }))
                     {
@@ -58,12 +59,15 @@ namespace SanteDB.PakMan.Packers
                             Content = PakManTool.CompressContent(ms.ToArray())
                         };
                     }
+                }
                 else
+                {
                     return new AppletAsset()
                     {
                         MimeType = "text/xml",
                         Content = PakManTool.CompressContent(File.ReadAllBytes(file))
                     };
+                }
             }
             catch (XmlException e)
             {

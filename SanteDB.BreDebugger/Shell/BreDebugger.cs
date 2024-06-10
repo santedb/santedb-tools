@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2021 - 2023, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
+ * Copyright (C) 2021 - 2024, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
  * Copyright (C) 2019 - 2021, Fyfe Software Inc. and the SanteSuite Contributors
  * Portions Copyright (C) 2015-2018 Mohawk College of Applied Arts and Technology
  * 
@@ -16,7 +16,7 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2023-5-19
+ * Date: 2023-6-21
  */
 using Jint;
 using Jint.Runtime.Debugger;
@@ -91,7 +91,10 @@ namespace SanteDB.SDK.BreDebugger.Shell
             //Tracer.AddWriter(new ConsoleTraceWriter(EventLevel.LogAlways, "dbg", null), EventLevel.LogAlways);
 
             if (!String.IsNullOrEmpty(parms.WorkingDirectory))
+            {
                 ApplicationServiceContext.Current.GetService<FileSystemResolver>().RootDirectory = parms.WorkingDirectory;
+            }
+
             var rootPath = ApplicationServiceContext.Current.GetService<FileSystemResolver>().RootDirectory;
 
             // Load debug targets
@@ -117,16 +120,20 @@ namespace SanteDB.SDK.BreDebugger.Shell
             }
 
             if (parms.Sources != null)
+            {
                 foreach (var rf in parms.Sources)
                 {
                     var f = rf.Replace("~", rootPath);
                     if (!File.Exists(f))
+                    {
                         Console.Error.WriteLine("Can't find file {0}", f);
+                    }
                     else
+                    {
                         this.Execute(f);
+                    }
                 }
-
-
+            }
         }
 
         /// <summary>
@@ -142,14 +149,20 @@ namespace SanteDB.SDK.BreDebugger.Shell
             Console.WriteLine("Reloading debuggees...");
             var rootPath = ApplicationServiceContext.Current.GetService<FileSystemResolver>().RootDirectory;
             if (this.m_parms.Sources != null)
+            {
                 foreach (var rf in this.m_parms.Sources)
                 {
                     var f = rf.Replace("~", rootPath);
                     if (!File.Exists(f))
+                    {
                         Console.Error.WriteLine("Can't find file {0}", f);
+                    }
                     else
+                    {
                         this.Execute(f);
+                    }
                 }
+            }
         }
 
         /// <summary>
@@ -177,9 +190,14 @@ namespace SanteDB.SDK.BreDebugger.Shell
                 Console.Write(new string(' ', l));
                 Console.CursorLeft = 0;
                 if (this.m_blocPrint)
+                {
                     this.PrintBlock();
+                }
                 else
+                {
                     this.PrintLoc();
+                }
+
                 Console.ForegroundColor = col;
                 this.Prompt();
                 this.m_resetEvent.Wait();
@@ -188,7 +206,9 @@ namespace SanteDB.SDK.BreDebugger.Shell
                 return this.m_stepMode ?? StepMode.Into;
             }
             else
+            {
                 return StepMode.Into;
+            }
         }
 
         [Command("ob", "Sets the break output to block mode")]
@@ -204,15 +224,26 @@ namespace SanteDB.SDK.BreDebugger.Shell
         public void LoadScript(String file)
         {
             if (!Path.IsPathRooted(file))
+            {
                 file = Path.Combine(this.m_workingDirectory, file);
+            }
+
             if (!File.Exists(file))
+            {
                 throw new FileNotFoundException(file);
+            }
+
             if (!String.IsNullOrEmpty(this.m_loadFile))
+            {
                 Console.WriteLine("WARN: The file you're attempting to load is already loaded but not executed. Reloading.");
+            }
 
             String key = Path.GetFileName(file);
             if (this.m_loadedFiles.ContainsKey(key))
+            {
                 throw new InvalidOperationException($"File {key} already loaded and executed (or executing)");
+            }
+
             this.m_loadedFiles.Add(key, file);
             this.m_loadFile = file;
             this.m_prompt = key + " (idle) >";
@@ -226,7 +257,10 @@ namespace SanteDB.SDK.BreDebugger.Shell
         public void Terminate()
         {
             if (this.m_runThread != null)
+            {
                 this.m_runThread.Abort();
+            }
+
             this.m_runThread = null;
         }
 
@@ -246,15 +280,23 @@ namespace SanteDB.SDK.BreDebugger.Shell
             }
 
             if (String.IsNullOrEmpty(this.m_loadFile))
+            {
                 throw new InvalidOperationException("No file in buffer");
+            }
             else if (this.m_runThread != null)
+            {
                 throw new InvalidOperationException("Script is already running...");
+            }
+
             this.m_prompt = Path.GetFileName(this.m_loadFile) + " (run) >";
 
             this.m_runThread = new Thread(() =>
             {
                 using (var sr = File.OpenText(this.m_loadFile))
+                {
                     JavascriptExecutorPool.Current.ExecuteGlobal(e => e.ExecuteScript(Path.GetFileName(this.m_loadFile), sr.ReadToEnd()));
+                }
+
                 this.m_prompt = Path.GetFileName(this.m_loadFile) + " (idle) >";
                 this.m_loadFile = Path.GetFileName(this.m_loadFile);
                 Console.WriteLine("\r\nExecution Finished");
@@ -290,7 +332,9 @@ namespace SanteDB.SDK.BreDebugger.Shell
 
             }
             else
+            {
                 throw new InvalidOperationException("Step-in can only be done when loaded but not executing");
+            }
         }
 
         /// <summary>
@@ -311,7 +355,9 @@ namespace SanteDB.SDK.BreDebugger.Shell
                 this.Execute();
             }
             else
+            {
                 throw new InvalidOperationException("Step-in can only be done when loaded but not executing");
+            }
         }
 
         /// <summary>
@@ -332,7 +378,9 @@ namespace SanteDB.SDK.BreDebugger.Shell
                 this.Execute();
             }
             else
+            {
                 throw new InvalidOperationException("Step-over can only be done when loaded but not executing");
+            }
         }
 
         /// <summary>
@@ -353,7 +401,9 @@ namespace SanteDB.SDK.BreDebugger.Shell
                 this.Execute();
             }
             else
+            {
                 throw new InvalidOperationException("Step-over can only be done when loaded but not executing");
+            }
         }
 
         /// <summary>
@@ -393,10 +443,13 @@ namespace SanteDB.SDK.BreDebugger.Shell
                 try
                 {
                     if (kobj.IsObject())
+                    {
                         this.DumpObject((kobj.AsObject() as ObjectWrapper).Target, path);
+                    }
                     else
+                    {
                         this.DumpObject(kobj?.AsObject()?.GetOwnProperties(), path);
-
+                    }
                 }
                 catch
                 {
@@ -435,7 +488,9 @@ namespace SanteDB.SDK.BreDebugger.Shell
 
             // Locals?
             if (id == null)
+            {
                 this.DumpObject(locals.BindingNames.ToDictionary(o => o, o => locals.GetBindingValue(o)), path);
+            }
             else
             {
                 var kobj = locals.GetBindingValue(id);
@@ -453,8 +508,9 @@ namespace SanteDB.SDK.BreDebugger.Shell
                         Console.WriteLine();
                     }
                     else
+                    {
                         this.DumpObject(kobj?.AsArray() ?? kobj?.AsObject(), path);
-
+                    }
                 }
                 catch
                 {
@@ -493,17 +549,22 @@ namespace SanteDB.SDK.BreDebugger.Shell
             // Locals?
             var globals = this.m_currentDebug.CurrentScopeChain.First(o => o.ScopeType == DebugScopeType.Global);
             if (id == null)
+            {
                 this.DumpObject(globals.BindingNames.ToDictionary(o => o, o => globals.GetBindingValue(o)), path);
+            }
             else
             {
                 var kobj = globals.GetBindingValue(id);
                 try
                 {
                     if (kobj.IsObject())
+                    {
                         this.DumpObject((kobj.AsObject() as ObjectWrapper).Target, path);
+                    }
                     else
+                    {
                         this.DumpObject(kobj?.AsObject()?.GetOwnProperties(), path);
-
+                    }
                 }
                 catch
                 {
@@ -522,7 +583,9 @@ namespace SanteDB.SDK.BreDebugger.Shell
             this.ThrowIfNotDebugging();
             int i = 0;
             foreach (var itm in this.m_currentDebug.CallStack)
+            {
                 Console.WriteLine("{0}:{1}", i++, itm);
+            }
         }
 
         /// <summary>
@@ -531,7 +594,9 @@ namespace SanteDB.SDK.BreDebugger.Shell
         private void ThrowIfNotDebugging()
         {
             if (this.m_currentDebug == null)
+            {
                 throw new InvalidOperationException("Not in break / debug mode");
+            }
         }
 
         /// <summary>
@@ -574,10 +639,14 @@ namespace SanteDB.SDK.BreDebugger.Shell
             if (this.m_currentDebug != null)
             {
                 if (!this.m_loadedFiles.TryGetValue(this.m_currentDebug.CurrentCallFrame.FunctionName ?? this.m_loadFile, out fileName))
+                {
                     throw new InvalidOperationException($"Source for {this.m_currentDebug.CurrentCallFrame.FunctionName} not found");
+                }
             }
             else if (!this.m_loadedFiles.TryGetValue(Path.GetFileName(this.m_loadFile), out fileName))
+            {
                 throw new InvalidOperationException($"Source for '{this.m_loadFile}' not found");
+            }
 
             int ln = 1,
                 startInt = String.IsNullOrEmpty(start) ? 0 : Int32.Parse(start),
@@ -588,10 +657,18 @@ namespace SanteDB.SDK.BreDebugger.Shell
                 while (!sr.EndOfStream)
                 {
                     if (ln >= startInt && ln <= endInt)
+                    {
                         Console.WriteLine($"[{ln}]{(this.m_currentDebug?.CurrentNode.Location.Start.Line <= ln && this.m_currentDebug?.CurrentNode.Location.End.Line >= ln ? "++>" : this.Breakpoints.Contains(ln) ? "***" : "   ")}{sr.ReadLine()}");
-                    else if (ln >= endInt) break;
+                    }
+                    else if (ln >= endInt)
+                    {
+                        break;
+                    }
                     else
+                    {
                         sr.ReadLine();
+                    }
+
                     ln++;
                 }
 
@@ -633,7 +710,10 @@ namespace SanteDB.SDK.BreDebugger.Shell
         {
             var t = Type.GetType(cast);
             if (t == null)
+            {
                 t = new SanteDB.Core.Model.Serialization.ModelSerializationBinder().BindToType(typeof(IdentifiedData).Assembly.FullName, cast);
+            }
+
             if (t == null)
             {
                 throw new ArgumentOutOfRangeException(nameof(cast));
@@ -650,7 +730,10 @@ namespace SanteDB.SDK.BreDebugger.Shell
         {
             var t = Type.GetType(cast);
             if (t == null)
+            {
                 t = new SanteDB.Core.Model.Serialization.ModelSerializationBinder().BindToType(typeof(IdentifiedData).Assembly.FullName, cast);
+            }
+
             if (t == null)
             {
                 throw new ArgumentOutOfRangeException(nameof(cast));
@@ -675,16 +758,25 @@ namespace SanteDB.SDK.BreDebugger.Shell
             this.StepRegister(stepIn);
 
             if (this.m_scopeObject == null)
+            {
                 throw new InvalidOperationException("Cannot validate a null scope object");
+            }
             else if (this.m_currentDebug != null)
+            {
                 throw new InvalidOperationException("Cannot execute validator at this time");
+            }
 
             if (asType == null)
+            {
                 asType = this.m_scopeObject.GetType();
+            }
+
             var rdb = typeof(IBusinessRulesService<>).MakeGenericType(asType);
             var rds = ApplicationServiceContext.Current.GetService(rdb);
             if (rds == null)
+            {
                 throw new InvalidOperationException($"Cannot find business rule registered for {this.m_scopeObject.GetType().Name}");
+            }
             else
             {
                 this.m_prompt = Path.GetFileName(this.m_loadFile) + " (run) >";
@@ -731,7 +823,10 @@ namespace SanteDB.SDK.BreDebugger.Shell
         {
             var t = Type.GetType(cast);
             if (t == null)
+            {
                 t = new SanteDB.Core.Model.Serialization.ModelSerializationBinder().BindToType(typeof(IdentifiedData).Assembly.FullName, cast);
+            }
+
             if (t == null)
             {
                 throw new ArgumentOutOfRangeException(nameof(cast));
@@ -748,7 +843,10 @@ namespace SanteDB.SDK.BreDebugger.Shell
         {
             var t = Type.GetType(cast);
             if (t == null)
+            {
                 t = new SanteDB.Core.Model.Serialization.ModelSerializationBinder().BindToType(typeof(IdentifiedData).Assembly.FullName, cast);
+            }
+
             if (t == null)
             {
                 throw new ArgumentOutOfRangeException(nameof(cast));
@@ -773,16 +871,25 @@ namespace SanteDB.SDK.BreDebugger.Shell
             this.StepRegister(stepIn);
 
             if (this.m_scopeObject == null)
+            {
                 throw new InvalidOperationException("Cannot validate a null scope object");
+            }
             else if (this.m_currentDebug != null)
+            {
                 throw new InvalidOperationException("Cannot execute validator at this time");
+            }
 
             if (asType == null)
+            {
                 asType = this.m_scopeObject.GetType();
+            }
+
             var rdb = typeof(IBusinessRulesService<>).MakeGenericType(asType);
             var rds = ApplicationServiceContext.Current.GetService(rdb);
             if (rds == null)
+            {
                 throw new InvalidOperationException($"Cannot find business rule registered for {this.m_scopeObject.GetType().Name}");
+            }
             else
             {
                 this.m_prompt = Path.GetFileName(this.m_loadFile) + " (run) >";
