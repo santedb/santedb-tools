@@ -51,9 +51,9 @@ namespace SanteDB.SDK.JsProxy
         private static readonly CodeTypeReference s_tJsonReader = new CodeTypeReference(typeof(JsonReader));
         private static readonly CodeTypeReference s_tJsonWriter = new CodeTypeReference(typeof(JsonWriter));
 
-        private static readonly CodeFieldReferenceExpression s_fTracer = new CodeFieldReferenceExpression(new CodeThisReferenceExpression(), "m_tracer");
+        //private static readonly CodeFieldReferenceExpression s_fTracer = new CodeFieldReferenceExpression(new CodeThisReferenceExpression(), "m_tracer");
         private static readonly CodeFieldReferenceExpression s_fBinder = new CodeFieldReferenceExpression(new CodeThisReferenceExpression(), "m_binder");
-        private static readonly CodeMethodReferenceExpression s_traceError = new CodeMethodReferenceExpression(s_fTracer, "TraceError");
+        //private static readonly CodeMethodReferenceExpression s_traceError = new CodeMethodReferenceExpression(s_fTracer, "TraceError");
         private static readonly CodeMethodReferenceExpression s_toList = new CodeMethodReferenceExpression(new CodeTypeReferenceExpression(typeof(Enumerable)), "ToList");
 
         /// <summary>
@@ -99,7 +99,7 @@ namespace SanteDB.SDK.JsProxy
                 },
                  new CodeCatchClause[] {
                     new CodeCatchClause("e", new CodeTypeReference(typeof(Exception)),
-                        new CodeExpressionStatement(new CodeMethodInvokeExpression(s_traceError, this.CreateStringFormatExpression("Casting Error: {0}", new CodeVariableReferenceExpression("e")))),
+                        //new CodeExpressionStatement(new CodeMethodInvokeExpression(s_traceError, this.CreateStringFormatExpression("Casting Error: {0}", new CodeVariableReferenceExpression("e")))),
                             failExpression)
                     }
                  );
@@ -116,7 +116,7 @@ namespace SanteDB.SDK.JsProxy
                 },
                 new CodeCatchClause[] {
                 new CodeCatchClause("e", new CodeTypeReference(typeof(Exception)),
-                    new CodeExpressionStatement(new CodeMethodInvokeExpression(s_traceError, this.CreateStringFormatExpression("Casting Error: {0}", new CodeVariableReferenceExpression("e")))),
+                    //new CodeExpressionStatement(new CodeMethodInvokeExpression(s_traceError, this.CreateStringFormatExpression("Casting Error: {0}", new CodeVariableReferenceExpression("e")))),
                     failExpression)
                 });
         }
@@ -132,7 +132,7 @@ namespace SanteDB.SDK.JsProxy
                 },
                 new CodeCatchClause[] {
                 new CodeCatchClause("e", new CodeTypeReference(typeof(Exception)),
-                    new CodeExpressionStatement(new CodeMethodInvokeExpression(s_traceError, this.CreateStringFormatExpression("Casting Error: {0}", new CodeVariableReferenceExpression("e")))),
+                    //new CodeExpressionStatement(new CodeMethodInvokeExpression(s_traceError, this.CreateStringFormatExpression("Casting Error: {0}", new CodeVariableReferenceExpression("e")))),
                     failExpression)
                 });
         }
@@ -224,7 +224,7 @@ namespace SanteDB.SDK.JsProxy
             retVal.Comments.Add(new CodeCommentStatement($"<summary>Serializes <see cref=\"{forType.FullName}\"/> to or from JSON View Model Format</summary>", true));
             // Add methods
             retVal.Members.Add(this.CreateBinderField());
-            retVal.Members.Add(this.CreateTracerField(retVal));
+            //retVal.Members.Add(this.CreateTracerField(retVal));
             retVal.Members.Add(this.CreateHandlesTypeProperty(forType));
             retVal.Members.Add(this.CreateSerializeMethod(forType));
             retVal.Members.Add(this.CreateDeserializeMethod(forType));
@@ -270,14 +270,14 @@ namespace SanteDB.SDK.JsProxy
         /// <summary>
         /// Create tracer property
         /// </summary>
-        private CodeTypeMember CreateTracerField(CodeTypeDeclaration retVal)
-        {
-            return new CodeMemberField(typeof(Tracer), "m_tracer")
-            {
-                Attributes = MemberAttributes.Private,
-                InitExpression = new CodeMethodInvokeExpression(new CodeMethodReferenceExpression(new CodeTypeReferenceExpression(typeof(Tracer)), "GetTracer"), new CodeTypeOfExpression(new CodeTypeReference(retVal.Name)))
-            };
-        }
+        //private CodeTypeMember CreateTracerField(CodeTypeDeclaration retVal)
+        //{
+        //    return new CodeMemberField(typeof(Tracer), "m_tracer")
+        //    {
+        //        Attributes = MemberAttributes.Private,
+        //        InitExpression = new CodeMethodInvokeExpression(new CodeMethodReferenceExpression(new CodeTypeReferenceExpression(typeof(Tracer)), "GetTracer"), new CodeTypeOfExpression(new CodeTypeReference(retVal.Name)))
+        //    };
+        //}
 
         /// <summary>
         /// Create the GetSimpleValue method
