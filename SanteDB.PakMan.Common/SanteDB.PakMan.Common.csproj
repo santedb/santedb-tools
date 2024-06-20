@@ -15,19 +15,20 @@
   <ItemGroup>
     <PackageReference Include="MimeMapping" Version="2.0.0" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\santedb-cdss\SanteDB.Cdss.Xml\SanteDB.Cdss.Xml.csproj" />
-  </ItemGroup>
 
   <Choose>
     <When Condition="$(SolutionName.Contains('-ext'))">
       <ItemGroup>
         <ProjectReference Include="..\..\santedb-applets\SanteDB.Core.Applets\SanteDB.Core.Applets.csproj" />
       </ItemGroup>
+      <ItemGroup>
+        <ProjectReference Include="..\..\santedb-cdss\SanteDB.Cdss.Xml\SanteDB.Cdss.Xml.csproj" />
+      </ItemGroup>
     </When>
     <Otherwise>
       <ItemGroup>
         <PackageReference Include="SanteDB.Core.Applets" Version="$(VersionNumber)" />
+        <PackageReference Include="SanteDB.Cdss.Xml" Version="$(VersionNumber)" />
       </ItemGroup>
     </Otherwise>
   </Choose>

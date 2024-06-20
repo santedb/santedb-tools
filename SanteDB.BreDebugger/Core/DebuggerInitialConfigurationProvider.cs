@@ -191,6 +191,7 @@ namespace SanteDB.SDK.BreDebugger.Core
                         typeof(PersistenceEntitySource),
                         typeof(SanteDB.Caching.Memory.MemoryCacheService),
                         typeof(SanteDB.Core.Services.Impl.DefaultThreadPoolService),
+                        typeof(AppletTemplateDefinitionInstaller),
                         typeof(AppletClinicalProtocolInstaller),
                         typeof(MemoryAdhocCacheService),
                         typeof(MemoryQueryPersistenceService),
