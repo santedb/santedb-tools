@@ -297,7 +297,6 @@ namespace SanteDB.SDK.AppletDebugger.Configuration
                     new ResourceTypeReferenceConfiguration(typeof(Place)),
                     new ResourceTypeReferenceConfiguration(typeof(ReferenceTerm)),
                     new ResourceTypeReferenceConfiguration(typeof(AssigningAuthority)),
-                    new ResourceTypeReferenceConfiguration(typeof(UserEntity)),
                     new ResourceTypeReferenceConfiguration(typeof(SecurityUser)),
                     new ResourceTypeReferenceConfiguration(typeof(SecurityDevice)),
                     new ResourceTypeReferenceConfiguration(typeof(SecurityApplication))
