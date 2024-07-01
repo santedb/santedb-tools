@@ -131,6 +131,12 @@ namespace SanteDB.AdminConsole.Parameters
         [Description("Instructs the console to use basic authentication against the oauth token service")]
         public bool OAuthBasic { get; internal set; }
 
+        /// <summary>
+        /// Gets or sets the script file to run
+        /// </summary>
+        [Parameter("script")]
+        [Description("Instructs the administrative console to run the specified script file")]
+        public String ScriptFile { get; set; }
 
     }
 }
