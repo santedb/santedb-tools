@@ -290,7 +290,6 @@ namespace SanteDB.SDK.AppletDebugger.Configuration
                 PollInterval = new TimeSpan(0, 15, 0),
                 ForbidSending = new List<ResourceTypeReferenceConfiguration>()
                 {
-                    new ResourceTypeReferenceConfiguration(typeof(DeviceEntity)),
                     new ResourceTypeReferenceConfiguration(typeof(ApplicationEntity)),
                     new ResourceTypeReferenceConfiguration(typeof(Concept)),
                     new ResourceTypeReferenceConfiguration(typeof(ConceptSet)),
@@ -302,6 +301,7 @@ namespace SanteDB.SDK.AppletDebugger.Configuration
                     new ResourceTypeReferenceConfiguration(typeof(SecurityApplication))
                 }
             });
+
             return configuration;
         }
     }
