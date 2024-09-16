@@ -15,8 +15,6 @@
  * License for the specific language governing permissions and limitations under 
  * the License.
  * 
- * User: fyfej
- * Date: 2023-12-11
  */
 using SanteDB.Cdss.Xml.Antlr;
 using SanteDB.Cdss.Xml.Exceptions;
