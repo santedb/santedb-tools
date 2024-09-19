@@ -15,8 +15,6 @@
  * License for the specific language governing permissions and limitations under 
  * the License.
  * 
- * User: fyfej
- * Date: 2023-6-21
  */
 using SanteDB.BI.Services.Impl;
 using SanteDB.BusinessRules.JavaScript;
@@ -290,7 +288,6 @@ namespace SanteDB.SDK.AppletDebugger.Configuration
                 PollInterval = new TimeSpan(0, 15, 0),
                 ForbidSending = new List<ResourceTypeReferenceConfiguration>()
                 {
-                    new ResourceTypeReferenceConfiguration(typeof(DeviceEntity)),
                     new ResourceTypeReferenceConfiguration(typeof(ApplicationEntity)),
                     new ResourceTypeReferenceConfiguration(typeof(Concept)),
                     new ResourceTypeReferenceConfiguration(typeof(ConceptSet)),
@@ -302,6 +299,7 @@ namespace SanteDB.SDK.AppletDebugger.Configuration
                     new ResourceTypeReferenceConfiguration(typeof(SecurityApplication))
                 }
             });
+
             return configuration;
         }
     }

@@ -15,8 +15,6 @@
  * License for the specific language governing permissions and limitations under 
  * the License.
  * 
- * User: fyfej
- * Date: 2023-6-21
  */
 using MohawkCollege.Util.Console.Parameters;
 using System;
@@ -131,6 +129,12 @@ namespace SanteDB.AdminConsole.Parameters
         [Description("Instructs the console to use basic authentication against the oauth token service")]
         public bool OAuthBasic { get; internal set; }
 
+        /// <summary>
+        /// Gets or sets the script file to run
+        /// </summary>
+        [Parameter("script")]
+        [Description("Instructs the administrative console to run the specified script file")]
+        public String ScriptFile { get; set; }
 
     }
 }

@@ -15,9 +15,8 @@
  * License for the specific language governing permissions and limitations under 
  * the License.
  * 
- * User: fyfej
- * Date: 2023-6-21
  */
+using DocumentFormat.OpenXml.Drawing.Charts;
 using MohawkCollege.Util.Console.Parameters;
 using SanteDB.AdminConsole.Attributes;
 using SanteDB.Core.BusinessRules;
@@ -31,6 +30,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Security.Cryptography;
+using System.Text.RegularExpressions;
 
 namespace SanteDB.AdminConsole.Shell
 {
@@ -44,6 +45,7 @@ namespace SanteDB.AdminConsole.Shell
         // Exit debugger
         private bool m_exitRequested = false;
 
+        private Regex m_extractParmsRegex = new Regex(@"((?:-\w+\s|--\w+=)(\""[^\""]+\""|\'[^\""]+\'|\w+)|([^\s]+))");
         protected string m_prompt = "> ";
         private ConsoleColor m_promptColor = Console.ForegroundColor;
         // Commandlets
@@ -133,6 +135,35 @@ namespace SanteDB.AdminConsole.Shell
             }
         }
 
+        /// <summary>
+        /// Run a script
+        /// </summary>
+        /// <param name="scriptFile"></param>
+        public void RunScript(String scriptFile)
+        {
+            try
+            {
+                using (var tr = File.OpenText(scriptFile))
+                {
+                    while (!tr.EndOfStream) {
+                        var cmd = tr.ReadLine();
+                        if (cmd.StartsWith("#"))
+                        {
+                            continue;
+                        }
+                        else
+                        {
+                            Console.WriteLine("EXEC: {0}", cmd);
+                            this.RunCmd(cmd);
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                this.PrintStack(e);
+            }
+        }
 
         /// <summary>
         /// Perform debugger
@@ -143,109 +174,93 @@ namespace SanteDB.AdminConsole.Shell
             Console.CursorVisible = true;
             Console.WriteLine("Ready...");
 
-            var col = Console.ForegroundColor;
-
             // Now drop to a command prompt
             while (!m_exitRequested)
             {
+                var col = Console.ForegroundColor;
                 this.Prompt();
                 var cmd = Console.ReadLine();
+                this.RunCmd(cmd);
+                Console.ForegroundColor = col;
 
-                Console.ForegroundColor = this.GetResponseColor();
-                if (String.IsNullOrEmpty(cmd))
+            }
+        }
+
+        /// <summary>
+        /// Run command
+        /// </summary>
+        /// <param name="cmd">The command text to run</param>
+        public void RunCmd(String cmd)
+        {
+
+            Console.ForegroundColor = this.GetResponseColor();
+            if (String.IsNullOrEmpty(cmd))
+            {
+                return;
+            }
+
+            var redir = cmd.Split('>');
+            cmd = redir[0];
+            string[] tokens = m_extractParmsRegex.Matches(cmd).OfType<Match>().SelectMany(o => {
+                if (o.Groups[0].Value.StartsWith("--") || !o.Groups[0].Value.StartsWith("-"))
                 {
-                    continue;
+                    return new string[] { o.Groups[0].Value };
+                }
+                else {
+                    return new string[] { o.Groups[0].Value.Substring(0, 2), o.Groups[0].Value.Substring(3) };
+                }
+            }).ToArray();
+            
+
+            // Set output
+            TextWriter tw = null, orig = Console.Out;
+            if (redir.Length > 1)
+            {
+                if (redir.Length == 2)
+                {
+                    tw = File.CreateText(redir[1].Trim());
+                }
+                else if (redir.Length == 3)
+                {
+                    tw = File.AppendText(redir[2].Trim());
                 }
 
-                var redir = cmd.Split('>');
-                cmd = redir[0];
-                // Get tokens / parms
-                var tokens = cmd.Split(' ').ToArray();
-                List<String> tToken = new List<string>() { tokens[0] };
-                String sstr = String.Empty;
-                foreach (var tkn in tokens.Skip(1))
-                {
-                    if (string.IsNullOrEmpty(tkn.Trim()))
-                    {
-                        continue;
-                    }
+                Console.SetOut(tw);
+            }
 
-                    if (tkn.StartsWith("'") && tkn.EndsWith("'"))
+            // Get tokens
+            if (!this.m_commandlets.Keys.Any(o => o.Command == tokens[0]))
+            {
+                Console.Error.WriteLine("ERR: Command {0} with {1} parms not found", tokens[0], tokens.Length - 1);
+            }
+            else
+            {
+                var parmValues = tokens.Length > 1 ? tokens.OfType<String>().Skip(1).ToArray() : new string[0];
+
+                try
+                {
+                    // Find the matches
+                    var candidates = this.m_commandlets.Where(o => o.Key.Command == tokens[0]);
+                    if (candidates.Count() == 1)
                     {
-                        tToken.Add(tkn.Substring(1, tkn.Length - 2));
-                    }
-                    else if (tkn.StartsWith("'"))
-                    {
-                        sstr = tkn.Substring(1);
-                    }
-                    else if (sstr != String.Empty && tkn.EndsWith("'"))
-                    {
-                        sstr += " " + tkn.Substring(0, tkn.Length - 1);
-                        tToken.Add(sstr);
-                        sstr = String.Empty;
-                    }
-                    else if (sstr != String.Empty)
-                    {
-                        sstr += " " + tkn;
+                        candidates.First().Value.Invoke(this, this.CreateParameters(parmValues, candidates.First().Value.GetParameters()));
                     }
                     else
                     {
-                        tToken.Add(tkn);
+                        var candidate = candidates.FirstOrDefault(o => parmValues.Length == o.Value.GetParameters().Length);
+                        candidate.Value?.Invoke(this, this.CreateParameters(parmValues, candidate.Value?.GetParameters()));
                     }
                 }
-                tokens = tToken.ToArray();
-
-                // Set output
-                TextWriter tw = null, orig = Console.Out;
-                if (redir.Length > 1)
+                catch (Exception e)
                 {
-                    if (redir.Length == 2)
-                    {
-                        tw = File.CreateText(redir[1].Trim());
-                    }
-                    else if (redir.Length == 3)
-                    {
-                        tw = File.AppendText(redir[2].Trim());
-                    }
-
-                    Console.SetOut(tw);
+                    this.PrintStack(e);
                 }
+            }
 
-                // Get tokens
-                if (!this.m_commandlets.Keys.Any(o => o.Command == tokens[0]))
-                {
-                    Console.Error.WriteLine("ERR: Command {0} with {1} parms not found", tokens[0], tokens.Length - 1);
-                }
-                else
-                {
-                    var parmValues = tokens.Length > 1 ? tokens.OfType<String>().Skip(1).ToArray() : new string[0];
-
-                    try
-                    {
-                        // Find the matches
-                        var candidates = this.m_commandlets.Where(o => o.Key.Command == tokens[0]);
-                        if (candidates.Count() == 1)
-                        {
-                            candidates.First().Value.Invoke(this, this.CreateParameters(parmValues, candidates.First().Value.GetParameters()));
-                        }
-                        else
-                        {
-                            var candidate = candidates.FirstOrDefault(o => parmValues.Length == o.Value.GetParameters().Length);
-                            candidate.Value?.Invoke(this, this.CreateParameters(parmValues, candidate.Value?.GetParameters()));
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        this.PrintStack(e);
-                    }
-                }
-
-                if (tw != null)
-                {
-                    tw.Close();
-                    Console.SetOut(orig);
-                }
-                Console.ForegroundColor = col;
+            if (tw != null)
+            {
+                tw.Close();
+                Console.SetOut(orig);
             }
         }
 
@@ -270,7 +285,7 @@ namespace SanteDB.AdminConsole.Shell
                 {
                     var ppt = typeof(ParameterParser<>).MakeGenericType(argTypes[i].ParameterType);
                     var pp = Activator.CreateInstance(ppt);
-                    argVals[i] = ppt.GetMethod("Parse").Invoke(pp, new object[] { args });
+                    argVals[i] = ppt.GetMethod("Parse").Invoke(pp, new object[] { args.Select(o=>o.Replace("\"", "").Replace("\'", "")).ToArray() });
                 }
             }
             return argVals;
