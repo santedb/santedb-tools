@@ -146,7 +146,7 @@ namespace SanteDB.PakMan
             else
             {
                 var asset = PakManTool.GetPacker(itm).Process(itm, this.m_optimize);
-                asset.Name = PakManTool.TranslatePath(itm.Replace(basePath, ""));
+                asset.Name = PakManTool.TranslatePath((asset.Name ?? itm).Replace(basePath, ""));
                 return asset;
             }
 
