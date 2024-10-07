@@ -21,6 +21,7 @@ using SanteDB.Cdss.Xml.Exceptions;
 using SanteDB.Core.Applets.Model;
 using System;
 using System.IO;
+using System.Linq;
 
 namespace SanteDB.PakMan.Packers
 {
@@ -45,6 +46,7 @@ namespace SanteDB.PakMan.Packers
                         tps.Save(ms);
                         return new AppletAsset()
                         {
+                            Name = Path.ChangeExtension(file, "xml"),
                             Content = PakManTool.CompressContent(ms.ToArray()),
                             MimeType = "application/xml"
                         };
@@ -53,7 +55,9 @@ namespace SanteDB.PakMan.Packers
             }
             catch (CdssTranspilationException e)
             {
-                throw new Exception($"Could not transpile {file}", e);
+                var errm = $"Could not transpile: {file} -\r\n\t{String.Join("\r\n\t", e.Errors.Select(o => $"{o.Line}:{o.Column} - {o.Message}"))}";
+                throw new Exception(errm, e);
+
             }
         }
     }
