@@ -290,6 +290,7 @@ namespace SanteDB.SDK.AppletDebugger.Configuration
                 {
                     new ResourceTypeReferenceConfiguration(typeof(ApplicationEntity)),
                     new ResourceTypeReferenceConfiguration(typeof(Concept)),
+                    new ResourceTypeReferenceConfiguration(typeof(Material)),
                     new ResourceTypeReferenceConfiguration(typeof(ConceptSet)),
                     new ResourceTypeReferenceConfiguration(typeof(Place)),
                     new ResourceTypeReferenceConfiguration(typeof(ReferenceTerm)),
