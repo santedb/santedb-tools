@@ -20,6 +20,7 @@ using MohawkCollege.Util.Console.Parameters;
 using SanteDB.AdminConsole.Attributes;
 using SanteDB.AdminConsole.Util;
 using SanteDB.Core.Interop;
+using SanteDB.Core.Model.AMI.Auth;
 using SanteDB.Core.Model.Constants;
 using SanteDB.Core.Model.Entities;
 using SanteDB.Messaging.AMI.Client;
@@ -107,7 +108,25 @@ namespace SanteDB.AdminConsole.Shell.CmdLets
                 var userEntity = m_hdsiClient.Query<UserEntity>(o => o.SecurityUser.UserName.ToLowerInvariant() == stm.ToLowerInvariant()).Item.OfType<UserEntity>().FirstOrDefault();
                 if(userEntity == null)
                 {
-                    throw new KeyNotFoundException($"User {stm} not found or does not have a user profile");
+                    var se = m_amiClient.GetUsers(u => u.UserName.ToLowerInvariant() == stm.ToLowerInvariant()).CollectionItem.OfType<SecurityUserInfo>().FirstOrDefault();
+                    if(se == null)
+                    {
+                        throw new KeyNotFoundException($"User {stm} not found");
+                    }
+
+                    userEntity = new UserEntity()
+                    {
+                        SecurityUserKey = se.Key.Value,
+                        Names = new List<EntityName>()
+                        {
+                            new EntityName(NameUseKeys.OfficialRecord, String.Empty, stm)
+                        },
+                        Telecoms = new List<EntityTelecomAddress>()
+                        {
+                            new EntityTelecomAddress(TelecomAddressUseKeys.WorkPlace, se.Entity.Email ?? "none@none.com")
+                        }
+                    };
+                    userEntity = m_hdsiClient.Create(userEntity);
                 }
 
                 // Assign the user 
