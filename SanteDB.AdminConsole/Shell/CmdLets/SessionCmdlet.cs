@@ -47,7 +47,7 @@ namespace SanteDB.AdminConsole.Shell.CmdLets
             var sessions = m_client.Client.Get<AmiCollection>("/SessionInfo");
             DisplayUtil.TablePrint(sessions.CollectionItem.OfType<SecuritySessionInfo>(),
                 new String[] { "ID", "User", "Application", "Device", "Established", "Expires", "IP Address" },
-                new int[] { 30, 26, 32, 32, 22, 22, 10 },
+                new int[] { 40, 20, 30, 30, 22, 22, 10 },
                 o => o.SessionId,
                 o => o.User,
                 o => o.Application,
