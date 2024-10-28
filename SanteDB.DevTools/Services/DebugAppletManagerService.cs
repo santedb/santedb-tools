@@ -477,7 +477,7 @@ namespace SanteDB.Tools.Debug.Services
                         Priority = Int32.Parse(widgetEle.Attribute("priority")?.Value ?? "0"),
                         MaxStack = Int32.Parse(widgetEle.Attribute("maxStack")?.Value ?? "2"),
                         Order = Int32.Parse(widgetEle.Attribute("order")?.Value ?? "0"),
-                        Context = widgetEle.Attribute("context")?.Value,
+                        Context = widgetEle.Attribute("context")?.Value.Split(' ').ToList(),
                         Description = widgetEle.Elements().Where(o => o.Name == xs_santedb + "description").Select(o => new LocaleString() { Value = o.Value, Language = o.Attribute("lang")?.Value }).ToList(),
                         Name = widgetEle.Attribute("name")?.Value,
                         Controller = widgetEle.Element(xs_santedb + "controller")?.Value,
