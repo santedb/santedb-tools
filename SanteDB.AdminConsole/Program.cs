@@ -59,7 +59,7 @@ namespace SanteDB.AdminConsole
 
                     ApplicationContext.Initialize(options);
                     ApplicationContext.Current.Start();
-                    new InteractiveShell().Exec();
+                    new InteractiveShell().Exec(options);
                 }
                 catch (Exception e)
                 {
