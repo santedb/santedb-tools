@@ -213,6 +213,7 @@ namespace SanteDB.AdminConsole.Shell.CmdLets
             /// </summary>
             [Description("The policies to grant")]
             [Parameter("p")]
+            [Parameter("*")]
             public StringCollection GrantPolicies { get; set; }
 
             /// <summary>
@@ -269,7 +270,7 @@ namespace SanteDB.AdminConsole.Shell.CmdLets
         /// Add a role
         /// </summary>
         // [PolicyPermission(System.Security.Permissions.SecurityAction.Demand, PolicyId = PermissionPolicyIdentifiers.CreateRoles)]
-        [AdminCommand("role.ungrant", "Denies a role a policy")]
+        [AdminCommand("role.ungrant", "Removes a role policy")]
         internal static void UnGrantRole(GrantRoleParms parms)
         {
             // get the role
