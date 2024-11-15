@@ -31,6 +31,8 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using static SanteDB.AdminConsole.Shell.CmdLets.RoleCmdlet;
 
 namespace SanteDB.AdminConsole.Shell.CmdLets
 {
@@ -54,6 +56,20 @@ namespace SanteDB.AdminConsole.Shell.CmdLets
             public StringCollection ApplictionId { get; set; }
         }
 
+
+        /// <summary>
+        /// Secret to set
+        /// </summary>
+        internal class GenericApplicationSecretParms : GenericApplicationParms
+        {
+            /// <summary>
+            /// The secret of the application
+            /// </summary>
+            [Description("The application secret to set")]
+            [Parameter("s")]
+            public string Secret { get; set; }
+        }
+
         // Ami client
         private static AmiServiceClient m_client = new AmiServiceClient(ApplicationContext.Current.GetRestClient(ServiceEndpointType.AdministrationIntegrationService));
 
@@ -62,14 +78,9 @@ namespace SanteDB.AdminConsole.Shell.CmdLets
         /// <summary>
         /// Parameters for adding applications
         /// </summary>
-        internal class AddApplicationParms : GenericApplicationParms
+        internal class AddApplicationParms : GenericApplicationSecretParms
         {
-            /// <summary>
-            /// The secret of the application
-            /// </summary>
-            [Description("The application secret to set")]
-            [Parameter("s")]
-            public string Secret { get; set; }
+
 
             /// <summary>
             /// The policies to add
@@ -133,6 +144,39 @@ namespace SanteDB.AdminConsole.Shell.CmdLets
                 }
             });
             Console.WriteLine("CREATE {0}", parms.ApplictionId[0]);
+        }
+
+
+        [AdminCommand("application.secret", "Reset application secret")]
+        [Description("This command resets or re-generates the application secret")]
+        // [PolicyPermission(System.Security.Permissions.SecurityAction.Demand, PolicyId = PermissionPolicyIdentifiers.CreateApplication)]
+        internal static void ChangeSecret(GenericApplicationSecretParms parms)
+        {
+
+            var appid = parms.ApplictionId.OfType<String>().First();
+            var application = m_client.GetApplications(o => o.Name.ToLowerInvariant() == appid.ToLowerInvariant()).CollectionItem.OfType<SecurityApplicationInfo>().FirstOrDefault();
+
+            if(application == null)
+            {
+                throw new KeyNotFoundException($"Application {appid} not found");
+            }
+
+            if (String.IsNullOrEmpty(parms.Secret))
+            {
+                parms.Secret = BitConverter.ToString(Guid.NewGuid().ToByteArray()).Replace("-", "").Substring(0, 12);
+                Console.WriteLine("Application secret: {0}", parms.Secret);
+            }
+
+            m_client.UpdateApplication(application.Key.Value, new SecurityApplicationInfo()
+            {
+                Entity = new SecurityApplication()
+                {
+                    Name = parms.ApplictionId.OfType<String>().First(),
+                    ApplicationSecret = parms.Secret
+                },
+                
+            });
+            Console.WriteLine("SECRET {0}", parms.ApplictionId[0]);
         }
 
         /// <summary>
@@ -326,6 +370,111 @@ namespace SanteDB.AdminConsole.Shell.CmdLets
                 {
                     m_client.Client.Unlock<SecurityApplicationInfo>($"SecurityApplication/{application.Key}");
                 }
+            }
+        }
+
+        /// <summary>
+        /// Add role parameters
+        /// </summary>
+        internal class GrantApplicationParms : GenericApplicationParms
+        {
+
+            /// <summary>
+            /// Gets or sets the policies
+            /// </summary>
+            [Description("The policies to grant")]
+            [Parameter("p")]
+            public StringCollection GrantPolicies { get; set; }
+
+            /// <summary>
+            /// The grant
+            /// </summary>
+            [Description("The grant action")]
+            [Parameter("g")]
+            public String Grant { get; set; }
+
+        }
+
+        /// <summary>
+        /// Add a role
+        /// </summary>
+        // [PolicyPermission(System.Security.Permissions.SecurityAction.Demand, PolicyId = PermissionPolicyIdentifiers.CreateRoles)]
+        [AdminCommand("application.grant", "Grants an application a policy")]
+        internal static void GrantApplication(GrantApplicationParms parms)
+        {
+            // get the role
+            var appid = parms.ApplictionId.OfType<String>().First();
+            var application = m_client.GetApplications(o => o.Name == appid).CollectionItem.FirstOrDefault() as SecurityApplicationInfo;
+            if (application == null)
+            {
+                throw new KeyNotFoundException($"Application {appid} not found");
+            }
+
+            // Get the policies
+            var policyKeys = parms.GrantPolicies.OfType<String>().Select(r =>
+            {
+                var pol = m_client.GetPolicies(p => p.Oid.ToLowerInvariant() == r.ToLowerInvariant() | p.Name.ToLowerInvariant() == r.ToLowerInvariant()).CollectionItem.OfType<SecurityPolicy>().FirstOrDefault();
+                if (pol == null)
+                {
+                    throw new KeyNotFoundException($"Policy having OID or Name of {r}");
+                }
+                else
+                {
+                    return pol;
+                }
+            }).ToArray();
+
+            if (!Enum.TryParse<PolicyGrantType>(parms.Grant, true, out var grant))
+            {
+                throw new ArgumentOutOfRangeException($"{parms.Grant} - Expected Grant, Deny, Elevate");
+            }
+
+            foreach (var p in policyKeys)
+            {
+                m_client.AddPolicy(application.Entity, p.Oid, grant);
+                Console.WriteLine("{0} {1} - ADDED", grant, p.Name);
+            }
+
+        }
+
+        /// <summary>
+        /// Add a role
+        /// </summary>
+        // [PolicyPermission(System.Security.Permissions.SecurityAction.Demand, PolicyId = PermissionPolicyIdentifiers.CreateRoles)]
+        [AdminCommand("application.ungrant", "Removes an application policy")]
+        internal static void UnGrantApplication(GrantApplicationParms parms)
+        {
+            // get the role
+            var appid = parms.ApplictionId.OfType<String>().First();
+            var application = m_client.GetApplications(o => o.Name == appid).CollectionItem.FirstOrDefault() as SecurityApplicationInfo;
+            if (application == null)
+            {
+                throw new KeyNotFoundException($"Application {appid} not found");
+            }
+
+            // Get the policies
+            var policyKeys = parms.GrantPolicies.OfType<String>().Select(r =>
+            {
+                var pol = m_client.GetPolicies(p => p.Oid.ToLowerInvariant() == r.ToLowerInvariant() | p.Name.ToLowerInvariant() == r.ToLowerInvariant()).CollectionItem.OfType<SecurityPolicy>().FirstOrDefault();
+                if (pol == null)
+                {
+                    throw new KeyNotFoundException($"Policy having OID or Name of {r}");
+                }
+                else
+                {
+                    return pol;
+                }
+            }).ToArray();
+
+            if (!Enum.TryParse<PolicyGrantType>(parms.Grant, true, out var grant))
+            {
+                throw new ArgumentOutOfRangeException($"{parms.Grant} - Expected Grant, Deny, Elevate");
+            }
+
+            foreach (var p in policyKeys)
+            {
+                m_client.RemovePolicy(application.Entity, p.Key.Value);
+                Console.WriteLine("{0} {1} - REMOVED", grant, p.Name);
             }
         }
 

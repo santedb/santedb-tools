@@ -27,7 +27,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("PakSrv")]
-[assembly: AssemblyCopyright("Copyright (C) 2023 SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md)")]
+[assembly: AssemblyCopyright("Copyright (C) 2020 - 2024 The SanteSuite Contributors (See NOTICE.md)")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -49,3 +49,4 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
+[assembly: AssemblyInformationalVersion("Alberta")]

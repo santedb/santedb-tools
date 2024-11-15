@@ -77,7 +77,7 @@ namespace SanteDB.PakMan.Packers
                         Priority = Int32.Parse(viewElement.Attribute("priority")?.Value ?? "0"),
                         MaxStack = Int32.Parse(viewElement.Attribute("maxStack")?.Value ?? "2"),
                         Order = Int32.Parse(viewElement.Attribute("order")?.Value ?? "0"),
-                        Context = viewElement.Attribute("context")?.Value,
+                        Context = viewElement.Attribute("context")?.Value.Split(' ').ToList(),
                         Description = viewElement.Elements().Where(o => o.Name == (XNamespace)PakManTool.XS_APPLET + "description").Select(o => new LocaleString() { Value = o.Value, Language = o.Attribute("lang")?.Value }).ToList(),
                         Name = viewElement.Attribute("name")?.Value,
                         Controller = viewElement.Element((XNamespace)PakManTool.XS_APPLET + "controller")?.Value,

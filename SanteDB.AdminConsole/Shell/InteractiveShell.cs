@@ -19,6 +19,7 @@
 using DocumentFormat.OpenXml.Drawing.Charts;
 using MohawkCollege.Util.Console.Parameters;
 using SanteDB.AdminConsole.Attributes;
+using SanteDB.AdminConsole.Parameters;
 using SanteDB.Core.BusinessRules;
 using SanteDB.Core.Http;
 using SanteDB.Core.Security;
@@ -45,7 +46,7 @@ namespace SanteDB.AdminConsole.Shell
         // Exit debugger
         private bool m_exitRequested = false;
 
-        private Regex m_extractParmsRegex = new Regex(@"((?:-\w+\s|--\w+=)(\""[^\""]+\""|\'[^\""]+\'|\w+)|([^\s]+))");
+        private Regex m_extractParmsRegex = new Regex(@"((?:-\w\s|--\w+=)(\""[^\""]+\""|\'[^\']+\'|\w+)|([^\s]+))");
         protected string m_prompt = "> ";
         private ConsoleColor m_promptColor = Console.ForegroundColor;
         // Commandlets
@@ -168,21 +169,63 @@ namespace SanteDB.AdminConsole.Shell
         /// <summary>
         /// Perform debugger
         /// </summary>
-        public void Exec()
+        public void Exec(ConsoleParameters parameters = null)
         {
 
             Console.CursorVisible = true;
             Console.WriteLine("Ready...");
 
-            // Now drop to a command prompt
-            while (!m_exitRequested)
+            if (parameters.ScriptFiles?.Count > 0)
             {
-                var col = Console.ForegroundColor;
-                this.Prompt();
-                var cmd = Console.ReadLine();
-                this.RunCmd(cmd);
-                Console.ForegroundColor = col;
+                foreach(var itm in parameters.ScriptFiles)
+                {
+                    try
+                    {
+                        if(File.Exists(itm))
+                        {
+                            Console.WriteLine("Running {0}...", itm);
+                            using(var fr = File.OpenText(itm))
+                            {
+                                while(!fr.EndOfStream)
+                                {
+                                    var cmd = fr.ReadLine();
+                                    if(!cmd.StartsWith("#"))
+                                    {
+                                        Console.WriteLine(cmd);
+                                        this.RunCmd(cmd);
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("ERROR: {0} not found", itm);
+                        }
+                    }
+                    catch(Exception e)
+                    {
+                        Console.WriteLine("Error Executing Scripts: {0}", e.ToHumanReadableString());
+                    }
+                }
+            }
+            else
+            {
+                // Now drop to a command prompt
+                while (!m_exitRequested)
+                {
+                    try
+                    {
+                        var col = Console.ForegroundColor;
+                        this.Prompt();
+                        var cmd = Console.ReadLine();
+                        this.RunCmd(cmd);
+                        Console.ForegroundColor = col;
+                    }
+                    catch
+                    {
 
+                    }
+                }
             }
         }
 

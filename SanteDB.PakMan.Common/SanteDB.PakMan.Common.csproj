@@ -13,7 +13,7 @@
     <None Include="..\SanteDB.licenseheader" Link="SanteDB.licenseheader" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="MimeMapping" Version="2.0.0" />
+    <PackageReference Include="MimeMapping" Version="3.0.1" />
   </ItemGroup>
 
   <Choose>

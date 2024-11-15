@@ -71,7 +71,7 @@ namespace SanteDB.VocabImport
             {
 
                 Console.WriteLine("SanteDB Vocabulary Importer v{0} ({1})", Assembly.GetEntryAssembly().GetName().Version, Assembly.GetEntryAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion);
-                Console.WriteLine("Copyright (C) 2015-2022 See NOTICE for contributors");
+                Console.WriteLine("Copyright (C) 2015- 2024 See NOTICE for contributors");
                 var parms = new ParameterParser<ConsoleParameters>().Parse(args);
                 Dataset retVal = new Dataset()
                 {

@@ -18,6 +18,7 @@
  */
 using MohawkCollege.Util.Console.Parameters;
 using System;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 
@@ -130,11 +131,10 @@ namespace SanteDB.AdminConsole.Parameters
         public bool OAuthBasic { get; internal set; }
 
         /// <summary>
-        /// Gets or sets the script file to run
+        /// Script files
         /// </summary>
-        [Parameter("script")]
-        [Description("Instructs the administrative console to run the specified script file")]
-        public String ScriptFile { get; set; }
-
+        [Parameter("*")]
+        [Description("One or more script files to execute for the SDBAC")]
+        public StringCollection ScriptFiles { get; set; }
     }
 }

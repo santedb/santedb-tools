@@ -77,7 +77,6 @@ namespace SanteDB.PakMan
             return 1;
         }
 
-
         /// <summary>
         /// Package a DCG distribution
         /// </summary>

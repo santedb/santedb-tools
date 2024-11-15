@@ -30,6 +30,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace SanteDB.AdminConsole.Shell.CmdLets
 {
@@ -199,6 +200,112 @@ namespace SanteDB.AdminConsole.Shell.CmdLets
         }
         #endregion
 
+        #region Grant Role
 
+        /// <summary>
+        /// Add role parameters
+        /// </summary>
+        internal class GrantRoleParms : GenericRoleParms
+        {
+
+            /// <summary>
+            /// Gets or sets the policies
+            /// </summary>
+            [Description("The policies to grant")]
+            [Parameter("p")]
+            [Parameter("*")]
+            public StringCollection GrantPolicies { get; set; }
+
+            /// <summary>
+            /// The grant
+            /// </summary>
+            [Description("The grant action")]
+            [Parameter("g")]
+            public String Grant { get; set; }
+
+        }
+
+        /// <summary>
+        /// Add a role
+        /// </summary>
+        // [PolicyPermission(System.Security.Permissions.SecurityAction.Demand, PolicyId = PermissionPolicyIdentifiers.CreateRoles)]
+        [AdminCommand("role.grant", "Grants a role a policy")]
+        internal static void GrantRole(GrantRoleParms parms)
+        {
+            // get the role
+            var role = m_client.GetRoles(o => o.Name == parms.RoleName).CollectionItem.FirstOrDefault() as SecurityRoleInfo;
+            if(role == null)
+            {
+                throw new KeyNotFoundException($"Role {parms.RoleName} not found");
+            }
+
+            // Get the policies
+            var policyKeys = parms.GrantPolicies.OfType<String>().Select(r =>
+            {
+                var pol = m_client.GetPolicies(p => p.Oid.ToLowerInvariant() == r.ToLowerInvariant() | p.Name.ToLowerInvariant() == r.ToLowerInvariant()).CollectionItem.OfType<SecurityPolicy>().FirstOrDefault();
+                if(pol == null)
+                {
+                    throw new KeyNotFoundException($"Policy having OID or Name of {r}");
+                }
+                else
+                {
+                    return pol;
+                }
+            }).ToArray();
+
+            if(!Enum.TryParse<PolicyGrantType>(parms.Grant, true, out var grant))
+            {
+                throw new ArgumentOutOfRangeException($"{parms.Grant} - Expected Grant, Deny, Elevate");
+            }
+
+            foreach (var p in policyKeys)
+            {
+                m_client.AddPolicy(role.Entity, p.Oid, grant);
+                Console.WriteLine("{0} {1} - ADDED", grant, p.Name);
+            }
+            
+        }
+
+        /// <summary>
+        /// Add a role
+        /// </summary>
+        // [PolicyPermission(System.Security.Permissions.SecurityAction.Demand, PolicyId = PermissionPolicyIdentifiers.CreateRoles)]
+        [AdminCommand("role.ungrant", "Removes a role policy")]
+        internal static void UnGrantRole(GrantRoleParms parms)
+        {
+            // get the role
+            var role = m_client.GetRoles(o => o.Name == parms.RoleName).CollectionItem.FirstOrDefault() as SecurityRoleInfo;
+            if (role == null)
+            {
+                throw new KeyNotFoundException($"Role {parms.RoleName} not found");
+            }
+
+            // Get the policies
+            var policyKeys = parms.GrantPolicies.OfType<String>().Select(r =>
+            {
+                var pol = m_client.GetPolicies(p => p.Oid.ToLowerInvariant() == r.ToLowerInvariant() | p.Name.ToLowerInvariant() == r.ToLowerInvariant()).CollectionItem.OfType<SecurityPolicy>().FirstOrDefault();
+                if (pol == null)
+                {
+                    throw new KeyNotFoundException($"Policy having OID or Name of {r}");
+                }
+                else
+                {
+                    return pol;
+                }
+            }).ToArray();
+
+            if (!Enum.TryParse<PolicyGrantType>(parms.Grant, true, out var grant))
+            {
+                throw new ArgumentOutOfRangeException($"{parms.Grant} - Expected Grant, Deny, Elevate");
+            }
+
+            foreach (var p in policyKeys)
+            {
+                m_client.RemovePolicy(role.Entity, p.Key.Value);
+                Console.WriteLine("{0} {1} - REMOVED", grant, p.Name);
+            }
+        }
+
+        #endregion
     }
 }

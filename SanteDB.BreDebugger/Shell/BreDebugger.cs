@@ -97,7 +97,7 @@ namespace SanteDB.SDK.BreDebugger.Shell
 
             // Load debug targets
             Console.WriteLine("Loading debuggees...");
-            JavascriptExecutorPool.Current.ExecuteGlobal(o => o.Engine.DebugHandler.Step += JreStep);
+            JavascriptExecutorPool.Current.ExecuteGlobal(o => o.Engine.Debugger.Step += JreStep);
 
             if (parms.Extensions != null)
             {
@@ -141,7 +141,7 @@ namespace SanteDB.SDK.BreDebugger.Shell
         public void ResetEvironment()
         {
             JavascriptExecutorPool.Current.Dispose();
-            JavascriptExecutorPool.Current.ExecuteGlobal(o => o.Engine.DebugHandler.Step += JreStep);
+            JavascriptExecutorPool.Current.ExecuteGlobal(o => o.Engine.Debugger.Step += JreStep);
             this.m_loadedFiles.Clear();
             // Load debug targets
             Console.WriteLine("Reloading debuggees...");
