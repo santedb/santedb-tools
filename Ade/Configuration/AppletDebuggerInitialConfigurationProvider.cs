@@ -277,7 +277,9 @@ namespace SanteDB.SDK.AppletDebugger.Configuration
                     // Audit any failure - No matter which event
                     new AuditFilterConfiguration(null, null, OutcomeIndicator.EpicFail | OutcomeIndicator.MinorFail | OutcomeIndicator.SeriousFail, true, true),
                     // Audit anything that creates, reads, or updates data
-                    new AuditFilterConfiguration(ActionType.Create | ActionType.Read | ActionType.Update | ActionType.Delete, null, null, true, true),
+                    new AuditFilterConfiguration(ActionType.Create | ActionType.Update | ActionType.Delete, null, null, true, true) { Sensitivity = Core.Model.Attributes.ResourceSensitivityClassification.Administrative | Core.Model.Attributes.ResourceSensitivityClassification.Metadata },
+                    new AuditFilterConfiguration(ActionType.Execute | ActionType.Read, EventIdentifierType.Query, OutcomeIndicator.Success, false, false) { Sensitivity = Core.Model.Attributes.ResourceSensitivityClassification.Administrative | Core.Model.Attributes.ResourceSensitivityClassification.Metadata },
+                    new AuditFilterConfiguration(ActionType.Create | ActionType.Read | ActionType.Update | ActionType.Delete | ActionType.Execute, null, null, true, true) { Sensitivity = Core.Model.Attributes.ResourceSensitivityClassification.PersonalHealthInformation },
                     // Audit any break the glass execution
                     new AuditFilterConfiguration(ActionType.Execute, EventIdentifierType.EmergencyOverrideStarted | EventIdentifierType.SecurityAlert, null, true, true)
                 }
