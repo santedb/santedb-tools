@@ -139,7 +139,7 @@ namespace SanteDB.SDK.AppletDebugger
                     }
                     else
                     {
-                        configurationManager = new InitialConfigurationManager(SanteDBHostType.Debugger, consoleArgs.InstanceName, configurationFile);
+                        configurationManager = new InitialConfigurationManager(SanteDBHostType.Gateway, consoleArgs.InstanceName, configurationFile);
                     }
 
                     var context = new DebuggerApplicationContext(consoleArgs, configurationManager);
