@@ -106,6 +106,7 @@ namespace SanteDB.SDK.AppletDebugger.Configuration
                     new TypeReferenceConfiguration(typeof(UpstreamApplicationIdentityProvider)),
                     new TypeReferenceConfiguration(typeof(UpstreamSecurityChallengeProvider)), // AmiSecurityChallengeProvider
                     new TypeReferenceConfiguration(typeof(UpstreamRoleProviderService)),
+                    new TypeReferenceConfiguration(typeof(UpstreamDataTemplateManagementService)),
                     new TypeReferenceConfiguration(typeof(UpstreamSecurityRepository)),
                     new TypeReferenceConfiguration(typeof(UpstreamRepositoryFactory)),
                     new TypeReferenceConfiguration(typeof(UpstreamPolicyInformationService)),

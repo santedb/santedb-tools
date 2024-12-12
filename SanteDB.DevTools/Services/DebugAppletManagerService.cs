@@ -485,7 +485,8 @@ namespace SanteDB.Tools.Debug.Services
                         AlternateViews = widgetEle.Element(xs_santedb + "views")?.Elements().Where(o => o.Name == xs_santedb + "view").Select(o => new AppletWidgetView()
                         {
                             ViewType = (AppletWidgetViewType)Enum.Parse(typeof(AppletWidgetViewType), o.Attribute("type")?.Value ?? "None"),
-                            Policies = o.Elements().Where(d => d.Name == xs_santedb + "demand").Select(d => d.Value).ToList()
+                            Policies = o.Elements().Where(d => d.Name == xs_santedb + "demand").Select(d => d.Value).ToList(),
+                            Guard = o.Elements().Where(d=>d.Name == xs_santedb + "guard").Select(d=>d.Value).ToList()
                         }).ToList()
                     };
 
