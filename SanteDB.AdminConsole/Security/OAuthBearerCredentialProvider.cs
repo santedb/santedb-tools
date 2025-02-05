@@ -21,6 +21,7 @@ using SanteDB.Client.OAuth;
 using SanteDB.Client.Services;
 using SanteDB.Core.Http;
 using SanteDB.Core.Security;
+using SanteDB.Core.Security.OAuth;
 using System;
 using System.Security.Principal;
 
@@ -98,7 +99,7 @@ namespace SanteDB.AdminConsole.Security
                         app.Configuration.Password = null;
                     }
                 }
-                catch (RestClientException<OAuthClientTokenResponse> e)
+                catch (RestClientException<OAuthTokenResponse> e)
                 {
                     switch (e.Result.Error)
                     {
