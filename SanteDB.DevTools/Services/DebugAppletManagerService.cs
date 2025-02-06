@@ -210,7 +210,7 @@ namespace SanteDB.Tools.Debug.Services
             }
 
             this.m_appletCollection.Add(applet);
-            AppletCollection.ClearCaches();
+            this.m_appletCollection.ClearCaches();
             return true;
         }
 
@@ -253,7 +253,7 @@ namespace SanteDB.Tools.Debug.Services
                     if (itm.Content is byte[] ba && this.m_hostBridgeProvider != null)
                     {
                         itm.Content = System.Text.Encoding.UTF8.GetString(this.m_appletCollection.RenderAssetContent(itm)) + "\r\n" + this.m_hostBridgeProvider.GetBridgeScript();
-                        AppletCollection.ClearCaches();
+                        this.m_appletCollection.ClearCaches();
 
                     }
                 }
@@ -379,6 +379,7 @@ namespace SanteDB.Tools.Debug.Services
                                         applet.Strings = newManifest.Strings;
                                         applet.Templates = newManifest.Templates;
                                         applet.ViewModel = newManifest.ViewModel;
+                                        applet.DynamicHtml = newManifest.DynamicHtml;
                                     }
                                 }
                                 catch (IOException)
@@ -420,7 +421,7 @@ namespace SanteDB.Tools.Debug.Services
 
                         break;
                 }
-                AppletCollection.ClearCaches();
+                this.m_appletCollection.ClearCaches();
                 ApplicationServiceContext.Current.GetService<ILocalizationService>().Reload();
                 this.Changed?.Invoke(this, EventArgs.Empty);
             }
