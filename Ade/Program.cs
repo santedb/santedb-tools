@@ -120,6 +120,10 @@ namespace SanteDB.SDK.AppletDebugger
                         }
                     });
 
+                    //Fix for accidentally adding a newline at the end of the arguments in Visual Studio
+                    if (!string.IsNullOrEmpty(consoleArgs.BaseUrl))
+                        consoleArgs.BaseUrl = consoleArgs.BaseUrl.Trim();
+
                     // Different binding port?
                     if (String.IsNullOrEmpty(consoleArgs.BaseUrl))
                     {
