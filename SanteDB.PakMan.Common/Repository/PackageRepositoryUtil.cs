@@ -42,7 +42,7 @@ namespace SanteDB.PakMan.Repository
         private static PackageRepositoryConfig s_localCache;
 
         // Sante DB SDK
-        private const string LocalCachePath = "file:///~/.santedb-sdk";
+        private const string LocalCachePath = "file:///~/.pakman";
 
         /// <summary>
         /// Static ctor

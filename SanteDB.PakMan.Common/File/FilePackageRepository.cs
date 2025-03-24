@@ -56,7 +56,7 @@ namespace SanteDB.PakMan.Repository.File
         private String GetRepositoryPath()
         {
             // Get confifuration for repository
-            var scanDir = this.m_basePath.LocalPath.Replace("~", Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)).Replace("/", Path.DirectorySeparatorChar.ToString());
+            var scanDir = this.m_basePath.LocalPath.Replace("~", Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)).Replace("/", Path.DirectorySeparatorChar.ToString());
             if (scanDir.StartsWith("\\"))
             {
                 scanDir = scanDir.Substring(1);
