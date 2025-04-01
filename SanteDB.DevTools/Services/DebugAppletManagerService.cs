@@ -422,6 +422,7 @@ namespace SanteDB.Tools.Debug.Services
                         break;
                 }
                 this.m_appletCollection.ClearCaches();
+                this.m_readonlyAppletCollection?.ClearCaches(); // HACK: Currently there is an issue with the R/O collection not clearing when the underlying R/W collection is cache cleared
                 ApplicationServiceContext.Current.GetService<ILocalizationService>().Reload();
                 this.Changed?.Invoke(this, EventArgs.Empty);
             }
