@@ -14,6 +14,12 @@
   <ItemGroup>
     <ProjectReference Include="..\SanteDB.PakMan.Common\SanteDB.PakMan.Common.csproj" />
   </ItemGroup>
+ 
+  <ItemGroup>
+    <None Update="Schema\sdk.xsd">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 
 
   <PropertyGroup>
