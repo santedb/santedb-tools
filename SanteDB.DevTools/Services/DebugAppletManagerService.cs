@@ -199,6 +199,11 @@ namespace SanteDB.Tools.Debug.Services
         /// <returns>True if the manifest was added</returns>
         public bool LoadApplet(AppletManifest applet)
         {
+            if (this.m_appletCollection.Contains(applet))
+            {
+                return true;
+            }
+
             var sourceManifest = applet.Settings.Find(o => o.Name == APPLET_SOURCE)?.Value;
             if (applet.Info.Id == this.m_configuration.DefaultApplet)
             {
@@ -451,7 +456,7 @@ namespace SanteDB.Tools.Debug.Services
             var manifestSource = navigateAsset.Manifest.GetSetting(APPLET_SOURCE);
             if (String.IsNullOrEmpty(manifestSource))
             {
-                return null;
+                return navigateAsset.Content;
             }
 
             String itmPath = System.IO.Path.Combine(
@@ -621,9 +626,9 @@ namespace SanteDB.Tools.Debug.Services
         {
             try
             {
-                this.LoadReferences();
-                this.LoadSolution();
                 this.LoadApplets();
+                this.LoadSolution();
+                this.LoadReferences();
             }
             catch (Exception e)
             {
@@ -636,31 +641,31 @@ namespace SanteDB.Tools.Debug.Services
         /// </summary>
         private void LoadApplets()
         {
-            if (this.m_configuration.AppletReferences?.Any() == true)
-            {
-                foreach (var appletDir in this.m_configuration.AppletReferences)
-                {
-                    try
-                    {
-                        if (!Directory.Exists(appletDir) || !File.Exists(Path.Combine(appletDir, "manifest.xml")))
-                        {
-                            throw new DirectoryNotFoundException($"Applet {appletDir} not found");
-                        }
+            //if (this.m_configuration.AppletReferences?.Any() == true)
+            //{
+            //    foreach (var appletDir in this.m_configuration.AppletReferences)
+            //    {
+            //        try
+            //        {
+            //            if (!Directory.Exists(appletDir) || !File.Exists(Path.Combine(appletDir, "manifest.xml")))
+            //            {
+            //                throw new DirectoryNotFoundException($"Applet {appletDir} not found");
+            //            }
 
-                        String appletPath = Path.Combine(appletDir, "manifest.xml");
-                        using (var fs = File.OpenRead(appletPath))
-                        {
-                            AppletManifest manifest = AppletManifest.Load(fs);
-                            manifest.AddSetting(APPLET_SOURCE, appletPath);
-                            this.LoadApplet(manifest);
-                        }
-                    }
-                    catch (Exception)
-                    {
-                        throw;
-                    }
-                }
-            }
+            //            String appletPath = Path.Combine(appletDir, "manifest.xml");
+            //            using (var fs = File.OpenRead(appletPath))
+            //            {
+            //                AppletManifest manifest = AppletManifest.Load(fs);
+            //                manifest.AddSetting(APPLET_SOURCE, appletPath);
+            //                this.LoadApplet(manifest);
+            //            }
+            //        }
+            //        catch (Exception ex)
+            //        {
+            //            throw;
+            //        }
+            //    }
+            //}
 
             if (m_configuration.AppletsToDebug?.Any() == true)
             {
@@ -757,6 +762,7 @@ namespace SanteDB.Tools.Debug.Services
                         using (var fs = File.OpenRead(refString))
                         {
                             var appletPackage = AppletPackage.Load(fs);
+
                             if (appletPackage is AppletSolution solution)
                             {
                                 foreach (var itm in solution.Include)
