@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2021 - 2024, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
+ * Copyright (C) 2021 - 2025, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
  * Copyright (C) 2019 - 2021, Fyfe Software Inc. and the SanteSuite Contributors
  * Portions Copyright (C) 2015-2018 Mohawk College of Applied Arts and Technology
  * 
@@ -15,6 +15,8 @@
  * License for the specific language governing permissions and limitations under 
  * the License.
  * 
+ * User: fyfej
+ * Date: 2023-6-21
  */
 using SanteDB.Client.Services;
 using SanteDB.Client.UserInterface;
@@ -197,6 +199,11 @@ namespace SanteDB.Tools.Debug.Services
         /// <returns>True if the manifest was added</returns>
         public bool LoadApplet(AppletManifest applet)
         {
+            if (this.m_appletCollection.Contains(applet))
+            {
+                return true;
+            }
+
             var sourceManifest = applet.Settings.Find(o => o.Name == APPLET_SOURCE)?.Value;
             if (applet.Info.Id == this.m_configuration.DefaultApplet)
             {
@@ -422,6 +429,7 @@ namespace SanteDB.Tools.Debug.Services
                         break;
                 }
                 this.m_appletCollection.ClearCaches();
+                this.m_readonlyAppletCollection?.ClearCaches(); // HACK: Currently there is an issue with the R/O collection not clearing when the underlying R/W collection is cache cleared
                 ApplicationServiceContext.Current.GetService<ILocalizationService>().Reload();
                 this.Changed?.Invoke(this, EventArgs.Empty);
             }
@@ -448,7 +456,7 @@ namespace SanteDB.Tools.Debug.Services
             var manifestSource = navigateAsset.Manifest.GetSetting(APPLET_SOURCE);
             if (String.IsNullOrEmpty(manifestSource))
             {
-                return null;
+                return navigateAsset.Content;
             }
 
             String itmPath = System.IO.Path.Combine(
@@ -618,9 +626,9 @@ namespace SanteDB.Tools.Debug.Services
         {
             try
             {
-                this.LoadReferences();
-                this.LoadSolution();
                 this.LoadApplets();
+                this.LoadSolution();
+                this.LoadReferences();
             }
             catch (Exception e)
             {
@@ -633,31 +641,31 @@ namespace SanteDB.Tools.Debug.Services
         /// </summary>
         private void LoadApplets()
         {
-            if (this.m_configuration.AppletReferences?.Any() == true)
-            {
-                foreach (var appletDir in this.m_configuration.AppletReferences)
-                {
-                    try
-                    {
-                        if (!Directory.Exists(appletDir) || !File.Exists(Path.Combine(appletDir, "manifest.xml")))
-                        {
-                            throw new DirectoryNotFoundException($"Applet {appletDir} not found");
-                        }
+            //if (this.m_configuration.AppletReferences?.Any() == true)
+            //{
+            //    foreach (var appletDir in this.m_configuration.AppletReferences)
+            //    {
+            //        try
+            //        {
+            //            if (!Directory.Exists(appletDir) || !File.Exists(Path.Combine(appletDir, "manifest.xml")))
+            //            {
+            //                throw new DirectoryNotFoundException($"Applet {appletDir} not found");
+            //            }
 
-                        String appletPath = Path.Combine(appletDir, "manifest.xml");
-                        using (var fs = File.OpenRead(appletPath))
-                        {
-                            AppletManifest manifest = AppletManifest.Load(fs);
-                            manifest.AddSetting(APPLET_SOURCE, appletPath);
-                            this.LoadApplet(manifest);
-                        }
-                    }
-                    catch (Exception)
-                    {
-                        throw;
-                    }
-                }
-            }
+            //            String appletPath = Path.Combine(appletDir, "manifest.xml");
+            //            using (var fs = File.OpenRead(appletPath))
+            //            {
+            //                AppletManifest manifest = AppletManifest.Load(fs);
+            //                manifest.AddSetting(APPLET_SOURCE, appletPath);
+            //                this.LoadApplet(manifest);
+            //            }
+            //        }
+            //        catch (Exception ex)
+            //        {
+            //            throw;
+            //        }
+            //    }
+            //}
 
             if (m_configuration.AppletsToDebug?.Any() == true)
             {
@@ -754,6 +762,7 @@ namespace SanteDB.Tools.Debug.Services
                         using (var fs = File.OpenRead(refString))
                         {
                             var appletPackage = AppletPackage.Load(fs);
+
                             if (appletPackage is AppletSolution solution)
                             {
                                 foreach (var itm in solution.Include)
