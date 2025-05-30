@@ -51,4 +51,4 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers
 // by using the '*' as shown beloWARN:
 // [assembly: AssemblyVersion("0.9.4.*")][assembly: AssemblyInformationalVersion("Chippewa")]
-[assembly: AssemblyInformationalVersion("Alberta")]
+[assembly: AssemblyInformationalVersion("Bluenose")]
