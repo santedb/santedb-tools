@@ -49,5 +49,12 @@ namespace SanteDB.PakSrv
         [Parameter("uninstall")]
         [Description("Remove the service from the Windows service manager")]
         public bool Uninstall { get; set; }
+
+        /// <summary>
+        /// Add an authorized access
+        /// </summary>
+        [Parameter("addauth")]
+        [Description("Add an authorized credential to the pakman server")]
+        public string AddAuth { get; set; }
     }
 }
