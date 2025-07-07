@@ -21,7 +21,9 @@
 using MohawkCollege.Util.Console.Parameters;
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Reflection;
+using System.Security.Cryptography;
 using System.ServiceProcess;
 using System.Threading;
 
@@ -46,7 +48,17 @@ namespace SanteDB.PakSrv
 
             try
             {
-                if (parms.Install)
+                if(!String.IsNullOrEmpty(parms.AddAuth))
+                {
+                    var hasher = SHA256.Create();
+                    var userHash = BitConverter.ToString(hasher.ComputeHash(System.Text.Encoding.UTF8.GetBytes(parms.AddAuth))).Replace("-", "");
+                    var pass = Guid.NewGuid().ToByteArray().HexEncode();   
+                    var pwdHash = BitConverter.ToString(hasher.ComputeHash(System.Text.Encoding.UTF8.GetBytes(pass))).Replace("-", "");
+                    Console.WriteLine("Secret: {0}", pass);
+                    File.AppendAllLines(".access", new String[] { $"{userHash}:{pwdHash}" });
+
+                }
+                else if (parms.Install)
                 {
                     string serviceName = $"sdb-pkg-srvr";
                     if (!ServiceTools.ServiceInstaller.ServiceIsInstalled(serviceName))

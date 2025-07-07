@@ -73,19 +73,36 @@ namespace SanteDB.PakMan.Packers
         /// <param name="body"></param>
         /// <returns></returns>
         public static string RemoveWhiteSpaceFromStylesheets(string body)
-
         {
-            body = Regex.Replace(body, @"[a-zA-Z]+#", "#");
-            body = Regex.Replace(body, @"[\n\r]+\s*", string.Empty);
-            body = Regex.Replace(body, @"\s+", " ");
-            body = Regex.Replace(body, @"\s?([:,;{}])\s?", "$1");
+            body = s_ElementSelectorsOnIdentified.Replace(body, "#");
+            body = s_SpaceDelimitedNewlineTrivia.Replace(body, string.Empty);
+            body = s_MultispaceTrivia.Replace(body, " ");
+            body = s_DelimiterWhitespaceTrivia.Replace(body, "$1");
             body = body.Replace(";}", "}");
-            body = Regex.Replace(body, @"([\s:]0)(px|pt|%|em)", "$1");
+            body = s_ZeroValueWithUnits.Replace(body, "$1");
 
-            // Remove comments from CSS
-            body = Regex.Replace(body, @"/\*[\d\D]*?\*/", string.Empty);
+            //Remove comments
+            body = s_CommentTrivia.Replace(body, string.Empty);
+
+            //body = Regex.Replace(body, @"[a-zA-Z]+#", "#");
+            //body = Regex.Replace(body, @"[\n\r]+\s*", string.Empty);
+            //body = Regex.Replace(body, @"\s+", " ");
+            //body = Regex.Replace(body, @"\s?([:,;{}])\s?", "$1");
+            //body = body.Replace(";}", "}");
+            //body = Regex.Replace(body, @"([\s:]0)(px|pt|%|em)", "$1");
+
+            //// Remove comments from CSS
+            //body = Regex.Replace(body, @"/\*[\d\D]*?\*/", string.Empty);
             return body;
 
         }
+
+        static readonly Regex s_ElementSelectorsOnIdentified = new Regex(@"[a-zA-Z]+#", RegexOptions.Compiled, TimeSpan.FromMilliseconds(250));
+        static readonly Regex s_SpaceDelimitedNewlineTrivia = new Regex(@"[\n\r]+\s*", RegexOptions.Compiled, TimeSpan.FromMilliseconds(250));
+        static readonly Regex s_MultispaceTrivia = new Regex(@"\s+", RegexOptions.Compiled, TimeSpan.FromMilliseconds(250));
+        static readonly Regex s_DelimiterWhitespaceTrivia = new Regex(@"\s?([:,;{}])\s?", RegexOptions.Compiled, TimeSpan.FromMilliseconds(250));
+        static readonly Regex s_ZeroValueWithUnits = new Regex(@"([\s:]0)(px|pt|%|em)", RegexOptions.Compiled, TimeSpan.FromMilliseconds(250));
+
+        static readonly Regex s_CommentTrivia = new Regex(@"/\*[\d\D]*?\*/", RegexOptions.Compiled, TimeSpan.FromMilliseconds(250));
     }
 }
