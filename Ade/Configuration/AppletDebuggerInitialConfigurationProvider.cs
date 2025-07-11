@@ -68,7 +68,7 @@ namespace SanteDB.SDK.AppletDebugger.Configuration
     {
 
         /// <inheritdoc/>
-        public int Order => Int32.MinValue;
+        public int Order => Int32.MaxValue;
 
         /// <summary>
         /// Provide the default configuration
@@ -80,7 +80,7 @@ namespace SanteDB.SDK.AppletDebugger.Configuration
             var instanceName = appServiceSection.InstanceName;
             var localDataPath = AppDomain.CurrentDomain.GetData("DataDirectory").ToString();
 
-            appServiceSection.ServiceProviders.AddRange(new List<TypeReferenceConfiguration>() {
+            appServiceSection.AddServices(new List<TypeReferenceConfiguration>() {
                     new TypeReferenceConfiguration(typeof(AesSymmetricCrypographicProvider)),
                     new TypeReferenceConfiguration(typeof(InMemoryTickleService)),
                     new TypeReferenceConfiguration(typeof(DefaultNetworkInformationService)),
