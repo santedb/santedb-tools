@@ -73,8 +73,15 @@ namespace SanteDB.SDK.BrainBug
         /// Backup file
         /// </summary>
         [Parameter("bkfile")]
-        [Description("The name of the AB (raw) backup file")]
+        [Description("The name of the AB (raw) or SDBK backup file")]
         public String BackupFile { get; set; }
+
+        /// <summary>
+        /// The password for the backup file
+        /// </summary>
+        [Parameter("password")]
+        [Description("The password to use when extracting the backup file")]
+        public String Password { get; set; }
 
         /// <summary>
         /// Output directory
