@@ -32,7 +32,10 @@ namespace SanteDB.SDK.JsProxy
             CodeNamespace retVal = new CodeNamespace(name);
             retVal.Imports.Add(new CodeNamespaceImport("SanteDB.Core.Model"));
             // Generate the type definition
-            var ct = new CodeTypeDeclaration("DeepCloner");
+            var ct = new CodeTypeDeclaration("DeepCloner")
+            {
+                Attributes = MemberAttributes.Assembly | MemberAttributes.Static
+            };
             retVal.Types.Add(ct);
 
             var cloneTypes = asm.GetTypes().Where(o => o.GetCustomAttribute<JsonObjectAttribute>() != null && !o.IsAbstract && !o.IsGenericTypeDefinition && typeof(IdentifiedData).IsAssignableFrom(o));
@@ -46,7 +49,7 @@ namespace SanteDB.SDK.JsProxy
             }
 
             // Add a generic method which calls others
-            ct.Members.Add(this.CreateGenericDeepCloneMethod(cloneTypes));
+            //ct.Members.Add(this.CreateGenericDeepCloneMethod(cloneTypes));
             return retVal;
         }
 
@@ -57,7 +60,7 @@ namespace SanteDB.SDK.JsProxy
         {
             var retVal = new CodeMemberMethod()
             {
-                Attributes = MemberAttributes.Static | MemberAttributes.Public,
+                Attributes = MemberAttributes.Static | MemberAttributes.Assembly,
                 ReturnType = new CodeTypeReference(typeof(IdentifiedData)),
                 Name = "CloneDeep"
             };
@@ -65,17 +68,30 @@ namespace SanteDB.SDK.JsProxy
             retVal.Parameters.Add(new CodeParameterDeclarationExpression(new CodeTypeReference(typeof(IdentifiedData)), "clonee"));
             var _clonee = new CodeVariableReferenceExpression("clonee");
 
+            // Sort the clone types by their inheritence depth descending
+            var inheritenceDepths = cloneTypes.ToDictionary(t => t, t =>
+            {
+                int depth = 0;
+                while (t.BaseType != typeof(Object))
+                {
+                    depth++;
+                    t = t.BaseType;
+                };
+                return depth;
+            });
+
             // If/else statements
+
             CodeConditionStatement currentIfElse = null;
             int castType = 0;
             retVal.Statements.Add(new CodeSnippetStatement("switch(clonee) {"));
-            foreach(var itm in cloneTypes)
+            foreach(var itm in inheritenceDepths.OrderByDescending(o=>o.Value).Select(o=>o.Key))
             {
                 retVal.Statements.Add(new CodeSnippetStatement($"case {itm.FullName} cl{++castType}:"));
-                retVal.Statements.Add(new CodeMethodReturnStatement(new CodeMethodInvokeExpression(new CodeMethodReferenceExpression(new CodeTypeReferenceExpression("DeepCloner"), "CloneDeep"), new CodeSnippetExpression($"cl{castType}"))));
+                retVal.Statements.Add(new CodeMethodReturnStatement(new CodeMethodInvokeExpression(new CodeMethodReferenceExpression(new CodeSnippetExpression($"cl{castType}"), "DeepCopy"))));
             }
             retVal.Statements.Add(new CodeSnippetStatement("}"));
-            new CodeMethodReturnStatement(_clonee);
+            retVal.Statements.Add(new CodeMethodReturnStatement(_clonee));
 
             return retVal;
         }
@@ -88,7 +104,7 @@ namespace SanteDB.SDK.JsProxy
 
             var retVal = new CodeMemberMethod()
             {
-                Attributes = MemberAttributes.Static | MemberAttributes.Public,
+                Attributes = MemberAttributes.Static | MemberAttributes.Assembly,
                 ReturnType = new CodeTypeReference(forType),
                 Name = "CloneDeep"
             };
@@ -96,6 +112,8 @@ namespace SanteDB.SDK.JsProxy
             retVal.Parameters.Add(new CodeParameterDeclarationExpression(new CodeTypeReference(forType), "clonee"));
             var _clonee = new CodeVariableReferenceExpression("clonee");
             var _retVal = new CodeVariableReferenceExpression("_retVal");
+            var _iterator = new CodeVariableReferenceExpression($"_iterator");
+            bool hasIterator = false;
 
             retVal.Statements.Add(new CodeConditionStatement(new CodeBinaryOperatorExpression(_clonee, CodeBinaryOperatorType.IdentityEquality, s_null), new CodeMethodReturnStatement(s_null)));
 
@@ -107,35 +125,45 @@ namespace SanteDB.SDK.JsProxy
 
                 var _retValProp = new CodePropertyReferenceExpression(_retVal, property.Name);
                 var _cloneeProp = new CodePropertyReferenceExpression(_clonee, property.Name);
-                var nullCheck = new CodeConditionStatement(new CodeBinaryOperatorExpression(_cloneeProp, CodeBinaryOperatorType.IdentityInequality, s_null));
-                retVal.Statements.Add(nullCheck);
+                var targetStatementCollection = retVal.Statements;
+                if (property.PropertyType.IsClass || property.PropertyType.StripNullable() != property.PropertyType)
+                {
+                    var nullCheck = new CodeConditionStatement(new CodeBinaryOperatorExpression(_cloneeProp, CodeBinaryOperatorType.IdentityInequality, s_null));
+                    retVal.Statements.Add(nullCheck);
+                    targetStatementCollection = nullCheck.TrueStatements;
+
+                }
                 if (typeof(IList).IsAssignableFrom(property.PropertyType) && !property.PropertyType.IsArray)
                 {
                     if (typeof(IdentifiedData).IsAssignableFrom(property.PropertyType.GetGenericArguments()[0]))
                     {
-                        nullCheck.TrueStatements.Add(new CodeAssignStatement(_retValProp, new CodeObjectCreateExpression(property.PropertyType)));
-                        nullCheck.TrueStatements.Add(new CodeVariableDeclarationStatement(typeof(int), $"i{property.Name}"));
-                        var _iterator = new CodeVariableReferenceExpression($"i{property.Name}");
+                        targetStatementCollection.Add(new CodeAssignStatement(_retValProp, new CodeObjectCreateExpression(property.PropertyType)));
+                        if(!hasIterator)
+                        {
+                            retVal.Statements.Insert(2, new CodeVariableDeclarationStatement(typeof(int), $"_iterator"));
+                            hasIterator = true;
+                        }
+
                         var iterator = new CodeIterationStatement(
                                 new CodeAssignStatement(_iterator, new CodePrimitiveExpression(0)),
                                 new CodeBinaryOperatorExpression(_iterator, CodeBinaryOperatorType.LessThan, new CodePropertyReferenceExpression(_cloneeProp, "Count")),
                                 new CodeAssignStatement(_iterator, new CodeBinaryOperatorExpression(_iterator, CodeBinaryOperatorType.Add, new CodePrimitiveExpression(1)))
                             );
-                        iterator.Statements.Add(new CodeMethodInvokeExpression(_retValProp, "Add", new CodeMethodInvokeExpression(new CodeMethodReferenceExpression(new CodeTypeReferenceExpression("DeepCloner"), "CloneDeep"), new CodeArrayIndexerExpression(_cloneeProp, _iterator))));
-                        nullCheck.TrueStatements.Add(iterator);
+                        iterator.Statements.Add(new CodeMethodInvokeExpression(_retValProp, "Add", new CodeCastExpression(new CodeTypeReference(property.PropertyType.StripGeneric()), new CodeMethodInvokeExpression(new CodeMethodReferenceExpression(new CodeArrayIndexerExpression(_cloneeProp, _iterator), "DeepCopy")))));
+                        targetStatementCollection.Add(iterator);
                     }
                     else
                     {
-                        nullCheck.TrueStatements.Add(new CodeAssignStatement(_retValProp, new CodeObjectCreateExpression(property.PropertyType, _cloneeProp)));
+                        targetStatementCollection.Add(new CodeAssignStatement(_retValProp, new CodeObjectCreateExpression(property.PropertyType, _cloneeProp)));
                     }
                 }
                 else if(typeof(IdentifiedData).IsAssignableFrom(property.PropertyType))
                 {
-                    nullCheck.TrueStatements.Add(new CodeAssignStatement(_retValProp, new CodeMethodInvokeExpression(new CodeMethodReferenceExpression(new CodeTypeReferenceExpression("DeepCloner"), "CloneDeep"), _cloneeProp)));
+                    targetStatementCollection.Add(new CodeAssignStatement(_retValProp, new CodeCastExpression(new CodeTypeReference(property.PropertyType), new CodeMethodInvokeExpression(new CodeMethodReferenceExpression(_cloneeProp, "DeepCopy")))));
                 }
                 else
                 {
-                    nullCheck.TrueStatements.Add(new CodeAssignStatement(_retValProp, _cloneeProp));
+                    targetStatementCollection.Add(new CodeAssignStatement(_retValProp, _cloneeProp));
                 }
             }
 

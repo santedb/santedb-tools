@@ -235,7 +235,7 @@ function Exception(type, message, detail, cause, stack, policyId, policyOutcome,
                         using(var tw = File.CreateText(parms.Output ?? "out.cs"))
                         {
                             tw.Write(sw.ToString()
-                                .Replace("public class", "public static class") // HACK: #1 Code Dom Does not support static class
+                                .Replace("public class", "internal static class") // HACK: #1 Code Dom Does not support static class
                                 .Replace("CloneDeep(San", "CloneDeep(this San") // HACK: #2 Code Dom does not support extension methods
                             );
                         }
