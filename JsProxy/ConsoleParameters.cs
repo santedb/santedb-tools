@@ -31,9 +31,9 @@ namespace SanteDB.SDK.JsProxy
     public class ConsoleParameters
     {
 
-        [Parameter("asm")]
+        [Parameter("in")]
         [Description("The compiled SanteDB binary from which to operate")]
-        public StringCollection AssemblyFile { get; set; }
+        public StringCollection InputFile { get; set; }
 
         [Parameter("xml")]
         [Description("The .NET XML documentation file related to the assembly passed by --asm")]
@@ -54,6 +54,14 @@ namespace SanteDB.SDK.JsProxy
         [Parameter("proxy")]
         [Description("When specified, generate the JavaScript proxy")]
         public bool JsProxy { get; set; }
+
+        [Parameter("deepclone")]
+        [Description("Generate deep clone extesnion methods")]
+        public bool DeepClone { get; set; }
+
+        [Parameter("modelmap")]
+        [Description("Pre-generate model map classes")]
+        public bool ModelMap { get; set; }
 
         [Parameter("serializer")]
         [Description("When specified generate the C# Serializer Helpers")]

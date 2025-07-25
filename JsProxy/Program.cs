@@ -26,6 +26,8 @@ using SanteDB.Core.Diagnostics;
 using SanteDB.Core.Model;
 using SanteDB.Core.Model.Attributes;
 using SanteDB.Core.Model.Constants;
+using SanteDB.Core.Model.Map;
+using SanteDB.Core.Model.Map.Builder;
 using SanteDB.Core.Services;
 using System;
 using System.CodeDom;
@@ -39,6 +41,7 @@ using System.Reflection;
 using System.Text;
 using System.Xml;
 using System.Xml.Xsl;
+using ZstdSharp.Unsafe;
 
 namespace SanteDB.SDK.JsProxy
 {
@@ -101,7 +104,7 @@ namespace SanteDB.SDK.JsProxy
                 // First we want to open the output file
                 using (TextWriter output = File.CreateText(parms.Output ?? "out.js"))
                 {
-                    foreach (var asm in parms.AssemblyFile)
+                    foreach (var asm in parms.InputFile)
                     {
                         // Output namespace
                         XmlDocument xmlDoc = new XmlDocument();
@@ -176,7 +179,7 @@ function Exception(type, message, detail, cause, stack, policyId, policyOutcome,
                 // First we want to open the output file
                 using (TextWriter output = File.CreateText(parms.Output ?? "out.cs"))
                 {
-                    foreach (var asmFile in parms.AssemblyFile)
+                    foreach (var asmFile in parms.InputFile)
                     {
                         JsonSerializerFactory serFact = new JsonSerializerFactory();
                         CSharpCodeProvider csProvider = new CSharpCodeProvider();
@@ -201,6 +204,79 @@ function Exception(type, message, detail, cause, stack, policyId, policyOutcome,
                     }
                 }
             }
+            else if (parms.DeepClone)
+            {
+                // First we want to open the output file
+                foreach (var asmFile in parms.InputFile)
+                {
+                    DeepCloneFactory deepClone = new DeepCloneFactory();
+                    CSharpCodeProvider csProvider = new CSharpCodeProvider();
+                    CodeCompileUnit compileUnit = new CodeCompileUnit();
+
+                    var asm = asmFile;
+                    if (!Path.IsPathRooted(asm))
+                    {
+                        asm = Path.Combine(Path.GetDirectoryName(typeof(Program).Assembly.Location), asm);
+                    }
+                    // Add namespace
+                    compileUnit.Namespaces.Add(deepClone.CreateCodeNamespace(parms.Namespace ?? Path.GetFileNameWithoutExtension(asm), Assembly.LoadFile(asm)));
+                    compileUnit.ReferencedAssemblies.Add("System.dll");
+                    compileUnit.ReferencedAssemblies.Add("Newtonsoft.Json.dll");
+                    compileUnit.ReferencedAssemblies.Add(typeof(IdentifiedData).Assembly.Location);
+                    compileUnit.ReferencedAssemblies.Add(typeof(IJsonViewModelTypeFormatter).Assembly.Location);
+                    compileUnit.ReferencedAssemblies.Add(typeof(Tracer).Assembly.Location);
+                    using (var sw = new StringWriter())
+                    {
+                        csProvider.GenerateCodeFromCompileUnit(compileUnit, sw, new CodeGeneratorOptions()
+                        {
+                            BlankLinesBetweenMembers = true
+                        });
+
+                        using(var tw = File.CreateText(parms.Output ?? "out.cs"))
+                        {
+                            tw.Write(sw.ToString()
+                                .Replace("public class", "public static class") // HACK: #1 Code Dom Does not support static class
+                                .Replace("CloneDeep(San", "CloneDeep(this San") // HACK: #2 Code Dom does not support extension methods
+                            );
+                        }
+                    }
+                }
+            }
+            else if (parms.ModelMap)
+            {
+                // First we want to open the output file
+                using (TextWriter output = File.CreateText(parms.Output ?? "out.cs"))
+                {
+                    foreach (var inFile in parms.InputFile)
+                    {
+                        using (var fs = File.OpenRead(inFile)) {
+                            var modelMap = ModelMap.Load(fs);
+
+                            ModelMapBuilder serFact = new ModelMapBuilder();
+                            CSharpCodeProvider csProvider = new CSharpCodeProvider();
+                            CodeCompileUnit compileUnit = new CodeCompileUnit();
+
+                            var asm = inFile;
+                            if (!Path.IsPathRooted(asm))
+                            {
+                                asm = Path.Combine(Path.GetDirectoryName(typeof(Program).Assembly.Location), asm);
+                            }
+                            // Add namespace
+                            
+                            compileUnit.Namespaces.Add(serFact.CreateCodeNamespace(modelMap, parms.Namespace));
+                            compileUnit.ReferencedAssemblies.Add("System.dll");
+                            compileUnit.ReferencedAssemblies.Add("Newtonsoft.Json.dll");
+                            compileUnit.ReferencedAssemblies.Add(typeof(IdentifiedData).Assembly.Location);
+                            compileUnit.ReferencedAssemblies.Add(typeof(IJsonViewModelTypeFormatter).Assembly.Location);
+                            compileUnit.ReferencedAssemblies.Add(typeof(Tracer).Assembly.Location);
+                            csProvider.GenerateCodeFromCompileUnit(compileUnit, output, new CodeGeneratorOptions()
+                            {
+                                BlankLinesBetweenMembers = true
+                            });
+                        }
+                    }
+                }
+            }
             else if (parms.ServiceDocumentation)
             {
                 m_docTransform = new XslCompiledTransform();
@@ -220,7 +296,7 @@ function Exception(type, message, detail, cause, stack, policyId, policyOutcome,
                 };
 
                 // First we want to open the output file
-                foreach (var asm in parms.AssemblyFile)
+                foreach (var asm in parms.InputFile)
                 {
                     // Output namespace
                     XmlDocument xmlDoc = new XmlDocument();
