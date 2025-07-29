@@ -116,7 +116,6 @@ namespace SanteDB.SDK.JsProxy
             bool hasIterator = false;
 
             retVal.Statements.Add(new CodeConditionStatement(new CodeBinaryOperatorExpression(_clonee, CodeBinaryOperatorType.IdentityEquality, s_null), new CodeMethodReturnStatement(s_null)));
-
             retVal.Statements.Add(new CodeVariableDeclarationStatement(forType, "_retVal", new CodeObjectCreateExpression(forType)));
 
             foreach(var property in forType.GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(p => p.CanRead && p.CanWrite  && !p.HasCustomAttribute<SerializationMetadataAttribute>()))
@@ -126,7 +125,7 @@ namespace SanteDB.SDK.JsProxy
                 var _retValProp = new CodePropertyReferenceExpression(_retVal, property.Name);
                 var _cloneeProp = new CodePropertyReferenceExpression(_clonee, property.Name);
                 var targetStatementCollection = retVal.Statements;
-                if (property.PropertyType.IsClass || property.PropertyType.StripNullable() != property.PropertyType)
+                if (property.PropertyType.IsClass && !typeof(string).Equals(property.PropertyType))
                 {
                     var nullCheck = new CodeConditionStatement(new CodeBinaryOperatorExpression(_cloneeProp, CodeBinaryOperatorType.IdentityInequality, s_null));
                     retVal.Statements.Add(nullCheck);
@@ -167,6 +166,7 @@ namespace SanteDB.SDK.JsProxy
                 }
             }
 
+            retVal.Statements.Add(new CodeMethodInvokeExpression(new CodeMethodReferenceExpression(_retVal, "CopyDelayLoadIndicators"), _clonee));
             retVal.Statements.Add(new CodeMethodReturnStatement(_retVal));
             return retVal;
         }
