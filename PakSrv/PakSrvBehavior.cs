@@ -78,7 +78,14 @@ namespace SanteDB.PakSrv
             var filter = QueryExpressionParser.BuildLinqExpression<AppletInfo>(RestOperationContext.Current.IncomingRequest.Url.Query.ParseQueryString());
             string offset = RestOperationContext.Current.IncomingRequest.QueryString["_offset"] ?? "0",
                 count = RestOperationContext.Current.IncomingRequest.QueryString["_count"] ?? "10";
-            return this.m_configuration.Repository.GetRepository().Find(filter, Int32.Parse(offset), Int32.Parse(count), out int _).ToList();
+
+            return this.m_configuration.Repository.GetRepository()
+                .Find(filter, Int32.Parse(offset), Int32.Parse(count), out int _)
+                .OrderByDescending(applet => applet.Version)
+                .ThenBy(applet => $"{applet.GetName(null)}")
+                .ThenBy(applet => applet.Author)
+                .ThenBy(applet => applet.Id)
+                .ToList();
         }
 
         /// <summary>
