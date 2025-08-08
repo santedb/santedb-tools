@@ -86,6 +86,7 @@
   </Choose>
   <ItemGroup>
     <PackageReference Include="SharpCompress" Version="0.40.0" />
+    <PackageReference Include="System.Memory" Version="4.6.0" />
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.1.1" />
     <PackageReference Include="System.Text.Json" Version="9.0.0" />
   </ItemGroup>

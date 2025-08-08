@@ -12,6 +12,10 @@
   </ItemGroup>
  
   <ItemGroup>
+    <PackageReference Include="System.Memory" Version="4.6.0" />
+  </ItemGroup>
+ 
+  <ItemGroup>
     <ProjectReference Include="..\SanteDB.PakMan.Common\SanteDB.PakMan.Common.csproj" />
   </ItemGroup>
  
