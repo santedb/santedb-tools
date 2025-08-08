@@ -82,6 +82,13 @@ namespace SanteDB.SDK.AppletDebugger
         public bool NoBrowser { get; set; }
 
         /// <summary>
+        /// Gets or sets the host type
+        /// </summary>
+        [Parameter("type")]
+        [Description("The type of host to emulate (Client, Gateway, Server, etc.)")]
+        public String HostType { get; set; }
+
+        /// <summary>
         /// Convert this object back to an argument list
         /// </summary>
         internal IEnumerable<String> ToArgumentList()

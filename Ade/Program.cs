@@ -139,16 +139,18 @@ namespace SanteDB.SDK.AppletDebugger
                     // Establish a configuration environment 
                     IConfigurationManager configurationManager = null;
                     var configurationFile = Path.Combine(appConfigDirectory, "santedb.config");
+                    _ = Enum.TryParse<SanteDBHostType>(consoleArgs.HostType ?? "Gateway", out var hostType);
+
                     if (File.Exists(configurationFile))
                     {
                         configurationManager = new FileConfigurationService(configurationFile, false);
                     }
                     else
                     {
-                        configurationManager = new InitialConfigurationManager(SanteDBHostType.Gateway, consoleArgs.InstanceName, configurationFile);
+                        configurationManager = new InitialConfigurationManager(hostType, consoleArgs.InstanceName, configurationFile);
                     }
 
-                    var context = new DebuggerApplicationContext(consoleArgs, configurationManager);
+                    var context = new DebuggerApplicationContext(hostType, consoleArgs, configurationManager);
 
                     if (consoleArgs.AutoBindCertificate)
                     {

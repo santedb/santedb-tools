@@ -33,7 +33,7 @@ angular.module('pakman', [])
 
         function fetch(offset, filter, replace) {
             $scope.isLoading = true;     
-            $http.get(`./pak?_count=10&_offset=${offset}&name.value=${filter}`)
+            $http.get(`./pak?_count=10&_offset=${offset}&name.value||author||version||id=${filter}`)
                 .then(
                     (data) => {
                         if(replace || !$scope.packageList) 

@@ -19,12 +19,16 @@
  * Date: 2023-6-21
  */
 using MohawkCollege.Util.Console.Parameters;
+using SanteDB.Core.Data.Backup;
 using SharpCompress.Readers.Tar;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text;
+using SanteDB;
+
 
 namespace SanteDB.SDK.BrainBug
 {
@@ -35,12 +39,20 @@ namespace SanteDB.SDK.BrainBug
     /// </summary>
     internal class Program
     {
+
+        private static readonly Guid[] m_databaseAssets =
+        {
+            Guid.Parse("FB444942-4276-427C-A09C-9C65769837F0"),
+            Guid.Parse("EFF684F2-7641-4697-A4A0-CA0F5171BAA7"),
+            Guid.Parse("3E3C4EF4-5C64-4EC6-BB82-26719F09F8B5")
+        };
+
         /// <summary>
         /// Suck the brains out of the app
         /// </summary>
         private static void Main(string[] args)
         {
-            Console.WriteLine("SanteDB BrainBug - Android Extraction Tool");
+            Console.WriteLine("SanteDB BrainBug - Android / SanteDB Extraction Tool");
             Console.WriteLine("Version {0}", Assembly.GetEntryAssembly().GetName().Version);
             Console.WriteLine(Assembly.GetEntryAssembly().GetCustomAttribute<AssemblyCopyrightAttribute>().Copyright);
 
@@ -100,6 +112,92 @@ namespace SanteDB.SDK.BrainBug
                 return;
             }
 
+            // Determine the file format 
+            using(var fs = File.OpenRead(parameters.BackupFile))
+            {
+                var magicBuffer = new Byte[BackupReader.MAGIC.Length];
+                fs.Read(magicBuffer, 0, magicBuffer.Length);
+                if(BackupReader.MAGIC.SequenceEqual(magicBuffer))
+                {
+                    fs.Close();
+                    ProcessSanteDBBackup(parameters);
+                }
+                else
+                {
+                    fs.Close();
+                    ProcessAndroidBackup(parameters);
+                }
+            }
+            
+        }
+
+        /// <summary>
+        /// Process SanteDB Backup file
+        /// </summary>
+        private static void ProcessSanteDBBackup(ConsoleParameters parameters)
+        {
+            if(!Directory.Exists(parameters.ExtractDir))
+            {
+                Directory.CreateDirectory(parameters.ExtractDir);
+            }
+
+            using(var fs = File.OpenRead(parameters.BackupFile))
+            {
+                using(var br = BackupReader.Open(fs, parameters.Password))
+                {
+                    while(br.GetNextEntry(out var backupAsset))
+                    {
+                        using (var ins = backupAsset.Open())
+                        {
+                            string name = backupAsset.Name;
+                            // For databases we skip the password 
+                            if (m_databaseAssets.Contains(backupAsset.AssetClassId)) // this is actually several files
+                            {
+                                Console.WriteLine("Reported PWD: {0}", ins.ReadPascalString());
+                                while(true)
+                                {
+                                    name = ins.ReadPascalString();
+                                    if(String.IsNullOrEmpty(name))
+                                    {
+                                        break;
+                                    }
+                                    var lengthBuf = new byte[8];
+                                    ins.Read(lengthBuf, 0, 8);
+                                    var assetSize = BitConverter.ToInt64(lengthBuf, 0);
+                                    var bytesRead = 0;
+                                    var targetFile = Path.Combine(parameters.ExtractDir, name);
+                                    Console.WriteLine("Extracting {0} (type {1}) to {2}", backupAsset.Name, backupAsset.AssetClassId, targetFile);
+                                    using (var outs = File.Create(targetFile))
+                                    {
+                                        while (bytesRead < assetSize)
+                                        {
+                                            var assetBuffer = new byte[assetSize - bytesRead > 16_384 ? 16_384 : assetSize - bytesRead];
+                                            bytesRead += ins.Read(assetBuffer, 0, assetBuffer.Length);
+                                            outs.Write(assetBuffer, 0, assetBuffer.Length);
+                                        }
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                var targetFile = Path.Combine(parameters.ExtractDir, name);
+                                Console.WriteLine("Extracting {0} (type {1}) to {2}", backupAsset.Name, backupAsset.AssetClassId, targetFile);
+                                using (var outs = File.Create(targetFile))
+                                {
+                                    ins.CopyTo(outs);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Process an adroid backup
+        /// </summary>
+        private static void ProcessAndroidBackup(ConsoleParameters parameters)
+        {
             try
             {
                 Console.WriteLine("Extracting {0}...", parameters.BackupFile);

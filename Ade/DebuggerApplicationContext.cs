@@ -43,7 +43,7 @@ namespace SanteDB.SDK.AppletDebugger
         private ConsoleParameters m_consoleParameters;
 
         /// <inheritdoc/>
-        public DebuggerApplicationContext(ConsoleParameters debugParameters, IConfigurationManager configurationManager) : base(SanteDBHostType.Gateway, debugParameters.InstanceName, configurationManager)
+        public DebuggerApplicationContext(SanteDBHostType hostType, ConsoleParameters debugParameters, IConfigurationManager configurationManager) : base(hostType, debugParameters.InstanceName, configurationManager)
         {
 
             // Now create the debug applet configuration from the parameters
