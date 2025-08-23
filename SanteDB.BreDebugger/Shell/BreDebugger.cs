@@ -24,7 +24,7 @@ using Jint.Runtime.Interop;
 using Newtonsoft.Json;
 using SanteDB.BusinessRules.JavaScript;
 using SanteDB.Core;
-using SanteDB.Core.Applets.ViewModel.Json;
+using SanteDB.Core.ViewModel.Json;
 using SanteDB.Core.BusinessRules;
 using SanteDB.Core.Model;
 using SanteDB.Core.Services;

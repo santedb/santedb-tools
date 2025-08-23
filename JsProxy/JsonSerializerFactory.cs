@@ -19,7 +19,7 @@
  * Date: 2023-6-21
  */
 using Newtonsoft.Json;
-using SanteDB.Core.Applets.ViewModel.Json;
+using SanteDB.Core.ViewModel.Json;
 using SanteDB.Core.Diagnostics;
 using SanteDB.Core.Model;
 using SanteDB.Core.Model.Attributes;
