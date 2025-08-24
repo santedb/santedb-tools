@@ -24,7 +24,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using SanteDB.Client.Configuration;
 using SanteDB.Core;
-using SanteDB.Core.Applets.ViewModel.Json;
+using SanteDB.Core.ViewModel.Json;
 using SanteDB.Core.Model;
 using SanteDB.Core.Model.Map;
 using SanteDB.Core.Model.Query;

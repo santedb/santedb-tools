@@ -21,7 +21,7 @@
 using Microsoft.CSharp;
 using MohawkCollege.Util.Console.Parameters;
 using Newtonsoft.Json;
-using SanteDB.Core.Applets.ViewModel.Json;
+using SanteDB.Core.ViewModel.Json;
 using SanteDB.Core.Diagnostics;
 using SanteDB.Core.Model;
 using SanteDB.Core.Model.Attributes;

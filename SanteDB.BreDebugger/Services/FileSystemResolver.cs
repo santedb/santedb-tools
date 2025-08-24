@@ -19,6 +19,7 @@
  * Date: 2023-6-21
  */
 using SanteDB.BusinessRules.JavaScript;
+using SanteDB.Core.Services;
 using System;
 using System.IO;
 
@@ -27,13 +28,25 @@ namespace SanteDB.SDK.BreDebugger.Services
     /// <summary>
     /// File system resolver
     /// </summary>
-    internal class FileSystemResolver : IDataReferenceResolver
+    internal class FileSystemResolver : IReferenceResolver
     {
         public String RootDirectory { get; set; }
 
         public FileSystemResolver()
         {
             this.RootDirectory = Environment.CurrentDirectory;
+        }
+
+        /// <inheritdoc/>
+        public Stream ResolveAsStream(string reference) => this.Resolve(reference);
+
+        /// <inheritdoc/>
+        public string ResolveAsString(string reference)
+        {
+            using (var sr = new StreamReader(this.Resolve(reference)))
+            {
+                return sr.ReadToEnd();
+            }
         }
 
         /// <summary>
