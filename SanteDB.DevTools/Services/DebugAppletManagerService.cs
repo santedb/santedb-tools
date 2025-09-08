@@ -145,7 +145,7 @@ namespace SanteDB.Tools.Debug.Services
                     LoginAsset = sourceApplet.LoginAsset,
                     Menus = sourceApplet.Menus,
                     StartAsset = sourceApplet.StartAsset,
-                    Templates = sourceApplet.Templates,
+                    //Templates = sourceApplet.Templates,
                     ViewModel = sourceApplet.ViewModel
                 };
                 foreach (var itm in sourceApplet.Assets)
@@ -384,7 +384,7 @@ namespace SanteDB.Tools.Debug.Services
                                         applet.Menus = newManifest.Menus;
                                         applet.StartAsset = newManifest.StartAsset;
                                         applet.Strings = newManifest.Strings;
-                                        applet.Templates = newManifest.Templates;
+                                        //applet.Templates = newManifest.Templates;
                                         applet.ViewModel = newManifest.ViewModel;
                                         applet.DynamicHtml = newManifest.DynamicHtml;
                                     }
