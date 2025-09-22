@@ -145,7 +145,7 @@ namespace SanteDB.Tools.Debug.Services
                     LoginAsset = sourceApplet.LoginAsset,
                     Menus = sourceApplet.Menus,
                     StartAsset = sourceApplet.StartAsset,
-                    Templates = sourceApplet.Templates,
+                    //Templates = sourceApplet.Templates,
                     ViewModel = sourceApplet.ViewModel
                 };
                 foreach (var itm in sourceApplet.Assets)
@@ -384,7 +384,7 @@ namespace SanteDB.Tools.Debug.Services
                                         applet.Menus = newManifest.Menus;
                                         applet.StartAsset = newManifest.StartAsset;
                                         applet.Strings = newManifest.Strings;
-                                        applet.Templates = newManifest.Templates;
+                                        //applet.Templates = newManifest.Templates;
                                         applet.ViewModel = newManifest.ViewModel;
                                         applet.DynamicHtml = newManifest.DynamicHtml;
                                     }
@@ -496,7 +496,13 @@ namespace SanteDB.Tools.Debug.Services
                             ViewType = (AppletWidgetViewType)Enum.Parse(typeof(AppletWidgetViewType), o.Attribute("type")?.Value ?? "None"),
                             Policies = o.Elements().Where(d => d.Name == xs_santedb + "demand").Select(d => d.Value).ToList(),
                             Guard = o.Elements().Where(d=>d.Name == xs_santedb + "guard").Select(d=>d.Value).ToList()
-                        }).ToList()
+                        }).ToList(),
+                        Badges = widgetEle.Element((XNamespace)PakManTool.XS_APPLET + "badges")?.Elements().Where(o => o.Name == (XNamespace)PakManTool.XS_APPLET + "badge").Select(o => new AppletBadge()
+                        {
+                            BadgeClass = o.Attribute("badge")?.Value,
+                            IconClass = o.Attribute("icon")?.Value,
+                            GuardCondition = o.Elements()?.Where(d => d.Name == (XNamespace)PakManTool.XS_APPLET + "guard").Select(d => d.Value).ToList()
+                        }).ToList(),
                     };
 
                     // TODO Guards

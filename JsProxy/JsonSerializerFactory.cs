@@ -448,7 +448,7 @@ namespace SanteDB.SDK.JsProxy
                 Attributes = MemberAttributes.Public | MemberAttributes.Final
             };
             retVal.Parameters.Add(new CodeParameterDeclarationExpression(typeof(JsonWriter), "w"));
-            retVal.Parameters.Add(new CodeParameterDeclarationExpression(typeof(IdentifiedData), "o"));
+            retVal.Parameters.Add(new CodeParameterDeclarationExpression(typeof(object), "o"));
             retVal.Parameters.Add(new CodeParameterDeclarationExpression(typeof(JsonSerializationContext), "context"));
             var _object = new CodeVariableReferenceExpression("o");
             var _writer = new CodeVariableReferenceExpression("w");

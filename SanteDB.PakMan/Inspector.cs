@@ -178,7 +178,7 @@ namespace SanteDB.PakMan
                 var mfst = this.m_applet.Unpack();
 
                 Console.WriteLine("MENUS: {0}", String.Join(" , ", mfst.Menus.OrderBy(o => o.Order).Select(o => $"{o.Text[0].Value} ({o.Context} - {o.Menus.Count()} sub-items)")));
-                Console.WriteLine("TEMPLATES: {0}", String.Join(" , ", mfst.Templates.Select(o => o.Oid)));
+                //Console.WriteLine("TEMPLATES: {0}", String.Join(" , ", mfst.Templates.Select(o => o.Oid)));
                 Console.WriteLine("LOCALES: {0}", String.Join(" , ", mfst.Locales.Select(o => o.Code)));
                 Console.WriteLine("I18N STRINGS: {0}", String.Join(" , ", mfst.Strings.Select(o => $"{o.Language} ({o.String.Count()} strings - Refer: {o.Reference})")));
                 Console.WriteLine("-- CONTENTS --");

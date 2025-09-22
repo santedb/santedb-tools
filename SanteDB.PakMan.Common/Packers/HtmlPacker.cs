@@ -76,6 +76,12 @@ namespace SanteDB.PakMan.Packers
                             Policies = o.Elements().Where(d => d.Name == (XNamespace)PakManTool.XS_APPLET + "demand")?.Select(d => d?.Value).ToList(),
                             Guard = o.Elements().Where(d => d.Name == (XNamespace)PakManTool.XS_APPLET + "guard").Select(d => d.Value).ToList()
                         }).ToList(),
+                        Badges = viewElement.Element((XNamespace)PakManTool.XS_APPLET + "badges")?.Elements().Where(o=>o.Name == (XNamespace)PakManTool.XS_APPLET + "badge").Select(o=> new AppletBadge()
+                        {
+                            BadgeClass = o.Attribute("badge")?.Value,
+                            IconClass = o.Attribute("icon")?.Value,
+                            GuardCondition = o.Elements()?.Where(d => d.Name == (XNamespace)PakManTool.XS_APPLET + "guard").Select(d => d.Value).ToList()
+                        }).ToList(),
                         ColorClass = viewElement.Attribute("headerClass")?.Value,
                         Priority = Int32.Parse(viewElement.Attribute("priority")?.Value ?? "0"),
                         MaxStack = Int32.Parse(viewElement.Attribute("maxStack")?.Value ?? "2"),
