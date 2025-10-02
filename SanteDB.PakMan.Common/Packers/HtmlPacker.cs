@@ -177,7 +177,7 @@ namespace SanteDB.PakMan.Packers
             }
             catch (Exception e)
             {
-                throw new InvalidOperationException($"Cannot process HTML {file}", e);
+                throw new InvalidOperationException($"Cannot process HTML {file} - {e.ToHumanReadableString()}", e);
                 throw;
             }
         }
