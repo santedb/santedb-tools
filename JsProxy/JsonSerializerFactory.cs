@@ -407,9 +407,7 @@ namespace SanteDB.SDK.JsProxy
             var _xsiTypeRef = new CodeVariableReferenceExpression("_type");
             propertyCondition.TrueStatements.Add(new CodeVariableDeclarationStatement(typeof(Type), "_type", new CodeMethodInvokeExpression(new CodeMethodReferenceExpression(s_fBinder, "BindToType"), new CodePrimitiveExpression(forType.Assembly.FullName), new CodeMethodInvokeExpression(new CodeMethodReferenceExpression(_reader, "ReadAsString")))));
             propertyCondition.TrueStatements.Add(new CodeConditionStatement(new CodeBinaryOperatorExpression(_xsiTypeRef, CodeBinaryOperatorType.IdentityInequality, new CodeTypeOfExpression(forType)),
-                    new CodeVariableDeclarationStatement(forType, "_nretVal", new CodeCastExpression(forType, new CodeMethodInvokeExpression(new CodeMethodReferenceExpression(new CodeMethodInvokeExpression(new CodeMethodReferenceExpression(_jsonContext, "GetFormatter"), _xsiTypeRef), "Deserialize"), _reader, _xsiTypeRef, _context))),
-                    new CodeExpressionStatement(new CodeMethodInvokeExpression(new CodeMethodReferenceExpression(new CodeVariableReferenceExpression("_nretVal"), "CopyObjectData"), s_retVal)),
-                    new CodeMethodReturnStatement(new CodeVariableReferenceExpression("_nretVal"))
+                    new CodeMethodReturnStatement(new CodeCastExpression(forType, new CodeMethodInvokeExpression(new CodeMethodReferenceExpression(new CodeMethodInvokeExpression(new CodeMethodReferenceExpression(_jsonContext, "GetFormatter"), _xsiTypeRef), "Deserialize"), _reader, _xsiTypeRef, _context)))
             ));
             propertyCondition.FalseStatements.Add(new CodeExpressionStatement(new CodeMethodInvokeExpression(new CodeMethodReferenceExpression(_reader, "Skip"))));
 
