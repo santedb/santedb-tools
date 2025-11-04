@@ -93,7 +93,6 @@ namespace SanteDB.AdminConsole.Security
                     if (principal != null)
                     {
                         app.TokenAuthContext = AuthenticationContext.EnterContext(principal);
-
                         return new OAuthBearerTokenCredentials(principal);
                     }
                     else
