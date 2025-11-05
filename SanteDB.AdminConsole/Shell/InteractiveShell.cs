@@ -48,7 +48,7 @@ namespace SanteDB.AdminConsole.Shell
         // Exit debugger
         private bool m_exitRequested = false;
 
-        private Regex m_extractParmsRegex = new Regex(@"((?:-\w\s|--\w+=)(\""[^\""]+\""|\'[^\']+\'|\w+)|([^\s]+))");
+        private Regex m_extractParmsRegex = new Regex(@"((?:-\w+\s|--\w+=)(\""[^\""]+\""|\'[^\']+\'|\w+)|([^\s]+))");
         protected string m_prompt = "> ";
         private ConsoleColor m_promptColor = Console.ForegroundColor;
         // Commandlets
@@ -251,9 +251,11 @@ namespace SanteDB.AdminConsole.Shell
                 {
                     return new string[] { o.Groups[0].Value };
                 }
-                else {
-                    return new string[] { o.Groups[0].Value.Substring(0, 2), o.Groups[0].Value.Substring(3) };
+                else
+                {
+                    return o.Groups[0].Value.Split(' ');
                 }
+
             }).ToArray();
             
 
