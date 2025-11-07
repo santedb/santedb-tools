@@ -22,6 +22,7 @@ using SanteDB.AdminConsole.Shell;
 using SanteDB.Core.Interop;
 using SanteDB.Core.Model;
 using SanteDB.Core.Model.AMI.Auth;
+using SanteDB.Core.Model.Query;
 using SanteDB.Core.Model.Security;
 using SanteDB.Messaging.AMI.Client;
 using System;
@@ -170,7 +171,7 @@ namespace SanteDB.AdminConsole.Util
                 }
             }
 
-            List<SecurityPolicyInfo> policies = m_client.GetPolicies(o => o.ObsoletionTime == null).CollectionItem.OfType<SecurityPolicy>().OrderBy(o => o.Oid).Select(o => new SecurityPolicyInfo(o)).ToList();
+            List<SecurityPolicyInfo> policies = m_client.GetPolicies(o => o.ObsoletionTime == null && o.WithControl("_count", 1000) == null).CollectionItem.OfType<SecurityPolicy>().OrderBy(o => o.Oid).Select(o => new SecurityPolicyInfo(o)).ToList();
             policies.ForEach(o => o.Grant = (PolicyGrantType)10);
             foreach (var pol in user.Policies)
             {
