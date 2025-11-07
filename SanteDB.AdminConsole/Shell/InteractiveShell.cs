@@ -253,7 +253,7 @@ namespace SanteDB.AdminConsole.Shell
                 }
                 else
                 {
-                    return o.Groups[0].Value.Split(' ');
+                    return o.Groups[0].Value.Split(new[] {' '}, 2);
                 }
 
             }).ToArray();
