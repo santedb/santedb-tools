@@ -413,7 +413,6 @@ namespace SanteDB.SDK.JsProxy
                     new CodeSnippetStatement("switch (r.Value) {"),
                     new CodeSnippetStatement("case \"$type\":"),
                     new CodeVariableDeclarationStatement(typeof(Type), "_type", new CodeMethodInvokeExpression(new CodeMethodReferenceExpression(s_fBinder, "BindToType"), new CodePrimitiveExpression(forType.Assembly.FullName), new CodeMethodInvokeExpression(new CodeMethodReferenceExpression(_reader, "ReadAsString")))),
-                    new CodeMethodReturnStatement(new CodeCastExpression(forType, new CodeMethodInvokeExpression(new CodeMethodReferenceExpression(new CodeMethodInvokeExpression(new CodeMethodReferenceExpression(_jsonContext, "GetFormatter"), _xsiTypeRef), "Deserialize"), _reader, _xsiTypeRef, _context))),
                     new CodeConditionStatement(new CodeBinaryOperatorExpression(_xsiTypeRef, CodeBinaryOperatorType.IdentityInequality, new CodeTypeOfExpression(forType)),
                     new CodeMethodReturnStatement(new CodeCastExpression(forType, new CodeMethodInvokeExpression(new CodeMethodReferenceExpression(new CodeMethodInvokeExpression(new CodeMethodReferenceExpression(_jsonContext, "GetFormatter"), _xsiTypeRef), "Deserialize"), _reader, _xsiTypeRef, _context)))),
                     new CodeSnippetExpression("break")
