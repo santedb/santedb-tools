@@ -390,6 +390,10 @@ namespace SanteDB.SDK.JsProxy
             retVal.Statements.Add(new CodeConditionStatement(new CodeBinaryOperatorExpression(readerToken, CodeBinaryOperatorType.IdentityInequality, new CodeFieldReferenceExpression(new CodeTypeReferenceExpression(typeof(JsonToken)), "StartObject")),
                 new CodeAssignStatement(_depth, new CodeBinaryOperatorExpression(_depth, CodeBinaryOperatorType.Subtract, new CodePrimitiveExpression(1)))));
 
+            var _instance = new CodeVariableReferenceExpression("_instance");
+            retVal.Statements.Add(new CodeVariableDeclarationStatement(typeof(Object), "_instance", s_null));
+
+
             var jsonPropertyTokenCondition = new CodeConditionStatement(new CodeBinaryOperatorExpression(readerToken, CodeBinaryOperatorType.IdentityEquality, new CodeFieldReferenceExpression(new CodeTypeReferenceExpression(typeof(JsonToken)), "PropertyName")));
             jsonPropertyTokenCondition.FalseStatements.Add(new CodeConditionStatement(
                 new CodeBinaryOperatorExpression(
@@ -402,15 +406,17 @@ namespace SanteDB.SDK.JsProxy
             ));
             var elementLoop = new CodeIterationStatement(new CodeSnippetStatement(), new CodeMethodInvokeExpression(new CodeMethodReferenceExpression(_reader, "Read")), new CodeSnippetStatement(), jsonPropertyTokenCondition);
 
-            // Switch the object type
-            CodeConditionStatement propertyCondition = new CodeConditionStatement(this.CreateEqualsStatement(new CodePrimitiveExpression("$type"), readerValue));
+            // Switch the object type 
             var _xsiTypeRef = new CodeVariableReferenceExpression("_type");
-            propertyCondition.TrueStatements.Add(new CodeVariableDeclarationStatement(typeof(Type), "_type", new CodeMethodInvokeExpression(new CodeMethodReferenceExpression(s_fBinder, "BindToType"), new CodePrimitiveExpression(forType.Assembly.FullName), new CodeMethodInvokeExpression(new CodeMethodReferenceExpression(_reader, "ReadAsString")))));
-            propertyCondition.TrueStatements.Add(new CodeConditionStatement(new CodeBinaryOperatorExpression(_xsiTypeRef, CodeBinaryOperatorType.IdentityInequality, new CodeTypeOfExpression(forType)),
-                    new CodeMethodReturnStatement(new CodeCastExpression(forType, new CodeMethodInvokeExpression(new CodeMethodReferenceExpression(new CodeMethodInvokeExpression(new CodeMethodReferenceExpression(_jsonContext, "GetFormatter"), _xsiTypeRef), "Deserialize"), _reader, _xsiTypeRef, _context)))
-            ));
-            propertyCondition.FalseStatements.Add(new CodeExpressionStatement(new CodeMethodInvokeExpression(new CodeMethodReferenceExpression(_reader, "Skip"))));
-
+            var switchConditions = new CodeStatementCollection()
+            {
+                    new CodeSnippetStatement("switch (r.Value) {"),
+                    new CodeSnippetStatement("case \"$type\":"),
+                    new CodeVariableDeclarationStatement(typeof(Type), "_type", new CodeMethodInvokeExpression(new CodeMethodReferenceExpression(s_fBinder, "BindToType"), new CodePrimitiveExpression(forType.Assembly.FullName), new CodeMethodInvokeExpression(new CodeMethodReferenceExpression(_reader, "ReadAsString")))),
+                    new CodeConditionStatement(new CodeBinaryOperatorExpression(_xsiTypeRef, CodeBinaryOperatorType.IdentityInequality, new CodeTypeOfExpression(forType)),
+                    new CodeMethodReturnStatement(new CodeCastExpression(forType, new CodeMethodInvokeExpression(new CodeMethodReferenceExpression(new CodeMethodInvokeExpression(new CodeMethodReferenceExpression(_jsonContext, "GetFormatter"), _xsiTypeRef), "Deserialize"), _reader, _xsiTypeRef, _context)))),
+                    new CodeSnippetExpression("break")
+            };
             // Loop
             foreach (var pi in forType.GetProperties(BindingFlags.Public | BindingFlags.Instance))
             {
@@ -420,14 +426,18 @@ namespace SanteDB.SDK.JsProxy
                     continue;
                 }
 
-                propertyCondition = new CodeConditionStatement(this.CreateEqualsStatement(new CodePrimitiveExpression(jsonName), readerValue), new CodeStatement[] { }, new CodeStatement[] { propertyCondition });
-                propertyCondition.TrueStatements.Add(new CodeMethodInvokeExpression(new CodeMethodReferenceExpression(_reader, "Read")));
-                propertyCondition.TrueStatements.Add(new CodeVariableDeclarationStatement(typeof(Object), "_instance", new CodeMethodInvokeExpression(new CodeMethodReferenceExpression(_jsonContext, "ReadElementUtil"), _reader, new CodeTypeOfExpression(pi.PropertyType), new CodeObjectCreateExpression(typeof(JsonSerializationContext), new CodePrimitiveExpression(jsonName), _jsonContext, s_retVal, _context))));
-                var _instance = new CodeVariableReferenceExpression("_instance");
-                propertyCondition.TrueStatements.Add(new CodeConditionStatement(new CodeBinaryOperatorExpression(_instance, CodeBinaryOperatorType.IdentityInequality, s_null), new CodeAssignStatement(new CodePropertyReferenceExpression(s_retVal, pi.Name), new CodeCastExpression(pi.PropertyType, _instance))));
+                switchConditions.Add(new CodeSnippetStatement($"case \"{jsonName}\":"));
+                switchConditions.Add(new CodeMethodInvokeExpression(new CodeMethodReferenceExpression(_reader, "Read")));
+                switchConditions.Add(new CodeAssignStatement(_instance, new CodeMethodInvokeExpression(new CodeMethodReferenceExpression(_jsonContext, "ReadElementUtil"), _reader, new CodeTypeOfExpression(pi.PropertyType), new CodeObjectCreateExpression(typeof(JsonSerializationContext), new CodePrimitiveExpression(jsonName), _jsonContext, s_retVal, _context))));
+                switchConditions.Add(new CodeConditionStatement(new CodeBinaryOperatorExpression(_instance, CodeBinaryOperatorType.IdentityInequality, s_null), new CodeAssignStatement(new CodePropertyReferenceExpression(s_retVal, pi.Name), new CodeCastExpression(pi.PropertyType, _instance))));
+                switchConditions.Add(new CodeSnippetExpression("break"));
             }
 
-            jsonPropertyTokenCondition.TrueStatements.Add(propertyCondition);
+            switchConditions.Add(new CodeSnippetStatement("default:"));
+            switchConditions.Add(new CodeExpressionStatement(new CodeMethodInvokeExpression(new CodeMethodReferenceExpression(_reader, "Skip"))));
+            switchConditions.Add(new CodeSnippetExpression("break"));
+            switchConditions.Add(new CodeSnippetStatement("}"));
+            jsonPropertyTokenCondition.TrueStatements.AddRange(switchConditions);
             retVal.Statements.Add(elementLoop);
             retVal.Statements.Add(new CodeMethodReturnStatement(s_retVal));
             return retVal;
