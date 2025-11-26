@@ -113,11 +113,11 @@ namespace SanteDB.SDK.BrainBug
             }
 
             // Determine the file format 
-            using(var fs = File.OpenRead(parameters.BackupFile))
+            using (var fs = File.OpenRead(parameters.BackupFile))
             {
                 var magicBuffer = new Byte[BackupReader.MAGIC.Length];
                 fs.Read(magicBuffer, 0, magicBuffer.Length);
-                if(BackupReader.MAGIC.SequenceEqual(magicBuffer))
+                if (BackupReader.MAGIC.SequenceEqual(magicBuffer))
                 {
                     fs.Close();
                     ProcessSanteDBBackup(parameters);
@@ -128,7 +128,7 @@ namespace SanteDB.SDK.BrainBug
                     ProcessAndroidBackup(parameters);
                 }
             }
-            
+
         }
 
         /// <summary>
@@ -136,16 +136,16 @@ namespace SanteDB.SDK.BrainBug
         /// </summary>
         private static void ProcessSanteDBBackup(ConsoleParameters parameters)
         {
-            if(!Directory.Exists(parameters.ExtractDir))
+            if (!Directory.Exists(parameters.ExtractDir))
             {
                 Directory.CreateDirectory(parameters.ExtractDir);
             }
 
-            using(var fs = File.OpenRead(parameters.BackupFile))
+            using (var fs = File.OpenRead(parameters.BackupFile))
             {
-                using(var br = BackupReader.Open(fs, parameters.Password))
+                using (var br = BackupReader.Open(fs, parameters.Password))
                 {
-                    while(br.GetNextEntry(out var backupAsset))
+                    while (br.GetNextEntry(out var backupAsset))
                     {
                         using (var ins = backupAsset.Open())
                         {
@@ -153,28 +153,21 @@ namespace SanteDB.SDK.BrainBug
                             // For databases we skip the password 
                             if (m_databaseAssets.Contains(backupAsset.AssetClassId)) // this is actually several files
                             {
-                                Console.WriteLine("Reported PWD: {0}", ins.ReadPascalString());
-                                while(true)
+                                name = ins.ReadPascalString();
+
+                                var lengthBuf = new byte[8];
+                                ins.Read(lengthBuf, 0, 8);
+                                var assetSize = BitConverter.ToInt64(lengthBuf, 0);
+                                var bytesRead = 0;
+                                var targetFile = Path.Combine(parameters.ExtractDir, name);
+                                Console.WriteLine("Extracting {0} (type {1}) to {2}", backupAsset.Name, backupAsset.AssetClassId, targetFile);
+                                using (var outs = File.Create(targetFile))
                                 {
-                                    name = ins.ReadPascalString();
-                                    if(String.IsNullOrEmpty(name))
+                                    while (bytesRead < assetSize)
                                     {
-                                        break;
-                                    }
-                                    var lengthBuf = new byte[8];
-                                    ins.Read(lengthBuf, 0, 8);
-                                    var assetSize = BitConverter.ToInt64(lengthBuf, 0);
-                                    var bytesRead = 0;
-                                    var targetFile = Path.Combine(parameters.ExtractDir, name);
-                                    Console.WriteLine("Extracting {0} (type {1}) to {2}", backupAsset.Name, backupAsset.AssetClassId, targetFile);
-                                    using (var outs = File.Create(targetFile))
-                                    {
-                                        while (bytesRead < assetSize)
-                                        {
-                                            var assetBuffer = new byte[assetSize - bytesRead > 16_384 ? 16_384 : assetSize - bytesRead];
-                                            bytesRead += ins.Read(assetBuffer, 0, assetBuffer.Length);
-                                            outs.Write(assetBuffer, 0, assetBuffer.Length);
-                                        }
+                                        var assetBuffer = new byte[assetSize - bytesRead > 16_384 ? 16_384 : assetSize - bytesRead];
+                                        bytesRead += ins.Read(assetBuffer, 0, assetBuffer.Length);
+                                        outs.Write(assetBuffer, 0, assetBuffer.Length);
                                     }
                                 }
                             }
