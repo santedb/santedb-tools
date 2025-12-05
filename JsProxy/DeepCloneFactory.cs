@@ -64,6 +64,7 @@ namespace SanteDB.SDK.JsProxy
                 ReturnType = new CodeTypeReference(typeof(IdentifiedData)),
                 Name = "CloneDeep"
             };
+            retVal.Comments.Add(new CodeCommentStatement("<inheritdoc />"));
 
             retVal.Parameters.Add(new CodeParameterDeclarationExpression(new CodeTypeReference(typeof(IdentifiedData)), "clonee"));
             var _clonee = new CodeVariableReferenceExpression("clonee");
@@ -108,6 +109,7 @@ namespace SanteDB.SDK.JsProxy
                 ReturnType = new CodeTypeReference(forType),
                 Name = "CloneDeep"
             };
+            retVal.Comments.Add(new CodeCommentStatement("<inheritdoc />", true));
 
             retVal.Parameters.Add(new CodeParameterDeclarationExpression(new CodeTypeReference(forType), "clonee"));
             var _clonee = new CodeVariableReferenceExpression("clonee");

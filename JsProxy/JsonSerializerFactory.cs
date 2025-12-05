@@ -473,7 +473,7 @@ namespace SanteDB.SDK.JsProxy
             retVal.Statements.Add(new CodeVariableDeclarationStatement(forType, "_strong", s_null));
             //retVal.Statements.Add(new CodeVariableDeclarationStatement(typeof(JsonSerializationContext), "_jsonContext", s_null));
             //retVal.Statements.Add(new CodeVariableDeclarationStatement(typeof(bool), "_loaded", s_false));
-            retVal.Statements.Add(this.CreateCastTryCatch(forType, _strongType, _object, new CodeThrowExceptionStatement(new CodeObjectCreateExpression(typeof(ArgumentException), this.CreateStringFormatExpression("Invalid type {0} provided, expected {1}", this.CreateGetTypeExpression(_object), new CodeTypeOfExpression(forType))))));
+            retVal.Statements.Add(this.CreateCastTryCatch(forType, _strongType, _object, new CodeThrowExceptionStatement(new CodeObjectCreateExpression(typeof(ArgumentException), this.CreateStringFormatExpression("Invalid type {0} provided, expected {1}", this.CreateGetTypeExpression(_object), new CodeTypeOfExpression(forType)), new CodeVariableReferenceExpression("e")))));
 
             // Iterate through the object constructing the properties
             foreach (var pi in forType.GetProperties(BindingFlags.Public | BindingFlags.Instance))
