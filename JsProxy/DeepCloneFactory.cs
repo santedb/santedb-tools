@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using SanteDB.Core.Model;
 using SanteDB.Core.Model.Attributes;
@@ -120,7 +120,7 @@ namespace SanteDB.SDK.JsProxy
             retVal.Statements.Add(new CodeConditionStatement(new CodeBinaryOperatorExpression(_clonee, CodeBinaryOperatorType.IdentityEquality, s_null), new CodeMethodReturnStatement(s_null)));
             retVal.Statements.Add(new CodeVariableDeclarationStatement(forType, "_retVal", new CodeObjectCreateExpression(forType)));
 
-            foreach(var property in forType.GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(p => p.CanRead && p.CanWrite  && !p.HasCustomAttribute<SerializationMetadataAttribute>()))
+            foreach(var property in forType.GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(p => p.CanRead && p.CanWrite  && (!p.HasCustomAttribute<SerializationMetadataAttribute>())))
             {
                 retVal.Statements.Add(new CodeCommentStatement($"Clone {property.Name}"));
 
