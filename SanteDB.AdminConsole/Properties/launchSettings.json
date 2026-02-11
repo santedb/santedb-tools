@@ -2,7 +2,6 @@
   "profiles": {
     "Unsecured - Default - Local": {
       "commandName": "Project",
-      "commandLineArgs": "-x http://localhost:8888 -r fyfej-p358"
     },
     "Secured - Default - Local": {
       "commandName": "Project",
