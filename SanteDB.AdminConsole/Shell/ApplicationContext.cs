@@ -155,7 +155,7 @@ namespace SanteDB.AdminConsole.Shell
         {
             m_services.Add(this);
             m_services.Add(new AdminConsoleRestClientFactory());
-            m_services.Add(new ApplicationCredentialProvider());
+            //m_services.Add(new ApplicationCredentialProvider());
             m_services.Add(new OAuthBearerCredentialProvider());
             m_services.Add(new HttpBasicCredentialProvider());
             m_services.Add(new ConsoleCertificateValidator());
@@ -276,13 +276,13 @@ namespace SanteDB.AdminConsole.Shell
             {
                 if (endpoint.ServiceType == ServiceEndpointType.AuthenticationService)
                 {
-                    config.Binding.Security = new RestClientSecurityConfiguration()
-                    {
-                        CredentialProvider = GetService<ApplicationCredentialProvider>(),
-                        Mode = this.Configuration.OAuthBasic ? SecurityScheme.Basic : SecurityScheme.None,
-                        PreemptiveAuthentication = true,
-                        CertificateValidatorXml = new SanteDB.Core.Configuration.TypeReferenceConfiguration(typeof(ConsoleCertificateValidator))
-                    };
+                    //config.Binding.Security = new RestClientSecurityConfiguration()
+                    //{
+                    //    CredentialProvider = GetService<ApplicationCredentialProvider>(),
+                    //    Mode = this.Configuration.OAuthBasic ? SecurityScheme.Basic : SecurityScheme.None,
+                    //    PreemptiveAuthentication = true,
+                    //    CertificateValidatorXml = new SanteDB.Core.Configuration.TypeReferenceConfiguration(typeof(ConsoleCertificateValidator))
+                    //};
                 }
                 else
                 {
