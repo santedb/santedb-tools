@@ -41,6 +41,8 @@ namespace SanteDB.SDK.AppletDebugger
         [STAThread()]
         private static void Main(string[] args)
         {
+            // Service Point Manager for MONO - Required for some services such as SMTP
+            ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12 | SecurityProtocolType.Tls13;
 
             // Gets the console arguments
             var consoleArgs = new ParameterParser<ConsoleParameters>().Parse(args);

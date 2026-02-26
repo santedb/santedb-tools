@@ -27,6 +27,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Tracing;
+using System.Net;
 using System.Reflection;
 
 namespace SanteDB.AdminConsole
@@ -40,6 +41,9 @@ namespace SanteDB.AdminConsole
         static void Main(string[] args)
         {
             PrintHeader();
+
+            // Service Point Manager for MONO - Required for some services such as SMTP
+            ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12 | SecurityProtocolType.Tls13;
 
             var pp = new ParameterParser<ConsoleParameters>();
             var options = pp.Parse(args);
