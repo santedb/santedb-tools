@@ -159,7 +159,7 @@ namespace SanteDB.AdminConsole.Shell
             m_services.Add(new OAuthBearerCredentialProvider());
             m_services.Add(new HttpBasicCredentialProvider());
             m_services.Add(new ConsoleCertificateValidator());
-            m_services.Add(new Client.OAuth.OAuthClientCore(GetService<IRestClientFactory>(), GetService<IAdhocCacheService>()) { ClientId = Configuration.AppId });
+            m_services.Add(new Client.OAuth.OAuthClientCore(GetService<IRestClientFactory>(), GetService<IAdhocCacheService>(), GetService<IConfigurationManager>()) { ClientId = Configuration.AppId });
         }
 
         /// <summary>
