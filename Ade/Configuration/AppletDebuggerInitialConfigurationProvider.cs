@@ -258,7 +258,7 @@ namespace SanteDB.SDK.AppletDebugger.Configuration
             var backupSection = new BackupConfigurationSection()
             {
                 PrivateBackupLocation = Path.Combine(localDataPath, "backup"),
-                PublicBackupLocation = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "santedb", "sdk", "backup")
+                PublicBackupLocation = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonDocuments), "SanteDB")
             };
 
             configuration.Sections.Add(new RestClientConfigurationSection()
