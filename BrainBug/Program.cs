@@ -151,7 +151,7 @@ namespace SanteDB.SDK.BrainBug
                         {
                             string name = backupAsset.Name;
                             // For databases we skip the password 
-                            if (m_databaseAssets.Contains(backupAsset.AssetClassId)) // this is actually several files
+                            if (m_databaseAssets.Contains(backupAsset.AssetClassId) && backupAsset.Name.Contains("#sqlite")) // this is actually several files
                             {
                                 name = ins.ReadPascalString();
 
