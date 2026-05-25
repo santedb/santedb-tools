@@ -32,6 +32,7 @@ using System.Collections;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using SanteDB.Core.Model.Entities;
 
 namespace SanteDB.SDK.JsProxy
 {
@@ -343,7 +344,7 @@ namespace SanteDB.SDK.JsProxy
                 {
                     retVal.Statements.Add(this.CreateToStringTryCatch(_strongType, _o, new CodeMethodReturnStatement(s_null)));
                 }
-                else if(propertyType.PropertyType == typeof(byte[]))
+                else if (propertyType.PropertyType == typeof(byte[]))
                 {
                     retVal.Statements.Add(this.CreateCastOrBase64Decode(_strongType, _o, new CodeMethodReturnStatement(s_null)));
                 }
@@ -544,7 +545,17 @@ namespace SanteDB.SDK.JsProxy
                                 nullPropertyValueCondition.TrueStatements.Add(shouldForceLoad);
                                 shouldForceLoad.TrueStatements.Add(new CodeVariableDeclarationStatement(pi.PropertyType, "_delay", s_null));
                                 var codeRef = new CodeMethodReferenceExpression(new CodeTypeReferenceExpression(typeof(ExtensionMethods)), nameof(ExtensionMethods.LoadProperty), new CodeTypeReference(pi.PropertyType.StripGeneric()));
-                                shouldForceLoad.TrueStatements.Add(new CodeAssignStatement(_delay, new CodeMethodInvokeExpression(codeRef, _strongType, new CodePrimitiveExpression(pi.Name))));
+
+                                if (typeof(IdentityDomain) == pi.PropertyType ||
+                                    typeof(IHasPolicies).IsAssignableFrom(pi.PropertyType))
+                                {
+                                    var privacyRef = new CodeMethodReferenceExpression(new CodeTypeReferenceExpression(typeof(SanteDB.Core.ExtensionMethods)), nameof(SanteDB.Core.ExtensionMethods.ApplyPrivacyPolicies), new CodeTypeReference(pi.PropertyType.StripGeneric()));
+                                    shouldForceLoad.TrueStatements.Add(new CodeAssignStatement(_delay, new CodeMethodInvokeExpression(privacyRef, new CodeMethodInvokeExpression(codeRef, _strongType, new CodePrimitiveExpression(pi.Name)))));
+                                }
+                                else
+                                {
+                                    shouldForceLoad.TrueStatements.Add(new CodeAssignStatement(_delay, new CodeMethodInvokeExpression(codeRef, _strongType, new CodePrimitiveExpression(pi.Name))));
+                                }
                                 wasLoadedExpression = new CodeBinaryOperatorExpression(_delay, CodeBinaryOperatorType.IdentityInequality, s_null);
                             }
                         }
