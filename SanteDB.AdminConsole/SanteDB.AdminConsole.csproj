@@ -5,7 +5,7 @@
   <PropertyGroup>
     <TargetFramework>net4.8</TargetFramework>
     <Version>$(VersionNumber)</Version>
-    <InformationalVersion>Alberta</InformationalVersion>
+    <InformationalVersion>Chippewa</InformationalVersion>
     <OutputType>Exe</OutputType>
     <AssemblyName>sdbac</AssemblyName>
     <Copyright>Copyright (C) 2015-2026 SanteSuite Contributors (See: NOTICES)</Copyright>

@@ -732,12 +732,26 @@ function Exception(type, message, detail, cause, stack, policyId, policyOutcome,
                 writer.WriteLine();
                 writer.WriteLine("\t */");
 
-                writer.WriteLine("\t{0} : '{1}',", fi.Name, fi.GetValue(null));
-                try
+                var value = fi.GetValue(null);
+                if (value is IEnumerable enu)
                 {
-                    writer.WriteLine("\t{0}Int : '{1}',", fi.Name, (int)fi.GetValue(null));
+                    writer.WriteLine("\t{0} : [ {1} ],", fi.Name, String.Join(",", enu.OfType<Object>().Select(o=>$"'{o}'")));
+                    try
+                    {
+                        writer.WriteLine("\t{0}Int : [ {1} ],", fi.Name, String.Join(",", enu.OfType<Object>().Select(o => $"{(int)o}")));
+                    }
+                    catch { }
+
                 }
-                catch { }
+                else
+                {
+                    writer.WriteLine("\t{0} : '{1}',", fi.Name, value);
+                    try
+                    {
+                        writer.WriteLine("\t{0}Int : '{1}',", fi.Name, (int)value);
+                    }
+                    catch { }
+                }
             }
 
             writer.WriteLine("}}  // {0} ", jobject.Id);
