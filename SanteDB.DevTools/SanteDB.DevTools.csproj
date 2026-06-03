@@ -4,6 +4,9 @@
 <PropertyGroup Condition="'$(VersionNumber)' == ''">
     <VersionNumber>3.0-debug</VersionNumber>
   </PropertyGroup>
+	<PropertyGroup>
+		<TargetFrameworks>net10.0;net48;netstandard2.0</TargetFrameworks>
+	</PropertyGroup>
  
   <ItemGroup>
     <None Include="..\SanteDB.licenseheader">
@@ -25,9 +28,8 @@
     </None>
   </ItemGroup>
 
-
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    
     <PackageId>SanteDB.DevTools</PackageId>
     <Title>SanteDB.DevTools</Title>
     <Version>$(VersionNumber)</Version>
@@ -40,7 +42,6 @@
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <IncludeSymbols>true</IncludeSymbols>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Product>SanteDB</Product>
     <Copyright>Copyright (C) 2015-2026 SanteSuite Contributors (See: NOTICES)</Copyright>
     <Company>SanteSuite Contributors</Company>
@@ -50,29 +51,30 @@
   </PropertyGroup>
   
   <Choose>
-    <When Condition="$(SolutionName.Contains('-ext'))">
-      <ItemGroup>
-        <ProjectReference Include="..\..\santedb-applets\SanteDB.Core.Applets\SanteDB.Core.Applets.csproj">
-        </ProjectReference>
-        <ProjectReference Include="..\..\santedb-bre-js\SanteDB.BusinessRules.JavaScript\SanteDB.BusinessRules.JavaScript.csproj">
-        </ProjectReference>
-        <ProjectReference Include="..\..\santedb-model\SanteDB.Core.Model\SanteDB.Core.Model.csproj">
-        </ProjectReference>
-        <ProjectReference Include="..\..\santedb-api\SanteDB.Core.Api\SanteDB.Core.Api.csproj">
-        </ProjectReference>
-        <ProjectReference Include="..\..\santedb-dc-core\SanteDB.Client\SanteDB.Client.csproj" />
-        
-      </ItemGroup>
+    <When Condition="$(SolutionName.Contains('-nuget'))">
+			<ItemGroup>
+				<PackageReference Include="SanteDB.Core.Api" Version="$(VersionNumber)" />
+				<PackageReference Include="SanteDB.Core.Applets" Version="$(VersionNumber)" />
+				<PackageReference Include="SanteDB.Core.Model" Version="$(VersionNumber)" />
+				<PackageReference Include="SanteDB.BusinessRules.JavaScript" Version="$(VersionNumber)" />
+				<PackageReference Include="SanteDB.BI" Version="$(VersionNumber)" />
+				<PackageReference Include="SanteDB.Client" Version="$(VersionNumber)" />
+			</ItemGroup>
     </When>
     <Otherwise>
-      <ItemGroup>
-        <PackageReference Include="SanteDB.Core.Api" Version="$(VersionNumber)" />
-        <PackageReference Include="SanteDB.Core.Applets" Version="$(VersionNumber)" />
-        <PackageReference Include="SanteDB.Core.Model" Version="$(VersionNumber)" />
-        <PackageReference Include="SanteDB.BusinessRules.JavaScript" Version="$(VersionNumber)" />
-        <PackageReference Include="SanteDB.BI" Version="$(VersionNumber)" />
-        <PackageReference Include="SanteDB.Client" Version="$(VersionNumber)" />
-      </ItemGroup>
+			<ItemGroup>
+				<ProjectReference Include="..\..\santedb-applets\SanteDB.Core.Applets\SanteDB.Core.Applets.csproj">
+				</ProjectReference>
+				<ProjectReference Include="..\..\santedb-bre-js\SanteDB.BusinessRules.JavaScript\SanteDB.BusinessRules.JavaScript.csproj">
+				</ProjectReference>
+				<ProjectReference Include="..\..\santedb-model\SanteDB.Core.Model\SanteDB.Core.Model.csproj">
+				</ProjectReference>
+				<ProjectReference Include="..\..\santedb-api\SanteDB.Core.Api\SanteDB.Core.Api.csproj">
+				</ProjectReference>
+				<ProjectReference Include="..\..\santedb-dc-core\SanteDB.Client\SanteDB.Client.csproj" />
+
+			</ItemGroup>
+      
     </Otherwise>
   </Choose>
 </Project>

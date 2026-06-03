@@ -3,8 +3,10 @@
   <PropertyGroup Condition="'$(VersionNumber)' == ''">
     <VersionNumber>3.0.0-debug</VersionNumber>
   </PropertyGroup>
+	<PropertyGroup>
+		<TargetFrameworks>net10.0;net48;netstandard2.0</TargetFrameworks>
+	</PropertyGroup>
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>SanteDB.PakMan</RootNamespace>
     <Version>$(VersionNumber)</Version>
     <PackageId>SanteDB.PakMan.Common</PackageId>
@@ -17,20 +19,19 @@
   </ItemGroup>
 
   <Choose>
-    <When Condition="$(SolutionName.Contains('-ext'))">
-      <ItemGroup>
-        <ProjectReference Include="..\..\santedb-applets\SanteDB.Core.Applets\SanteDB.Core.Applets.csproj" />
-      </ItemGroup>
-      <ItemGroup>
-        <ProjectReference Include="..\..\santedb-cdss\SanteDB.Cdss.Xml\SanteDB.Cdss.Xml.csproj" />
-      </ItemGroup>
-    </When>
-    <Otherwise>
-      <ItemGroup>
-        <PackageReference Include="SanteDB.Core.Applets" Version="$(VersionNumber)" />
-        <PackageReference Include="SanteDB.Cdss.Xml" Version="$(VersionNumber)" />
-      </ItemGroup>
-    </Otherwise>
+    <When Condition="$(SolutionName.Contains('-nuget'))">
+			<ItemGroup>
+				<PackageReference Include="SanteDB.Core.Applets" Version="$(VersionNumber)" />
+				<PackageReference Include="SanteDB.Cdss.Xml" Version="$(VersionNumber)" />
+			</ItemGroup>
+		</When>
+		<Otherwise>
+			<ItemGroup>
+				<ProjectReference Include="..\..\santedb-applets\SanteDB.Core.Applets\SanteDB.Core.Applets.csproj" />
+				<ProjectReference Include="..\..\santedb-cdss\SanteDB.Cdss.Xml\SanteDB.Cdss.Xml.csproj" />
+			</ItemGroup>
+
+		</Otherwise>
   </Choose>
 
 </Project>
