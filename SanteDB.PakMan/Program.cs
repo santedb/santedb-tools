@@ -74,6 +74,10 @@ namespace SanteDB.PakMan
             {
                 return new Signer(parameters).Sign();
             }
+            else if(!String.IsNullOrEmpty(parameters.Get))
+            {
+                return new Manager(parameters).Get();
+            }
             else
             {
                 Console.WriteLine("Nothing to do!");
