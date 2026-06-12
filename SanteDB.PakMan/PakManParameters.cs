@@ -104,6 +104,13 @@ namespace SanteDB.PakMan
         public bool Compile { get; internal set; }
 
         /// <summary>
+        /// Get a package from any source
+        /// </summary>
+        [Parameter("get")]
+        [Description("Get the specified package from the any location")]
+        public String Get { get; set; }
+
+        /// <summary>
         /// Signing instruction
         /// </summary>
         [Parameter("sign")]
