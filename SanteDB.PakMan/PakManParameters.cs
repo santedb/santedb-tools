@@ -121,6 +121,10 @@ namespace SanteDB.PakMan
         [Description("The thumprint of the key to use for signing (in your user's personal store)")]
         public string SignKeyHash { get; set; }
 
+        [Parameter("machine")]
+        [Description("Use the machine store instead of the user store")]
+        public bool UseLocalMachine { get; set; }
+
         /// <summary>
         /// Embed certificate into the manifest
         /// </summary>
@@ -225,7 +229,7 @@ namespace SanteDB.PakMan
             }
             else if (!String.IsNullOrEmpty(this.SignKeyHash))
             {
-                using (var store = new X509Store(StoreName.My, StoreLocation.CurrentUser))
+                using (var store = new X509Store(StoreName.My, this.UseLocalMachine ? StoreLocation.LocalMachine : StoreLocation.CurrentUser))
                 {
                     store.Open(OpenFlags.OpenExistingOnly);
                     var candidates = store.Certificates.Find(X509FindType.FindByThumbprint, this.SignKeyHash, false);
