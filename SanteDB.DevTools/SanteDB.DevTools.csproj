@@ -1,31 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
 
-<PropertyGroup Condition="'$(VersionNumber)' == ''">
+  <PropertyGroup Condition="'$(VersionNumber)' == ''">
     <VersionNumber>3.0-debug</VersionNumber>
   </PropertyGroup>
  
-  <ItemGroup>
-    <None Include="..\SanteDB.licenseheader">
-      <Link>SanteDB.licenseheader</Link>
-    </None>
-  </ItemGroup>
- 
-  <ItemGroup>
-    <PackageReference Include="System.Memory" Version="4.6.0" />
-  </ItemGroup>
- 
-  <ItemGroup>
-    <ProjectReference Include="..\SanteDB.PakMan.Common\SanteDB.PakMan.Common.csproj" />
-  </ItemGroup>
- 
-  <ItemGroup>
-    <None Update="Schema\sdk.xsd">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
-
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <PackageId>SanteDB.DevTools</PackageId>
@@ -75,4 +54,24 @@
       </ItemGroup>
     </Otherwise>
   </Choose>
+
+  <ItemGroup>
+    <None Include="..\SanteDB.licenseheader">
+      <Link>SanteDB.licenseheader</Link>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Memory" Version="4.6.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SanteDB.PakMan.Common\SanteDB.PakMan.Common.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Schema\sdk.xsd">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>
