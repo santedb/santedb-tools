@@ -48,6 +48,9 @@
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe">
       <Version>6.1.2</Version>
     </PackageReference>
+    <PackageReference Include="System.Text.Json">
+      <Version>9.0.18</Version>
+    </PackageReference>
   </ItemGroup>
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
