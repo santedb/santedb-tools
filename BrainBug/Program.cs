@@ -28,6 +28,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using SanteDB;
+using SharpCompress.Factories;
 
 
 namespace SanteDB.SDK.BrainBug
@@ -223,7 +224,7 @@ namespace SanteDB.SDK.BrainBug
                     }
 
                     using (var fs = File.OpenRead(parameters.TargetFile))
-                    using (var tar = TarReader.OpenReader(fs))
+                    using (var tar = new TarFactory().OpenReader(fs, null))
                     {
                         while (tar.MoveToNextEntry())
                         {
