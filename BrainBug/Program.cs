@@ -223,7 +223,7 @@ namespace SanteDB.SDK.BrainBug
                     }
 
                     using (var fs = File.OpenRead(parameters.TargetFile))
-                    using (var tar = TarReader.Open(fs))
+                    using (var tar = TarReader.OpenReader(fs))
                     {
                         while (tar.MoveToNextEntry())
                         {

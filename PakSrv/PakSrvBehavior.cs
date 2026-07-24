@@ -303,7 +303,7 @@ namespace SanteDB.PakSrv
             if (Encoding.UTF8.GetString(content as byte[], 0, 4) == "LZIP")
             {
                 using (var ms = new MemoryStream(content as byte[]))
-                using (var ls = new SharpCompress.Compressors.LZMA.LZipStream(ms, SharpCompress.Compressors.CompressionMode.Decompress))
+                using (var ls = SharpCompress.Compressors.LZMA.LZipStream.Create(ms, SharpCompress.Compressors.CompressionMode.Decompress))
                 {
                     var oms = new MemoryStream();
                     ls.CopyTo(oms);
