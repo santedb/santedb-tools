@@ -333,24 +333,24 @@ namespace SanteDB.PakMan
             }
 
             using (var fs = File.OpenRead(qualifiedFile))
-            using (var tar = ZipReader.Open(fs))
+            using (var zip = ZipReader.OpenReader(fs))
             {
-                while (tar.MoveToNextEntry())
+                while (zip.MoveToNextEntry())
                 {
 
-                    string outName = Path.Combine(output, tar.Entry.Key);
+                    string outName = Path.Combine(output, zip.Entry.Key);
                     if (!Directory.Exists(Path.GetDirectoryName(outName)))
                     {
                         Directory.CreateDirectory(Path.GetDirectoryName(outName));
                     }
 
-                    Emit.Message("INFO", " {0} > {1}", tar.Entry.Key, outName);
+                    Emit.Message("INFO", " {0} > {1}", zip.Entry.Key, outName);
 
-                    if (!tar.Entry.IsDirectory)
+                    if (!zip.Entry.IsDirectory)
                     {
                         using (var ofs = File.Create(outName))
                         {
-                            tar.WriteEntryTo(ofs);
+                            zip.WriteEntryTo(ofs);
                         }
                     }
                 }

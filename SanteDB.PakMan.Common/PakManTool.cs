@@ -20,6 +20,7 @@
  */
 using SanteDB.Core.Applets.Model;
 using SanteDB.PakMan.Packers;
+using SharpCompress.Compressors.LZMA;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -139,7 +140,7 @@ namespace SanteDB.PakMan
         {
             using (var ms = new MemoryStream(content))
             {
-                using (var cs = new SharpCompress.Compressors.LZMA.LZipStream(ms, SharpCompress.Compressors.CompressionMode.Decompress))
+                using (var cs = LZipStream.Create(ms, SharpCompress.Compressors.CompressionMode.Decompress))
                 {
                     using (var oms = new MemoryStream())
                     {
@@ -157,7 +158,7 @@ namespace SanteDB.PakMan
         {
             using (var ms = new MemoryStream())
             {
-                using (var cs = new SharpCompress.Compressors.LZMA.LZipStream(ms, SharpCompress.Compressors.CompressionMode.Compress))
+                using (var cs = LZipStream.Create(ms, SharpCompress.Compressors.CompressionMode.Compress))
                 {
                     cs.Write(content, 0, content.Length);
                 }
@@ -172,7 +173,7 @@ namespace SanteDB.PakMan
         {
             using (var ms = new MemoryStream())
             {
-                using (var cs = new SharpCompress.Compressors.LZMA.LZipStream(ms, SharpCompress.Compressors.CompressionMode.Compress))
+                using (var cs = LZipStream.Create(ms, SharpCompress.Compressors.CompressionMode.Compress))
                 using (var sw = new StreamWriter(cs, System.Text.Encoding.UTF8))
                 {
                     sw.Write(content);
