@@ -302,7 +302,7 @@ namespace SanteDB.Tools.Debug.Services
                 }
                 else
                 {
-                    Console.WriteLine("Skipping directory {0}", dir);
+                    m_tracer.TraceInfo("Skipping directory {0}", dir);
                 }
             }
 
@@ -315,7 +315,8 @@ namespace SanteDB.Tools.Debug.Services
         /// </summary>
         private AppletAsset ProcessItem(String source, String path)
         {
-            Console.WriteLine("\t Processing {0}...", source);
+
+            m_tracer.TraceInfo("\t Processing {0}...", source);
 
 
             try

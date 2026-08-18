@@ -1,23 +1,69 @@
 <Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net10.0;net48</TargetFrameworks>
+    <LangVersion>14.0</LangVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(VersionNumber)'==''">
+    <VersionNumber>3.1-debug</VersionNumber>
+  </PropertyGroup>
 
   <PropertyGroup>
-    <TargetFramework>net48</TargetFramework>
-
-    <IsPackable>false</IsPackable>
+    <PackageId>SanteDB.DevTools.Test</PackageId>
+    <Title>SanteDB.DevTools.Test</Title>
+    <Version>$(VersionNumber)</Version>
+    <Description>Testing Project for SanteDB SDK DevTools</Description>
+    <Authors>SanteSuite Contributors</Authors>
+    <PackageTags>SanteDB</PackageTags>
+    <RepositoryUrl>https://github.com/santedb/santedb-tools</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <IncludeSymbols>true</IncludeSymbols>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <Product>SanteDB</Product>
+    <Copyright>Copyright (C) 2015-2026 SanteSuite Contributors (See: NOTICES)</Copyright>
+    <Company>SanteSuite Contributors</Company>
+    <PackageIconUrl>http://santesuite.org/assets/img/logo.png</PackageIconUrl>
+    <PackageProjectUrl>http://santesuite.org</PackageProjectUrl>
   </PropertyGroup>
+
+  <Choose>
+    <When Condition="$(SolutionName.Contains('-nuget'))">
+      <ItemGroup>
+        <PackageReference Include="SanteDB.Core.TestFramework" Version="$(VersionNumber)" />
+      </ItemGroup>
+    </When>
+    <Otherwise>
+      <ItemGroup>
+        <ProjectReference Include="..\..\santedb-api\SanteDB.Core.TestFramework\SanteDB.Core.TestFramework.csproj" />
+      </ItemGroup>
+    </Otherwise>
+  </Choose>
+
+  <ItemGroup>
+    <PackageReference Include="NUnit" Version="[4.5.0,5)" />
+    <PackageReference Include="NUnit3TestAdapter" Version="[6.1.0,7)" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="[18.3.0,18.4)" />
+  </ItemGroup>
 
   <ItemGroup>
     <None Include="..\..\SanteDB.licenseheader" Link="SanteDB.licenseheader" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="NUnit" Version="3.13.3" />
-    <PackageReference Include="NUnit3TestAdapter" Version="4.4.2" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
-  </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\SanteDB.DevTools\SanteDB.DevTools.csproj" />
-  </ItemGroup>
+  <Choose>
+    <When Condition="$(SolutionName.Contains('-nuget'))">
+      <ItemGroup>
+        <PackageReference Include="SanteDB.DevTools" Version="$(VersionNumber)" />
+      </ItemGroup>
+    </When>
+    <Otherwise>
+      <ItemGroup>
+        <ProjectReference Include="..\SanteDB.DevTools\SanteDB.DevTools.csproj" />
+      </ItemGroup>
+    </Otherwise>
+  </Choose>
 
 </Project>
