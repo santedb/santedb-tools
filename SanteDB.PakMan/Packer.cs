@@ -22,6 +22,7 @@ using SanteDB.Core.Applets.Model;
 using SanteDB.PakMan.Repository;
 using System;
 using System.IO;
+using System.Web.UI.HtmlControls;
 
 namespace SanteDB.PakMan
 {
@@ -77,6 +78,11 @@ namespace SanteDB.PakMan
                     Emit.Message("WARN", "This package is not signed, production release tools may not load it!");
                 }
 
+                if(Directory.Exists(this.m_parms.Output))
+                {
+                    this.m_parms.Output = Path.Combine(this.m_parms.Output, pkg.Meta.Id) + ".pak";
+                    Emit.Message("INFO", "Will output to {0}", this.m_parms.Output);
+                }
                 if (!Directory.Exists(Path.GetDirectoryName(this.m_parms.Output)) && !String.IsNullOrEmpty(Path.GetDirectoryName(this.m_parms.Output)))
                 {
                     Directory.CreateDirectory(Path.GetDirectoryName(this.m_parms.Output));

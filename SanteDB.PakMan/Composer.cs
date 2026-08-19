@@ -145,6 +145,12 @@ namespace SanteDB.PakMan
                     new Signer(this.m_parms).CreateSignedSolution(sln);
                 }
 
+                if (Directory.Exists(this.m_parms.Output))
+                {
+                    this.m_parms.Output = Path.Combine(this.m_parms.Output, sln.Meta.Id) + ".pak";
+                    Emit.Message("INFO", "Will output to {0}", this.m_parms.Output);
+                }
+
                 // Now save
                 using (FileStream fs = File.Create(this.m_parms.Output ?? Path.ChangeExtension(sln.Meta.Id, ".sln.pak")))
                 {
