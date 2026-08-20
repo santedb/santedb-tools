@@ -17,9 +17,6 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <PackageReference Include="FirebirdSql.Data.FirebirdClient">
-      <Version>9.1.1</Version>
-    </PackageReference>
     <PackageReference Include="Microsoft.Data.Sqlite.Core">
       <Version>9.0.0</Version>
     </PackageReference>
