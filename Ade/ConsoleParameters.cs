@@ -82,6 +82,13 @@ namespace SanteDB.SDK.AppletDebugger
         public bool NoBrowser { get; set; }
 
         /// <summary>
+        /// No applet manager
+        /// </summary>
+        [Parameter("nomanager")]
+        [Description("Do not add the debug applet manager (ignores all applet files from command line and uses the configuration)")]
+        public bool NoAppletManager { get; set; }
+
+        /// <summary>
         /// Gets or sets the host type
         /// </summary>
         [Parameter("type")]
