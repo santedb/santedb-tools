@@ -50,6 +50,7 @@ using SanteDB.Core.Security.Audit;
 using SanteDB.Core.Security.Configuration;
 using SanteDB.Core.Security.Privacy;
 using SanteDB.Core.Services.Impl;
+using SanteDB.DevTools.Services;
 using SanteDB.Rest.OAuth.Configuration;
 using SanteDB.Security.Certs.BouncyCastle;
 using SanteDB.Tools.Debug.Services;
@@ -87,7 +88,7 @@ namespace SanteDB.SDK.AppletDebugger.Configuration
                     new TypeReferenceConfiguration(typeof(SHA256PasswordHashingService)),
                     new TypeReferenceConfiguration(typeof(DefaultPolicyDecisionService)),
                     new TypeReferenceConfiguration(typeof(MemoryAdhocCacheService)),
-                    new TypeReferenceConfiguration(typeof(AppletLocalizationService)),
+                    //new TypeReferenceConfiguration(typeof(AppletLocalizationService)),
                     new TypeReferenceConfiguration(typeof(AppletBusinessRulesDaemon)),
                     new TypeReferenceConfiguration(typeof(DefaultUpstreamManagementService)),
                     new TypeReferenceConfiguration(typeof(DefaultUpstreamIntegrationService)),
@@ -99,6 +100,7 @@ namespace SanteDB.SDK.AppletDebugger.Configuration
                     new TypeReferenceConfiguration(typeof(FileSystemDispatcherQueueService)),
                     new TypeReferenceConfiguration(typeof(SimplePatchService)),
                     new TypeReferenceConfiguration(typeof(DefaultBackupManager)),
+                    new TypeReferenceConfiguration(typeof(DebugLocalizationService)),
                     new TypeReferenceConfiguration(typeof(DebugAppletManagerService)),
                     new TypeReferenceConfiguration(typeof(AppletBiRepository)),
                     new TypeReferenceConfiguration(typeof(OAuthClient)),
