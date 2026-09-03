@@ -22,6 +22,7 @@ using SanteDB.Client;
 using SanteDB.Client.Configuration;
 using SanteDB.Client.UserInterface;
 using SanteDB.Core;
+using SanteDB.Core.Applets.Services;
 using SanteDB.Core.i18n;
 using SanteDB.Core.Services;
 using SanteDB.DevTools.Configuration;
@@ -46,33 +47,38 @@ namespace SanteDB.SDK.AppletDebugger
         public DebuggerApplicationContext(SanteDBHostType hostType, ConsoleParameters debugParameters, IConfigurationManager configurationManager) : base(hostType, debugParameters.InstanceName, configurationManager)
         {
 
-            // Now create the debug applet configuration from the parameters
-            var appletConfiguration = new DebugAppletConfigurationSection();
-            this.m_consoleParameters = debugParameters;
-            if (debugParameters.BaseRefs)
+            if (!debugParameters.NoAppletManager)
             {
-                appletConfiguration.AppletReferences.AddRange(new string[]
+                // Now create the debug applet configuration from the parameters
+                var appletConfiguration = new DebugAppletConfigurationSection();
+                this.m_consoleParameters = debugParameters;
+                if (debugParameters.BaseRefs)
                 {
+                    appletConfiguration.AppletReferences.AddRange(new string[]
+                    {
                         "org.santedb.core",
                         "org.santedb.uicore",
                         "org.santedb.config",
                         "org.santedb.bicore",
                         "org.santedb.config.init",
                         "org.santedb.i18n.en"
-                });
+                    });
+                }
+                if (debugParameters.References != null)
+                {
+                    appletConfiguration.AppletReferences.AddRange(debugParameters.References.OfType<String>());
+                }
+                appletConfiguration.SolutionToDebug = debugParameters.SolutionFile;
+                if (debugParameters.AppletDirectories != null)
+                {
+                    appletConfiguration.AppletsToDebug.AddRange(debugParameters.AppletDirectories.OfType<String>());
+                }
+                configurationManager.Configuration.RemoveSection<DebugAppletConfigurationSection>();
+                configurationManager.Configuration.AddSection(appletConfiguration);
+
+                this.ServiceManager.AddServiceProvider(typeof(DebugAppletManagerService));
             }
-            if (debugParameters.References != null)
-            {
-                appletConfiguration.AppletReferences.AddRange(debugParameters.References.OfType<String>());
-            }
-            appletConfiguration.SolutionToDebug = debugParameters.SolutionFile;
-            if (debugParameters.AppletDirectories != null)
-            {
-                appletConfiguration.AppletsToDebug.AddRange(debugParameters.AppletDirectories.OfType<String>());
-            }
-            configurationManager.Configuration.RemoveSection<DebugAppletConfigurationSection>();
-            configurationManager.Configuration.AddSection(appletConfiguration);
-            this.ServiceManager.AddServiceProvider(typeof(DebugAppletManagerService));
+            
         }
 
         /// <inheritdoc/>
