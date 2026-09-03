@@ -24,13 +24,17 @@ using SanteDB.Core;
 using SanteDB.Core.Applets;
 using SanteDB.Core.Applets.Model;
 using SanteDB.Core.Applets.Services;
+using SanteDB.Core.Configuration;
+using SanteDB.Core.Configuration.Supplement;
 using SanteDB.Core.Diagnostics;
+using SanteDB.Core.i18n;
 using SanteDB.Core.Services;
 using SanteDB.DevTools.Configuration;
 using SanteDB.PakMan;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Packaging;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Threading;
@@ -69,6 +73,7 @@ namespace SanteDB.Tools.Debug.Services
         private readonly DebugAppletConfigurationSection m_configuration;
         private readonly IAppletHostBridgeProvider m_hostBridgeProvider;
         private readonly IThreadPoolService m_threadPoolService;
+        private readonly IConfigurationSupplementManager m_supplementManager;
 
         /// <summary>
         /// New constructor for the applet manager
@@ -76,6 +81,7 @@ namespace SanteDB.Tools.Debug.Services
         public DebugAppletManagerService(IConfigurationManager configurationManager,
             IThreadPoolService threadPoolService,
             IServiceManager serviceManager,
+            IConfigurationSupplementManager configurationSupplementManager = null,
             IAppletHostBridgeProvider hostBridgeProvider = null
             )
         {
@@ -87,6 +93,7 @@ namespace SanteDB.Tools.Debug.Services
             this.m_threadPoolService = threadPoolService;
             this.m_appletCollection.Resolver = this.ResolveAppletAsset;
             this.m_appletCollection.CachePages = false;
+            this.m_supplementManager = configurationSupplementManager;
             this.Initialize();
         }
 
@@ -387,6 +394,14 @@ namespace SanteDB.Tools.Debug.Services
                                         //applet.Templates = newManifest.Templates;
                                         applet.ViewModel = newManifest.ViewModel;
                                         applet.DynamicHtml = newManifest.DynamicHtml;
+
+                                        var supplements = AppletManifest.CreateConfigurationSupplement(newManifest);
+                                        if (supplements != null)
+                                        {
+                                            this.m_tracer.TraceInfo("Installing configuration modifiers from {0}...", newManifest.Info.Id);
+                                            this.m_supplementManager?.AddConfigurationSupplement(supplements);
+                                        }
+
                                     }
                                 }
                                 catch (IOException)
@@ -690,6 +705,12 @@ namespace SanteDB.Tools.Debug.Services
                             AppletManifest manifest = AppletManifest.Load(fs);
                             manifest.AddSetting(APPLET_SOURCE, appletPath);
                             this.LoadApplet(manifest);
+
+                            var supplement = AppletManifest.CreateConfigurationSupplement(manifest);
+                            if(supplement != null)
+                            {
+                                this.m_supplementManager?.AddConfigurationSupplement(supplement);
+                            }
                         }
                     }
                     catch (Exception)
@@ -805,6 +826,17 @@ namespace SanteDB.Tools.Debug.Services
                 }
             }
         }
+
+
+        /// <summary>
+        /// Get all configuration supplements
+        /// </summary>
+        public IEnumerable<ConfigurationSupplement> GetConfigurationSupplements()
+        {
+            // Solutions available?
+           return this.m_appletCollection.Select(AppletManifest.CreateConfigurationSupplement).OfType<ConfigurationSupplement>();
+        }
+
 
         /// <inheritdoc/>
         public ReadonlyAppletCollection GetApplets(string solutionId)
