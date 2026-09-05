@@ -181,6 +181,7 @@ namespace SanteDB.PakMan
                 Console.WriteLine("VIEW MODELS: {0}", String.Join(" , ", mfst.ViewModel.Select(o => $"{o.ViewModelId} = {o.Definition}")));
                 Console.WriteLine("LOCALES: {0}", String.Join(" , ", mfst.Locales.Select(o => o.Code)));
                 Console.WriteLine("I18N STRINGS: {0}", String.Join(" , ", mfst.Strings.Select(o => $"{o.Language} ({o.String.Count()} strings - Refer: {o.Reference})")));
+                Console.WriteLine("CONFIGURATION SUPPLEMENTS: {0}", String.Join(" , ", mfst.ConfigurationSupplements.Select(o=>o.Description)));
                 Console.WriteLine("-- CONTENTS --");
                 var contents = mfst.Assets.Select(itm =>
                 {
