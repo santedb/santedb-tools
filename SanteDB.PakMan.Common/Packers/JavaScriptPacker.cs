@@ -62,7 +62,7 @@ namespace SanteDB.PakMan.Packers
                 return new AppletAsset()
                 {
                     MimeType = "text/javascript",
-                    Content = content
+                    Content = PakManTool.CompressContent(content)
                 };
 
             }
