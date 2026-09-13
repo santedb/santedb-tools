@@ -278,7 +278,7 @@ namespace SanteDB.PakSrv
             }
 
             RestOperationContext.Current.OutgoingResponse.ContentType = assetObject.MimeType;
-            byte[] content;
+            byte[] content = null;
 
             switch(assetObject.Content)
             {
