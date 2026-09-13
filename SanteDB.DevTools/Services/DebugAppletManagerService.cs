@@ -329,14 +329,12 @@ namespace SanteDB.Tools.Debug.Services
 
             try
             {
-                var asset = PakManTool.GetPacker(source).Process(source, false, manifest);
-                asset.Name = PakManTool.TranslatePath(source.Replace(path, ""));
-                asset.Content = null;
-                return asset;
-            }
-            catch (IOException) // Timer the load
-            {
-                throw;
+                return new AppletAsset()
+                {
+                    Name = PakManTool.TranslatePath(source.Replace(path, "")),
+                    Content = null,
+                    MimeType = PakManTool.GetPacker(source).GetMimeType(source)
+                };
             }
             catch (Exception e)
             {
@@ -560,8 +558,7 @@ namespace SanteDB.Tools.Debug.Services
                     }));
                     htmlAsset.Style = new List<string>(xe.Descendants().OfType<XElement>().Where(o => o.Name == xs_santedb + "style").Select(o => this.CorrectAppletName(o.Value)));
 
-                    var demand = xe.DescendantNodes().OfType<XElement>().Where(o => o.Name == xs_santedb + "demand").Select(o => o.Value).ToList();
-
+                    navigateAsset.Policies  = xe.DescendantNodes().OfType<XElement>().Where(o => o.Name == xs_santedb + "demand").Select(o => o.Value).ToList();
                     var includes = xe.DescendantNodes().OfType<XComment>().Where(o => o?.Value?.Trim().StartsWith("#include virtual=\"") == true).ToList();
                     foreach (var inc in includes)
                     {

@@ -195,5 +195,8 @@ namespace SanteDB.PakMan.Packers
                 throw new InvalidOperationException($"Cannot process HTML {file} - {e.ToHumanReadableString()}", e);
             }
         }
+
+        /// <inhertidoc/>
+        public string GetMimeType(string file) => "text/html";
     }
 }

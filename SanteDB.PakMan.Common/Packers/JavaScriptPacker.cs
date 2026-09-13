@@ -33,6 +33,11 @@ namespace SanteDB.PakMan.Packers
         public string[] Extensions => new String[] { ".js" };
 
         /// <summary>
+        /// Get the file javascript
+        /// </summary>
+        public string GetMimeType(String file) => "text/javascript";
+
+        /// <summary>
         /// Process the file
         /// </summary>
         public AppletAsset Process(string file, bool optimize, AppletManifest manifest)

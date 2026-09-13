@@ -29,6 +29,9 @@ namespace SanteDB.PakMan.Packers
         public string[] Extensions => new string[] { ".png", ".jpg", ".jpeg" };
 
         /// <inhertidoc/>
+        public string GetMimeType(string file) => MimeMapping.MimeUtility.GetMimeMapping(file);
+
+        /// <inhertidoc/>
         public AppletAsset Process(string file, bool optimize, AppletManifest manifest)
         {
             try

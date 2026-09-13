@@ -97,6 +97,9 @@ namespace SanteDB.PakMan.Packers
 
         }
 
+        /// <inhertidoc/>
+        public string GetMimeType(string file) => "text/css";
+
         static readonly Regex s_ElementSelectorsOnIdentified = new Regex(@"[a-zA-Z]+#", RegexOptions.Compiled, TimeSpan.FromMilliseconds(250));
         static readonly Regex s_SpaceDelimitedNewlineTrivia = new Regex(@"[\n\r]+\s*", RegexOptions.Compiled, TimeSpan.FromMilliseconds(250));
         static readonly Regex s_MultispaceTrivia = new Regex(@"\s+", RegexOptions.Compiled, TimeSpan.FromMilliseconds(250));

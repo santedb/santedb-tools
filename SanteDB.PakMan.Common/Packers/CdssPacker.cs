@@ -36,6 +36,12 @@ namespace SanteDB.PakMan.Packers
         /// <inheritdoc/>
         public string[] Extensions => new string[] { ".cdss" };
 
+        /// <summary>
+        /// Get the mime type
+        /// </summary>
+        public string GetMimeType(string file) =>
+            Path.GetExtension(file).Equals(".cdss") ? "text/plain" : "application/xml";
+
         /// <inheritdoc/>
         public AppletAsset Process(string file, bool optimize, AppletManifest manifest)
         {

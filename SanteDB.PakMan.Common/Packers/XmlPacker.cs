@@ -35,6 +35,9 @@ namespace SanteDB.PakMan.Packers
         /// </summary>
         public virtual string[] Extensions => new string[] { ".xml", ".dataset" };
 
+        /// <inheritdoc/>
+        public string GetMimeType(string file) => "text/xml";
+
         /// <summary>
         /// Process the XML file
         /// </summary>

@@ -39,5 +39,10 @@ namespace SanteDB.PakMan.Packers
         /// </summary>
         AppletAsset Process(String file, bool optimize, AppletManifest manifest);
 
+        /// <summary>
+        /// Get the mime type of the asset based on file type
+        /// </summary>
+        string GetMimeType(String file);
+
     }
 }

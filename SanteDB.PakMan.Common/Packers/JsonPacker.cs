@@ -31,6 +31,9 @@ namespace SanteDB.PakMan.Packers
         /// </summary>
         public string[] Extensions => new String[] { ".json" };
 
+        /// <inheritdoc/>
+        public string GetMimeType(String file) => "application/json";
+
         /// <summary>
         /// Process the file
         /// </summary>
