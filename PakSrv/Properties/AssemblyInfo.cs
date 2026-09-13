@@ -29,7 +29,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("PakSrv")]
-[assembly: AssemblyCopyright("Copyright (C) 2020 - 2024 The SanteSuite Contributors (See NOTICE.md)")]
+[assembly: AssemblyCopyright("Copyright (C) 2020 - 2026 The SanteSuite Contributors (See NOTICE.md)")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
