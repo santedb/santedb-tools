@@ -31,6 +31,12 @@ using SanteDB.Core.i18n;
 using SanteDB.Core.Services;
 using SanteDB.DevTools.Configuration;
 using SanteDB.PakMan;
+using SanteDB.PakMan.Packers;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats;
+using SixLabors.ImageSharp.Formats.Jpeg;
+using SixLabors.ImageSharp.Formats.Png;
+using SixLabors.ImageSharp.Processing;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -38,6 +44,7 @@ using System.IO.Packaging;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Threading;
+using System.Xml;
 using System.Xml.Linq;
 
 namespace SanteDB.Tools.Debug.Services
@@ -241,7 +248,7 @@ namespace SanteDB.Tools.Debug.Services
                     baseDirectory += Path.DirectorySeparatorChar.ToString();
                 }
 
-                applet.Assets.AddRange(this.ProcessDirectory(baseDirectory, baseDirectory));
+                applet.Assets.AddRange(this.ProcessDirectory(baseDirectory, baseDirectory, applet));
 
                 // Watch for changes
                 var fsr = new FileSystemWatcher(baseDirectory) { IncludeSubdirectories = true, EnableRaisingEvents = true };
@@ -287,25 +294,20 @@ namespace SanteDB.Tools.Debug.Services
         /// <summary>
         /// Process the specified directory
         /// </summary>
-        private IEnumerable<AppletAsset> ProcessDirectory(string source, String path)
+        private IEnumerable<AppletAsset> ProcessDirectory(string source, String path, AppletManifest manifest)
         {
 
-            List<AppletAsset> retVal = new List<AppletAsset>();
-            foreach (var itm in Directory.GetFiles(source))
+            List<AppletAsset> retVal = Directory.GetFiles(source).AsParallel().Select(itm =>
             {
-                var asset = this.ProcessItem(itm, path);
-                if (asset != null)
-                {
-                    retVal.Add(asset);
-                }
-            }
+                return this.ProcessItem(itm, path, manifest);
+            }).OfType<AppletAsset>().ToList();
 
             // Process sub directories
             foreach (var dir in Directory.GetDirectories(source))
             {
                 if (!Path.GetFileName(dir).StartsWith("."))
                 {
-                    retVal.AddRange(ProcessDirectory(dir, path));
+                    retVal.AddRange(ProcessDirectory(dir, path, manifest));
                 }
                 else
                 {
@@ -320,14 +322,14 @@ namespace SanteDB.Tools.Debug.Services
         /// <summary>
         /// Process a single item
         /// </summary>
-        private AppletAsset ProcessItem(String source, String path)
+        private AppletAsset ProcessItem(String source, String path, AppletManifest manifest)
         {
             Console.WriteLine("\t Processing {0}...", source);
 
 
             try
             {
-                var asset = PakManTool.GetPacker(source).Process(source, false);
+                var asset = PakManTool.GetPacker(source).Process(source, false, manifest);
                 asset.Name = PakManTool.TranslatePath(source.Replace(path, ""));
                 asset.Content = null;
                 return asset;
@@ -416,7 +418,7 @@ namespace SanteDB.Tools.Debug.Services
                         }
                         else
                         {
-                            var newAsset = this.ProcessItem(e.FullPath, fsWatcherInfo.Value.Path);
+                            var newAsset = this.ProcessItem(e.FullPath, fsWatcherInfo.Value.Path, applet);
                             if (newAsset != null)
                             {
                                 // Add? 
@@ -484,110 +486,160 @@ namespace SanteDB.Tools.Debug.Services
             }
             else if (navigateAsset.MimeType == "text/html")
             {
-                XElement xe = XElement.Load(itmPath);
-
-                // Now we have to iterate throuh and add the asset\
-                AppletAssetHtml htmlAsset = null;
-
-                if (xe.Elements().OfType<XElement>().Any(o => o.Name == xs_santedb + "widget"))
+                try
                 {
-                    var widgetEle = xe.Elements().OfType<XElement>().FirstOrDefault(o => o.Name == xs_santedb + "widget");
-                    htmlAsset = new AppletWidget()
-                    {
-                        Icon = widgetEle.Element(xs_santedb + "icon")?.Value,
-                        Type = (AppletWidgetType)Enum.Parse(typeof(AppletWidgetType), widgetEle.Attribute("type")?.Value),
-                        Size = (AppletWidgetSize)Enum.Parse(typeof(AppletWidgetSize), widgetEle.Attribute("size")?.Value ?? "Medium"),
-                        ColorClass = widgetEle.Attribute("headerClass")?.Value,
-                        Priority = Int32.Parse(widgetEle.Attribute("priority")?.Value ?? "0"),
-                        MaxStack = Int32.Parse(widgetEle.Attribute("maxStack")?.Value ?? "2"),
-                        Order = Int32.Parse(widgetEle.Attribute("order")?.Value ?? "0"),
-                        Context = widgetEle.Attribute("context")?.Value.Split(' ').ToList(),
-                        Description = widgetEle.Elements().Where(o => o.Name == xs_santedb + "description").Select(o => new LocaleString() { Value = o.Value, Language = o.Attribute("lang")?.Value }).ToList(),
-                        Name = widgetEle.Attribute("name")?.Value,
-                        Controller = widgetEle.Element(xs_santedb + "controller")?.Value,
-                        Guard = widgetEle.Elements().Where(o => o.Name == xs_santedb + "guard").Select(o => o.Value).ToList(),
-                        AlternateViews = widgetEle.Element(xs_santedb + "views")?.Elements().Where(o => o.Name == xs_santedb + "view").Select(o => new AppletWidgetView()
-                        {
-                            ViewType = (AppletWidgetViewType)Enum.Parse(typeof(AppletWidgetViewType), o.Attribute("type")?.Value ?? "None"),
-                            Policies = o.Elements().Where(d => d.Name == xs_santedb + "demand").Select(d => d.Value).ToList(),
-                            Guard = o.Elements().Where(d=>d.Name == xs_santedb + "guard").Select(d=>d.Value).ToList()
-                        }).ToList(),
-                        Badges = widgetEle.Element((XNamespace)PakManTool.XS_APPLET + "badges")?.Elements().Where(o => o.Name == (XNamespace)PakManTool.XS_APPLET + "badge").Select(o => new AppletBadge()
-                        {
-                            BadgeClass = o.Attribute("badge")?.Value,
-                            IconClass = o.Attribute("icon")?.Value,
-                            GuardCondition = o.Elements()?.Where(d => d.Name == (XNamespace)PakManTool.XS_APPLET + "guard").Select(d => d.Value).ToList()
-                        }).ToList(),
-                    };
+                    XElement xe = XElement.Load(itmPath);
 
-                    // TODO Guards
-                }
-                else
-                {
-                    htmlAsset = new AppletAssetHtml();
-                    // View state data
-                    htmlAsset.ViewState = xe.Elements().OfType<XElement>().Where(o => o.Name == xs_santedb + "state").Select(o => new AppletViewState()
+                    // Now we have to iterate throuh and add the asset\
+                    AppletAssetHtml htmlAsset = null;
+
+                    if (xe.Elements().OfType<XElement>().Any(o => o.Name == xs_santedb + "widget"))
                     {
-                        Name = o.Attribute("name")?.Value,
-                        Priority = Int32.Parse(o.Attribute("priority")?.Value ?? "0"),
-                        Route = o.Elements().OfType<XElement>().FirstOrDefault(r => r.Name == xs_santedb + "url" || r.Name == xs_santedb + "route")?.Value,
-                        IsAbstract = Boolean.Parse(o.Attribute("abstract")?.Value ?? "False"),
-                        View = o.Elements().OfType<XElement>().Where(v => v.Name == xs_santedb + "view")?.Select(v => new AppletView()
+                        var widgetEle = xe.Elements().OfType<XElement>().FirstOrDefault(o => o.Name == xs_santedb + "widget");
+                        htmlAsset = new AppletWidget()
                         {
+                            Icon = widgetEle.Element(xs_santedb + "icon")?.Value,
+                            Type = (AppletWidgetType)Enum.Parse(typeof(AppletWidgetType), widgetEle.Attribute("type")?.Value),
+                            Size = (AppletWidgetSize)Enum.Parse(typeof(AppletWidgetSize), widgetEle.Attribute("size")?.Value ?? "Medium"),
+                            ColorClass = widgetEle.Attribute("headerClass")?.Value,
+                            Priority = Int32.Parse(widgetEle.Attribute("priority")?.Value ?? "0"),
+                            MaxStack = Int32.Parse(widgetEle.Attribute("maxStack")?.Value ?? "2"),
+                            Order = Int32.Parse(widgetEle.Attribute("order")?.Value ?? "0"),
+                            Context = widgetEle.Attribute("context")?.Value.Split(' ').ToList(),
+                            Description = widgetEle.Elements().Where(o => o.Name == xs_santedb + "description").Select(o => new LocaleString() { Value = o.Value, Language = o.Attribute("lang")?.Value }).ToList(),
+                            Name = widgetEle.Attribute("name")?.Value,
+                            Controller = widgetEle.Element(xs_santedb + "controller")?.Value,
+                            Guard = widgetEle.Elements().Where(o => o.Name == xs_santedb + "guard").Select(o => o.Value).ToList(),
+                            AlternateViews = widgetEle.Element(xs_santedb + "views")?.Elements().Where(o => o.Name == xs_santedb + "view").Select(o => new AppletWidgetView()
+                            {
+                                ViewType = (AppletWidgetViewType)Enum.Parse(typeof(AppletWidgetViewType), o.Attribute("type")?.Value ?? "None"),
+                                Policies = o.Elements().Where(d => d.Name == xs_santedb + "demand").Select(d => d.Value).ToList(),
+                                Guard = o.Elements().Where(d => d.Name == xs_santedb + "guard").Select(d => d.Value).ToList()
+                            }).ToList(),
+                            Badges = widgetEle.Element((XNamespace)PakManTool.XS_APPLET + "badges")?.Elements().Where(o => o.Name == (XNamespace)PakManTool.XS_APPLET + "badge").Select(o => new AppletBadge()
+                            {
+                                BadgeClass = o.Attribute("badge")?.Value,
+                                IconClass = o.Attribute("icon")?.Value,
+                                GuardCondition = o.Elements()?.Where(d => d.Name == (XNamespace)PakManTool.XS_APPLET + "guard").Select(d => d.Value).ToList()
+                            }).ToList(),
+                        };
+
+                        // TODO Guards
+                    }
+                    else
+                    {
+                        htmlAsset = new AppletAssetHtml();
+                        // View state data
+                        htmlAsset.ViewState = xe.Elements().OfType<XElement>().Where(o => o.Name == xs_santedb + "state").Select(o => new AppletViewState()
+                        {
+                            Name = o.Attribute("name")?.Value,
                             Priority = Int32.Parse(o.Attribute("priority")?.Value ?? "0"),
-                            Name = v.Attribute("name")?.Value,
-                            Controller = v.Element(xs_santedb + "controller")?.Value
-                        }).ToList()
-                    }).FirstOrDefault();
-                    htmlAsset.Titles = xe.Elements().OfType<XElement>().Where(t => t.Name == xs_santedb + "title")?.Select(t => new LocaleString()
-                    {
-                        Language = t.Attribute("lang")?.Value,
-                        Value = t?.Value
-                    }).ToList();
-                    htmlAsset.Static = xe.Attribute(xs_santedb + "static")?.Value == "true";
-                }
-
-                htmlAsset.Titles = new List<LocaleString>(xe.Descendants().OfType<XElement>().Where(o => o.Name == xs_santedb + "title").Select(o => new LocaleString() { Language = o.Attribute("lang")?.Value, Value = o.Value }));
-                htmlAsset.Bundle = new List<string>(xe.Descendants().OfType<XElement>().Where(o => o.Name == xs_santedb + "bundle").Select(o => this.CorrectAppletName(o.Value)));
-                htmlAsset.Script = new List<AssetScriptReference>(xe.Descendants().OfType<XElement>().Where(o => o.Name == xs_santedb + "script").Select(o => new AssetScriptReference()
-                {
-                    Reference = this.CorrectAppletName(o.Value),
-                    IsStatic = Boolean.Parse(o.Attribute("static")?.Value ?? "true")
-                }));
-                htmlAsset.Style = new List<string>(xe.Descendants().OfType<XElement>().Where(o => o.Name == xs_santedb + "style").Select(o => this.CorrectAppletName(o.Value)));
-
-                var demand = xe.DescendantNodes().OfType<XElement>().Where(o => o.Name == xs_santedb + "demand").Select(o => o.Value).ToList();
-
-                var includes = xe.DescendantNodes().OfType<XComment>().Where(o => o?.Value?.Trim().StartsWith("#include virtual=\"") == true).ToList();
-                foreach (var inc in includes)
-                {
-                    String assetName = inc.Value.Trim().Substring(18); // HACK: Should be a REGEX
-                    if (assetName.EndsWith("\""))
-                    {
-                        assetName = assetName.Substring(0, assetName.Length - 1);
+                            Route = o.Elements().OfType<XElement>().FirstOrDefault(r => r.Name == xs_santedb + "url" || r.Name == xs_santedb + "route")?.Value,
+                            IsAbstract = Boolean.Parse(o.Attribute("abstract")?.Value ?? "False"),
+                            View = o.Elements().OfType<XElement>().Where(v => v.Name == xs_santedb + "view")?.Select(v => new AppletView()
+                            {
+                                Priority = Int32.Parse(o.Attribute("priority")?.Value ?? "0"),
+                                Name = v.Attribute("name")?.Value,
+                                Controller = v.Element(xs_santedb + "controller")?.Value
+                            }).ToList()
+                        }).FirstOrDefault();
+                        htmlAsset.Titles = xe.Elements().OfType<XElement>().Where(t => t.Name == xs_santedb + "title")?.Select(t => new LocaleString()
+                        {
+                            Language = t.Attribute("lang")?.Value,
+                            Value = t?.Value
+                        }).ToList();
+                        htmlAsset.Static = xe.Attribute(xs_santedb + "static")?.Value == "true";
                     }
 
-                    if (assetName == "content")
+                    htmlAsset.Titles = new List<LocaleString>(xe.Descendants().OfType<XElement>().Where(o => o.Name == xs_santedb + "title").Select(o => new LocaleString() { Language = o.Attribute("lang")?.Value, Value = o.Value }));
+                    htmlAsset.Bundle = new List<string>(xe.Descendants().OfType<XElement>().Where(o => o.Name == xs_santedb + "bundle").Select(o => this.CorrectAppletName(o.Value)));
+                    htmlAsset.Script = new List<AssetScriptReference>(xe.Descendants().OfType<XElement>().Where(o => o.Name == xs_santedb + "script").Select(o => new AssetScriptReference()
                     {
-                        continue;
+                        Reference = this.CorrectAppletName(o.Value),
+                        IsStatic = Boolean.Parse(o.Attribute("static")?.Value ?? "true")
+                    }));
+                    htmlAsset.Style = new List<string>(xe.Descendants().OfType<XElement>().Where(o => o.Name == xs_santedb + "style").Select(o => this.CorrectAppletName(o.Value)));
+
+                    var demand = xe.DescendantNodes().OfType<XElement>().Where(o => o.Name == xs_santedb + "demand").Select(o => o.Value).ToList();
+
+                    var includes = xe.DescendantNodes().OfType<XComment>().Where(o => o?.Value?.Trim().StartsWith("#include virtual=\"") == true).ToList();
+                    foreach (var inc in includes)
+                    {
+                        String assetName = inc.Value.Trim().Substring(18); // HACK: Should be a REGEX
+                        if (assetName.EndsWith("\""))
+                        {
+                            assetName = assetName.Substring(0, assetName.Length - 1);
+                        }
+
+                        if (assetName == "content")
+                        {
+                            continue;
+                        }
+
+                        var includeAsset = this.CorrectAppletName(assetName);
+                        inc.AddAfterSelf(new XComment(String.Format("#include virtual=\"{0}\"", includeAsset)));
+                        inc.Remove();
                     }
 
-                    var includeAsset = this.CorrectAppletName(assetName);
-                    inc.AddAfterSelf(new XComment(String.Format("#include virtual=\"{0}\"", includeAsset)));
-                    inc.Remove();
-                }
+                    var xel = xe.Descendants().OfType<XElement>().Where(o => o.Name.Namespace == xs_santedb).ToList();
+                    if (xel != null)
+                    {
+                        foreach (var x in xel)
+                        {
+                            x.Remove();
+                        }
+                    }
 
-                var xel = xe.Descendants().OfType<XElement>().Where(o => o.Name.Namespace == xs_santedb).ToList();
-                if (xel != null)
+                    htmlAsset.Html = xe;
+                    return htmlAsset;
+                }
+                catch(XmlException e) // Return as a blob and warn
                 {
-                    foreach (var x in xel)
+                    if("true".Equals(navigateAsset.Manifest.GetSetting(PakmanConstants.AllowMalformedHtml), StringComparison.OrdinalIgnoreCase)) {
+                        // Do we inject CSP NONCE?
+                        var html = File.ReadAllText(itmPath);
+                        if("true".Equals(navigateAsset.Manifest.GetSetting(PakmanConstants.InjectCspIntoHtml), StringComparison.OrdinalIgnoreCase))
+                        {
+                            html = html.Replace("<script", "<script nonce={{ $csp_nonce }}");
+                        }
+                        return html;
+                    }
+                    else
                     {
-                        x.Remove();
+                        throw;
                     }
                 }
+            }
+            else if(!String.IsNullOrEmpty(navigateAsset.Manifest.GetSetting(PakmanConstants.ImageOptimizationMethod)) &&
+                (navigateAsset.MimeType == "image/png" ||  navigateAsset.MimeType == "image/jpeg")) // Preview content as Grey4
+            {
 
-                htmlAsset.Html = xe;
-                return htmlAsset;
+                using (var sourceImage = SixLabors.ImageSharp.Image.Load(File.ReadAllBytes(itmPath)))
+                {
+
+                    IImageEncoder encoder = null;
+                    var optimization = navigateAsset.Manifest.GetSetting(PakmanConstants.ImageOptimizationMethod);
+                    switch (navigateAsset.MimeType)
+                    {
+                        case "image/png":
+                            encoder = this.GetPngEncoder(optimization);
+                            break;
+                        case "image/jpeg":
+                            encoder = this.GetJpgEncoder(optimization);
+                            if(optimization == ImagePacker.OPTIMIZATION_GRAY2 || 
+                                optimization == ImagePacker.OPTIMIZATION_GRAY4)
+                            {
+                                sourceImage.Mutate(x => x.Grayscale());
+                            }
+                            break;
+                    }
+
+                    using(var ms = new MemoryStream())
+                    {
+                        sourceImage.Save(ms, encoder);
+                        return ms.ToArray();
+                    }
+                }
             }
             else if (navigateAsset.MimeType == "text/javascript" ||
                 navigateAsset.MimeType == "text/css" ||
@@ -607,6 +659,53 @@ namespace SanteDB.Tools.Debug.Services
             {
                 return File.ReadAllBytes(itmPath);
             }
+        }
+
+
+        /// <summary>
+        /// Get PNG file encoder
+        /// </summary>
+        private IImageEncoder GetPngEncoder(string optimization)
+        {
+            var encoder = new PngEncoder();
+            encoder.CompressionLevel = PngCompressionLevel.BestCompression;
+            encoder.ChunkFilter = PngChunkFilter.ExcludeAll;
+            encoder.IgnoreMetadata = true;
+            encoder.TransparentColorMode = PngTransparentColorMode.Clear;
+            switch (optimization)
+            {
+                case ImagePacker.OPTIMIZATION_GRAY2:
+                    encoder.BitDepth = PngBitDepth.Bit2;
+                    encoder.ColorType = PngColorType.Grayscale;
+                    break;
+                case ImagePacker.OPTIMIZATION_GRAY4:
+                    encoder.BitDepth = PngBitDepth.Bit4;
+                    encoder.ColorType = PngColorType.Grayscale;
+                    break;
+                case ImagePacker.OPTIMIZATION_2BPP:
+                    encoder.BitDepth = PngBitDepth.Bit2;
+                    encoder.ColorType = PngColorType.Palette;
+                    break;
+                case ImagePacker.OPTIMIZATION_4BPP:
+                    encoder.BitDepth = PngBitDepth.Bit4;
+                    encoder.ColorType = PngColorType.Palette;
+                    break;
+                case ImagePacker.OPTIMIZATION_8BPP:
+                    encoder.BitDepth = PngBitDepth.Bit8;
+                    encoder.ColorType = PngColorType.Palette;
+                    break;
+            }
+            return encoder;
+        }
+
+        /// <summary>
+        /// Get JPG encoder
+        /// </summary>
+        private IImageEncoder GetJpgEncoder(string optimization)
+        {
+            var encoder = new JpegEncoder();
+            encoder.Quality = 35;
+            return encoder;
         }
 
         /// <summary>

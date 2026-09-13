@@ -34,7 +34,7 @@ namespace SanteDB.PakMan.Packers
         /// <summary>
         /// Process the file
         /// </summary>
-        public AppletAsset Process(string file, bool optimize)
+        public AppletAsset Process(string file, bool optimize, AppletManifest manifest)
         {
             try
             {
@@ -43,7 +43,7 @@ namespace SanteDB.PakMan.Packers
                 return new AppletAsset()
                 {
                     MimeType = "application/json",
-                    Content = PakManTool.CompressContent(content)
+                    Content = content
                 };
 
             }

@@ -37,7 +37,7 @@ namespace SanteDB.PakMan.Packers
         /// <summary>
         /// Process the file
         /// </summary>
-        public AppletAsset Process(string file, bool optimize)
+        public AppletAsset Process(string file, bool optimize, AppletManifest manifest)
         {
             try
             {
@@ -50,7 +50,7 @@ namespace SanteDB.PakMan.Packers
                 return new AppletAsset()
                 {
                     MimeType = mime,
-                    Content = PakManTool.CompressContent(File.ReadAllBytes(file))
+                    Content = optimize ? PakManTool.CompressContent(File.ReadAllBytes(file)) : File.ReadAllBytes(file)
                 };
             }
             catch (Exception e)

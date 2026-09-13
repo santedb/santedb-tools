@@ -19,6 +19,7 @@
  * Date: 2023-6-21
  */
 using SanteDB.Client;
+using SanteDB.Client.Batteries;
 using SanteDB.Client.Configuration;
 using SanteDB.Client.UserInterface;
 using SanteDB.Core;

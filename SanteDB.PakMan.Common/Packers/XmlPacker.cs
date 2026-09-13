@@ -21,6 +21,7 @@
 using SanteDB.Core.Applets.Model;
 using System.IO;
 using System.Xml;
+using System.Xml.Linq;
 
 namespace SanteDB.PakMan.Packers
 {
@@ -37,26 +38,25 @@ namespace SanteDB.PakMan.Packers
         /// <summary>
         /// Process the XML file
         /// </summary>
-        public virtual AppletAsset Process(string file, bool optimize)
+        public virtual AppletAsset Process(string file, bool optimize, AppletManifest manifest)
         {
 
             // Verify that the file is XML
             try
             {
-                var xe = new XmlDocument();
-                xe.Load(file);
+                var xe = XDocument.Load(file);
 
                 if (optimize)
                 {
                     using (var ms = new MemoryStream())
-                    using (var xw = XmlWriter.Create(ms, new XmlWriterSettings() { Indent = false, OmitXmlDeclaration = true }))
                     {
-                        xe.WriteContentTo(xw);
-                        xw.Flush();
+                        xe.Save(ms, SaveOptions.DisableFormatting);
+                        ms.Seek(0, SeekOrigin.Begin);
+                        xe = XDocument.Load(ms);
                         return new AppletAsset()
                         {
                             MimeType = "text/xml",
-                            Content = PakManTool.CompressContent(ms.ToArray())
+                            Content = xe.Root
                         };
                     }
                 }
@@ -65,7 +65,7 @@ namespace SanteDB.PakMan.Packers
                     return new AppletAsset()
                     {
                         MimeType = "text/xml",
-                        Content = PakManTool.CompressContent(File.ReadAllBytes(file))
+                        Content = xe.Root
                     };
                 }
             }

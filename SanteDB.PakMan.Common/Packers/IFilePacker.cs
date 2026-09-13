@@ -37,7 +37,7 @@ namespace SanteDB.PakMan.Packers
         /// <summary>
         /// Processes the specified file into the applet format
         /// </summary>
-        AppletAsset Process(String file, bool optimize);
+        AppletAsset Process(String file, bool optimize, AppletManifest manifest);
 
     }
 }
