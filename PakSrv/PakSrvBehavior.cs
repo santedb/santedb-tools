@@ -279,26 +279,29 @@ namespace SanteDB.PakSrv
 
             RestOperationContext.Current.OutgoingResponse.ContentType = assetObject.MimeType;
             byte[] content;
-            if (assetObject.Content is byte[] bytea)
+
+            switch(assetObject.Content)
             {
-                content = bytea;
+                case byte[] b:
+                    content = b;
+                    break;
+                case String s:
+                    content = System.Text.Encoding.UTF8.GetBytes(s);
+                    break;
+                case XElement xela:
+                    System.Text.Encoding.UTF8.GetBytes(xela.ToString()); ;
+                    break;
+                case AppletAssetHtml html:
+                    content = System.Text.Encoding.UTF8.GetBytes(html.Html.ToString()); ;
+                    break;
+                case AppletAssetCdata cd:
+                    content = System.Text.Encoding.UTF8.GetBytes(cd.Value.ToString()); ;
+                    break;
+                default:
+                    throw new InvalidOperationException("Cannot render this type of data");
+
             }
-            else if (assetObject.Content is String stra)
-            {
-                content = System.Text.Encoding.UTF8.GetBytes(stra);
-            }
-            else if (assetObject.Content is XElement xela)
-            {
-                content = System.Text.Encoding.UTF8.GetBytes(xela.ToString());
-            }
-            else if (assetObject.Content is AppletAssetHtml html)
-            {
-                content = System.Text.Encoding.UTF8.GetBytes(html.Html.ToString());
-            }
-            else
-            {
-                throw new InvalidOperationException("Cannot render this type of data");
-            }
+            
 
             if (Encoding.UTF8.GetString(content as byte[], 0, 4) == "LZIP")
             {
