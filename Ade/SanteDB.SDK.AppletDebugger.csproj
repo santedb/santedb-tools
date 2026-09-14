@@ -330,10 +330,6 @@
       <Project>{b312ffef-fb93-4ba9-895c-597dd238bd4f}</Project>
       <Name>SanteDB.Persistence.Synchronization.ADO</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\santedb-dc-core\SanteDB.Client.Batteries\SanteDB.Client.Batteries.csproj">
-      <Project>{0CACEB40-A400-4F74-B827-AA125E8AE0E9}</Project>
-      <Name>SanteDB.Client.Batteries</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\santedb-i18n\SanteDB.Core.i18n\SanteDB.Core.i18n.csproj">
       <Project>{CA7B81DC-B789-4AF6-A079-EC84259C101A}</Project>
       <Name>SanteDB.Core.i18n</Name>
