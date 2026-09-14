@@ -18,6 +18,7 @@
  * User: fyfej
  * Date: 2023-6-21
  */
+using DocumentFormat.OpenXml.Office2010.CustomUI;
 using SanteDB.Core.Applets.Model;
 using System;
 using System.Collections.Generic;
@@ -25,6 +26,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using System.Text.RegularExpressions;
 
 namespace SanteDB.PakMan
 {
@@ -37,7 +39,8 @@ namespace SanteDB.PakMan
         // Manifest file
         private readonly string m_manifestFile;
         private readonly bool m_optimize;
-
+        private AppletManifest m_manifest;
+        private Regex m_ignoreFileRegex;
 
         /// <summary>
         /// Create a new packager
@@ -57,9 +60,22 @@ namespace SanteDB.PakMan
         {
             using (var fs = File.OpenRead(this.m_manifestFile))
             {
-                AppletManifest mfst = AppletManifest.Load(fs);
-                mfst.Assets.AddRange(this.ProcessDirectory(Path.GetDirectoryName(this.m_manifestFile), Path.GetDirectoryName(this.m_manifestFile)));
-                foreach (var i in mfst.Assets)
+                this.m_manifest = AppletManifest.Load(fs);
+
+                if (!String.IsNullOrEmpty(this.m_manifest.GetSetting(PakmanConstants.SkipPackingAssets)))
+                {
+                    this.m_ignoreFileRegex = new Regex(this.m_manifest.GetSetting(PakmanConstants.SkipPackingAssets), RegexOptions.Compiled | RegexOptions.IgnoreCase);
+                }
+                else
+                {
+                    this.m_ignoreFileRegex = new Regex("^$");
+                }
+
+                this.m_manifest.Assets.AddRange(this.ProcessDirectory(
+                    Path.GetDirectoryName(this.m_manifestFile),
+                    Path.GetDirectoryName(this.m_manifestFile)
+                ));
+                foreach (var i in this.m_manifest.Assets)
                 {
                     if (i.Name.StartsWith("/"))
                     {
@@ -69,11 +85,11 @@ namespace SanteDB.PakMan
 
                 if (!string.IsNullOrEmpty(asVersion))
                 {
-                    mfst.Info.Version = asVersion;
+                    this.m_manifest.Info.Version = asVersion;
                 }
-                mfst.Info.Version = PakManTool.ApplyVersion(mfst.Info.Version);
-                mfst.Info.PublicKeyToken = null;
-                var retVal = mfst.CreatePackage();
+                this.m_manifest.Info.Version = PakManTool.ApplyVersion(this.m_manifest.Info.Version);
+                this.m_manifest.Info.PublicKeyToken = null;
+                var retVal = this.m_manifest.CreatePackage();
                 retVal.Meta.Hash = SHA256.Create().ComputeHash(retVal.Manifest);
                 return retVal;
 
@@ -107,16 +123,7 @@ namespace SanteDB.PakMan
         /// </summary>
         public IEnumerable<AppletAsset> ProcessDirectory(string source, String path)
         {
-            List<AppletAsset> retVal = new List<AppletAsset>();
-            foreach (var itm in Directory.GetFiles(source))
-            {
-                if (Path.GetFileName(itm).StartsWith("."))
-                {
-                    Console.WriteLine("\t Skipping {0}...", itm);
-                    continue;
-                }
-                retVal.Add(this.ProcessFile(itm, path));
-            }
+            List<AppletAsset> retVal = Directory.EnumerateFiles(source).AsParallel().Select(itm => this.ProcessFile(itm, path)).OfType<AppletAsset>().ToList();
 
             // Process sub directories
             foreach (var dir in Directory.GetDirectories(source))
@@ -141,15 +148,36 @@ namespace SanteDB.PakMan
         /// <returns></returns>
         private AppletAsset ProcessFile(string itm, String basePath)
         {
+            var targetName = PakManTool.TranslatePath(itm.Replace(basePath, ""));
             if (Path.GetFileName(itm).ToLower() == "manifest.xml")
             {
                 return null;
             }
+            else if (!this.m_ignoreFileRegex.IsMatch(targetName))
+            {
+                var asset = PakManTool.GetPacker(itm).Process(itm, this.m_optimize, this.m_manifest);
+
+                if(asset.IsContentEmpty())
+                {
+                    Console.WriteLine("WARN: Asset {0} resulted in 0 bytes of data - ignoring", itm);
+                    return null;
+                }
+
+                if (!String.IsNullOrEmpty(asset.Name) && asset.Name != targetName)
+                {
+                    asset.Name = PakManTool.TranslatePath(asset.Name.Replace(basePath, "")); ;
+                }
+                else
+                {
+                    asset.Name = targetName;
+                }
+
+                return asset;
+            }
             else
             {
-                var asset = PakManTool.GetPacker(itm).Process(itm, this.m_optimize);
-                asset.Name = PakManTool.TranslatePath((asset.Name ?? itm).Replace(basePath, ""));
-                return asset;
+                Console.WriteLine("Ignoring {0}", targetName);
+                return null;
             }
 
         }

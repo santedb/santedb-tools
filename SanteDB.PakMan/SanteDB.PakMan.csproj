@@ -139,6 +139,10 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\santedb-api\SanteDB.Core.Api\SanteDB.Core.Api.csproj">
+      <Project>{3a45f695-47a2-464c-ace6-bdabbfa39fbc}</Project>
+      <Name>SanteDB.Core.Api</Name>
+    </ProjectReference>
     <ProjectReference Include="..\SanteDB.PakMan.Common\SanteDB.PakMan.Common.csproj">
       <Project>{9e67324a-2f6a-4a8c-bcdd-479b68da286f}</Project>
       <Name>SanteDB.PakMan.Common</Name>

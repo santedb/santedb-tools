@@ -41,7 +41,7 @@ namespace SanteDB.PakMan.Packers
         /// <summary>
         /// Process the specified file
         /// </summary>
-        public AppletAsset Process(string file, bool optimize)
+        public AppletAsset Process(string file, bool optimize, AppletManifest manifest)
         {
             try
             {
@@ -173,12 +173,30 @@ namespace SanteDB.PakMan.Packers
             }
             catch (XmlException e)
             {
-                throw new XmlException($"{file} is not well formed @ {e.LineNumber}:{e.LinePosition}", e);
+                if ("true".Equals(manifest.GetSetting(PakmanConstants.AllowMalformedHtml), StringComparison.InvariantCultureIgnoreCase))
+                {
+                    var content = System.IO.File.ReadAllText(file);
+                    if("true".Equals(manifest.GetSetting(PakmanConstants.InjectCspIntoHtml), StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        content = content.Replace("<script", "<script nonce=\"{{ $csp_nonce }}\"");
+                    }
+
+                    return new AppletAsset()
+                    {
+                        MimeType = "text/html",
+                        Content = new AppletAssetCdata(content)
+                    };
+                }
+                throw new InvalidOperationException($"HTML {file} must be well formed XHTML - {e.ToHumanReadableString()}", e);
+
             }
             catch (Exception e)
             {
                 throw new InvalidOperationException($"Cannot process HTML {file} - {e.ToHumanReadableString()}", e);
             }
         }
+
+        /// <inhertidoc/>
+        public string GetMimeType(string file) => "text/html";
     }
 }

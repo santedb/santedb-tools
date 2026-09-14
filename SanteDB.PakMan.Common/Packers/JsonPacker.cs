@@ -31,10 +31,13 @@ namespace SanteDB.PakMan.Packers
         /// </summary>
         public string[] Extensions => new String[] { ".json" };
 
+        /// <inheritdoc/>
+        public string GetMimeType(String file) => "application/json";
+
         /// <summary>
         /// Process the file
         /// </summary>
-        public AppletAsset Process(string file, bool optimize)
+        public AppletAsset Process(string file, bool optimize, AppletManifest manifest)
         {
             try
             {
@@ -43,7 +46,7 @@ namespace SanteDB.PakMan.Packers
                 return new AppletAsset()
                 {
                     MimeType = "application/json",
-                    Content = PakManTool.CompressContent(content)
+                    Content = content
                 };
 
             }

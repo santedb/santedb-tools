@@ -33,9 +33,14 @@ namespace SanteDB.PakMan.Packers
         public string[] Extensions => new String[] { ".js" };
 
         /// <summary>
+        /// Get the file javascript
+        /// </summary>
+        public string GetMimeType(String file) => "text/javascript";
+
+        /// <summary>
         /// Process the file
         /// </summary>
-        public AppletAsset Process(string file, bool optimize)
+        public AppletAsset Process(string file, bool optimize, AppletManifest manifest)
         {
             try
             {
@@ -45,7 +50,14 @@ namespace SanteDB.PakMan.Packers
                     var minifier = new Ext.Net.Utilities.JSMin();
                     // HACK : JSMIN Hates /// Reference 
                     content = new Regex(@"\/\/\/\s?\<Reference.*", RegexOptions.IgnoreCase).Replace(content, "");
-                    content = minifier.Minify(content);
+                    try
+                    {
+                        content = minifier.Minify(content);
+                    }
+                    catch
+                    {
+                        Console.Write("WARN: Could not minify {0} - full content included", file);
+                    }
                 }
                 return new AppletAsset()
                 {
