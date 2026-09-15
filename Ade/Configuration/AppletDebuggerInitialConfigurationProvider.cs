@@ -284,16 +284,14 @@ namespace SanteDB.SDK.AppletDebugger.Configuration
             {
                 AuditFilters = new List<AuditFilterConfiguration>()
                 {
-                    // Do not audit successful access controls and security alerts
-                    new AuditFilterConfiguration(ActionType.Execute, EventIdentifierType.SecurityAlert | EventIdentifierType.NetworkActivity, OutcomeIndicator.Success, false, false),
                     // Audit any failure - No matter which event
-                    new AuditFilterConfiguration(null, null, OutcomeIndicator.EpicFail | OutcomeIndicator.MinorFail | OutcomeIndicator.SeriousFail, true, true),
+                    new AuditFilterConfiguration(null, null, OutcomeIndicator.EpicFail | OutcomeIndicator.MinorFail | OutcomeIndicator.SeriousFail, null, true, true),
                     // Audit anything that creates, reads, or updates data
-                    new AuditFilterConfiguration(ActionType.Create | ActionType.Update | ActionType.Delete, null, null, true, true) { Sensitivity = Core.Model.Attributes.ResourceSensitivityClassification.Administrative | Core.Model.Attributes.ResourceSensitivityClassification.Metadata },
-                    new AuditFilterConfiguration(ActionType.Execute | ActionType.Read, EventIdentifierType.Query, OutcomeIndicator.Success, false, false) { Sensitivity = Core.Model.Attributes.ResourceSensitivityClassification.Administrative | Core.Model.Attributes.ResourceSensitivityClassification.Metadata },
-                    new AuditFilterConfiguration(ActionType.Create | ActionType.Read | ActionType.Update | ActionType.Delete | ActionType.Execute, null, null, true, true) { Sensitivity = Core.Model.Attributes.ResourceSensitivityClassification.PersonalHealthInformation },
+                    new AuditFilterConfiguration(ActionType.Execute | ActionType.Read, null, null, Core.Model.Attributes.ResourceSensitivityClassification.PersonalHealthInformation, true, true) { },
+                    new AuditFilterConfiguration(ActionType.Create | ActionType.Update | ActionType.Delete, null, null, null, true, false) {  },
                     // Audit any break the glass execution
-                    new AuditFilterConfiguration(ActionType.Execute, EventIdentifierType.EmergencyOverrideStarted | EventIdentifierType.SecurityAlert, null, true, true)
+                    new AuditFilterConfiguration(ActionType.Execute, EventIdentifierType.EmergencyOverrideStarted, null, null, true, true),
+                    new AuditFilterConfiguration(ActionType.Execute, EventIdentifierType.SecurityAlert, OutcomeIndicator.Success, Core.Model.Attributes.ResourceSensitivityClassification.Administrative, false, false)
                 }
             });
             configuration.Sections.Add(new SynchronizationConfigurationSection()
