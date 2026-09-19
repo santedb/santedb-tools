@@ -1,7 +1,6 @@
 ﻿/*
- * Copyright (C) 2021 - 2026, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
- * Copyright (C) 2019 - 2021, Fyfe Software Inc. and the SanteSuite Contributors
- * Portions Copyright (C) 2015-2018 Mohawk College of Applied Arts and Technology
+ * Copyright 2015-2018 Mohawk College of Applied Arts and Technology
+ *
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you 
  * may not use this file except in compliance with the License. You may 
@@ -16,33 +15,32 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2023-6-21
+ * Date: 2017-9-1
  */
-using SanteDB.Core.Applets.Model;
-using System;
-
-namespace SanteDB.PakMan.Packers
+namespace SanteDB.LogViewer
 {
     /// <summary>
-    /// File packager
+    /// Data inspector
     /// </summary>
-    public interface IFilePacker
+    public abstract class DataInspectorBase
     {
 
         /// <summary>
-        /// Extensions
+        /// Get the name of the inspector
         /// </summary>
-        string[] Extensions { get; }
+        public abstract string Name { get; }
 
         /// <summary>
-        /// Processes the specified file into the applet format
+        /// Inspect
         /// </summary>
-        AppletAsset Process(String file, bool optimize, AppletManifest manifest);
+        public abstract string Inspect(string source);
 
         /// <summary>
-        /// Get the mime type of the asset based on file type
+        /// Represent as string
         /// </summary>
-        string GetMimeType(String file);
-
+        public override string ToString()
+        {
+            return this.Name;
+        }
     }
 }

@@ -24,6 +24,7 @@ using SanteDB.Core.Applets.Model;
 using System;
 using System.IO;
 using System.Linq;
+using System.Xml.Linq;
 
 namespace SanteDB.PakMan.Packers
 {
@@ -35,8 +36,14 @@ namespace SanteDB.PakMan.Packers
         /// <inheritdoc/>
         public string[] Extensions => new string[] { ".cdss" };
 
+        /// <summary>
+        /// Get the mime type
+        /// </summary>
+        public string GetMimeType(string file) =>
+            Path.GetExtension(file).Equals(".cdss") ? "text/plain" : "application/xml";
+
         /// <inheritdoc/>
-        public AppletAsset Process(string file, bool optimize)
+        public AppletAsset Process(string file, bool optimize, AppletManifest manifest)
         {
             try
             {
@@ -46,10 +53,12 @@ namespace SanteDB.PakMan.Packers
                     using (var ms = new MemoryStream())
                     {
                         tps.Save(ms);
+                        ms.Seek(0, SeekOrigin.Begin);
+                        var xe = XDocument.Load(ms);
                         return new AppletAsset()
                         {
                             Name = Path.ChangeExtension(file, "xml"),
-                            Content = PakManTool.CompressContent(ms.ToArray()),
+                            Content = xe.Root,
                             MimeType = "application/xml"
                         };
                     }

@@ -38,7 +38,7 @@ namespace SanteDB.PakMan.Packers
         /// <summary>
         /// Process this package
         /// </summary>
-        public AppletAsset Process(string file, bool optimize)
+        public AppletAsset Process(string file, bool optimize, AppletManifest manifest)
         {
             try
             {
@@ -49,7 +49,7 @@ namespace SanteDB.PakMan.Packers
                     return new AppletAsset()
                     {
                         MimeType = "text/css",
-                        Content = PakManTool.CompressContent(content)
+                        Content = content
                     };
                 }
                 else
@@ -57,7 +57,7 @@ namespace SanteDB.PakMan.Packers
                     return new AppletAsset()
                     {
                         MimeType = "text/css",
-                        Content = PakManTool.CompressContent(File.ReadAllText(file))
+                        Content = File.ReadAllText(file)
                     };
                 }
             }
@@ -96,6 +96,9 @@ namespace SanteDB.PakMan.Packers
             return body;
 
         }
+
+        /// <inhertidoc/>
+        public string GetMimeType(string file) => "text/css";
 
         static readonly Regex s_ElementSelectorsOnIdentified = new Regex(@"[a-zA-Z]+#", RegexOptions.Compiled, TimeSpan.FromMilliseconds(250));
         static readonly Regex s_SpaceDelimitedNewlineTrivia = new Regex(@"[\n\r]+\s*", RegexOptions.Compiled, TimeSpan.FromMilliseconds(250));

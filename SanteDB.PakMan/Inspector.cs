@@ -200,6 +200,10 @@ namespace SanteDB.PakMan
                             typeName = "HTML";
                             szContent = Encoding.UTF8.GetByteCount(h.Html.ToString());
                             break;
+                        case AppletAssetCdata cd:
+                            typeName = "CDATA";
+                            szContent = cd.Value.Length;
+                            break;
                         case byte[] b:
                             typeName = "BINARY";
                             szContent = b.Length;
