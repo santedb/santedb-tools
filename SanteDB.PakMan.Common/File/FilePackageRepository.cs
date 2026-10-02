@@ -94,7 +94,8 @@ namespace SanteDB.PakMan.Repository.File
             {
                 return this.OpenPackage(match.Key);
             }
-            else if (!exactVersion) // fuzzy look
+            else if (!exactVersion ||
+                version.Build == -1) // fuzzy look
             {
                 match = candidates.OrderByDescending(o => o.Value.Version)
                         .FirstOrDefault(o =>
@@ -155,6 +156,7 @@ namespace SanteDB.PakMan.Repository.File
                 matches = this.m_packageInfos
                     .Select(o => o.Value)
                     .Where(o => queryPredicate(o))
+                    .OrderByDescending(o=>o.Version)
                     .ToArray();
             }
 

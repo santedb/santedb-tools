@@ -137,7 +137,18 @@ namespace SanteDB.PakMan.Repository
 
             try
             {
-                return s_localCache.GetRepository().Get(packageId, packageVersion, true);
+
+                var localCache = s_localCache.GetRepository().Get(packageId, packageVersion, true);
+                if(packageVersion == null ||
+                    packageVersion.Build == -1) // Maybe there's a new version?
+                {
+                    var latestVersion = s_configuration.Repository.SelectMany(o => o.GetRepository().Find(p => p.Id == packageId, 0, 1, out _)).OrderByDescending(o => o.Version).FirstOrDefault();
+                    if(latestVersion.GetVersion() > localCache.Meta.GetVersion())
+                    {
+                        return GetFromAny(packageId, latestVersion.GetVersion());
+                    }
+                }
+                return localCache;
             }
             catch
             {
@@ -145,13 +156,13 @@ namespace SanteDB.PakMan.Repository
                 {
                     try
                     {
-                        retVal = rep.GetRepository().Get(packageId, packageVersion);
+                        retVal = rep.GetRepository().Get(packageId, packageVersion, true);
                         if (retVal == null)
                         {
                             continue;
                         }
 
-                        if (packageVersion == null || retVal.Version == packageVersion.ToString())
+                        if (packageVersion == null || retVal.Meta.Version == packageVersion.ToString())
                         {
                             if (!LocalCachePath.Equals(rep.Path))
                             {
@@ -163,7 +174,7 @@ namespace SanteDB.PakMan.Repository
                     }
                     catch
                     {
-
+                        throw;
                     }
                 }
             }

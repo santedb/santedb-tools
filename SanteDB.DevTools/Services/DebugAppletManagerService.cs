@@ -924,22 +924,31 @@ namespace SanteDB.Tools.Debug.Services
                     {
                         this.m_tracer.TraceInfo("Fetching {0}...", refString);
                         var appletName = AppletName.Parse(refString);
-                        var resolvedPackage = PakMan.Repository.PackageRepositoryUtil.GetFromAny(appletName.Id, appletName.GetVersion());
-                        this.m_tracer.TraceInfo("Resolved {0} v{1}", resolvedPackage.Meta.Id, resolvedPackage.Meta.Version);
-                        if (resolvedPackage == null)
+                        // Find the latest version 
+                        try
                         {
-                            throw new KeyNotFoundException(appletName.ToString());
-                        }
-                        if (resolvedPackage is AppletSolution solution)
-                        {
-                            foreach (var inc in solution.Include)
+                            var resolvedPackage = PakMan.Repository.PackageRepositoryUtil.GetFromAny(appletName.Id, appletName.GetVersion());
+                            this.m_tracer.TraceInfo("Resolved {0} v{1}", resolvedPackage.Meta.Id, resolvedPackage.Meta.Version);
+                            if (resolvedPackage == null)
                             {
-                                this.LoadApplet(inc.Unpack());
+                                throw new KeyNotFoundException(appletName.ToString());
+                            }
+                            if (resolvedPackage is AppletSolution solution)
+                            {
+                                foreach (var inc in solution.Include)
+                                {
+                                    this.LoadApplet(inc.Unpack());
+                                }
+                            }
+                            else
+                            {
+                                this.LoadApplet(resolvedPackage.Unpack());
                             }
                         }
-                        else
+                        catch(Exception ex)
                         {
-                            this.LoadApplet(resolvedPackage.Unpack());
+                            this.m_tracer.TraceError("Error - {0}", ex);
+                            throw new Exception($"Could not locate {appletName} in any repository - does the version exist?");
                         }
                     }
                 }
