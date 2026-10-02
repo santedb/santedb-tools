@@ -213,17 +213,17 @@ namespace SanteDB.SDK.AppletDebugger.Configuration
                 },
                 TraceWriter = new System.Collections.Generic.List<TraceWriterConfiguration>() {
                     new TraceWriterConfiguration () {
-                        Filter = System.Diagnostics.Tracing.EventLevel.Warning,
+                        Filter = System.Diagnostics.Tracing.EventLevel.Informational,
                         InitializationData = "santedb",
                         TraceWriter = typeof(DebugDiagnosticsTraceWriter)
                     },
                     new TraceWriterConfiguration() {
-                        Filter = System.Diagnostics.Tracing.EventLevel.Warning,
+                        Filter = System.Diagnostics.Tracing.EventLevel.Informational,
                         InitializationData = Path.Combine(logDirectory, "santedb.log"),
                         TraceWriter = typeof(RolloverTextWriterTraceWriter)
                     },
                     new TraceWriterConfiguration() {
-                        Filter = System.Diagnostics.Tracing.EventLevel.Error,
+                        Filter = System.Diagnostics.Tracing.EventLevel.Informational,
                         InitializationData = "santedb",
                         TraceWriter = typeof(ConsoleTraceWriter)
                     }
