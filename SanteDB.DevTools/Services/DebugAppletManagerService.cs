@@ -43,6 +43,7 @@ using System.IO;
 using System.IO.Packaging;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Text;
 using System.Threading;
 using System.Xml;
 using System.Xml.Linq;
@@ -471,6 +472,25 @@ namespace SanteDB.Tools.Debug.Services
             var manifestSource = navigateAsset.Manifest.GetSetting(APPLET_SOURCE);
             if (String.IsNullOrEmpty(manifestSource))
             {
+                if (navigateAsset.FullPath.Equals("/org.santedb.core/js/santedb.js") || navigateAsset.FullPath.Equals("/org.santedb.core/js/santedb.min.js"))
+                {
+                    var script = String.Empty;
+                    switch(navigateAsset.Content) {
+                        case byte[] b:
+                            script = Encoding.UTF8.GetString(b);
+                            break;
+                        case string st:
+                            script = st;
+                            break;
+                        case AppletAssetCdata cd:
+                            script = cd.Value;
+                            break;
+                        default:
+                            throw new InvalidOperationException("Invalid Santedb.js asset");
+                    }
+                    script += this.m_hostBridgeProvider?.GetBridgeScript();
+                    return script;
+                }
                 return navigateAsset.Content;
             }
 
@@ -864,6 +884,7 @@ namespace SanteDB.Tools.Debug.Services
                         }
                         else if (!this.Applets.Any(a => a.Info.Id == dep.Id))
                         {
+                            this.m_tracer.TraceInfo("Adding external reference {0}:{1}", dep.Id, dep.Version ?? "*");   
                             this.m_configuration.AppletReferences.Add($"{dep.Id}:{dep.Version ?? "*"}");
                         }
                     }
@@ -901,22 +922,33 @@ namespace SanteDB.Tools.Debug.Services
                     }
                     else // Pakman reference
                     {
+                        this.m_tracer.TraceInfo("Fetching {0}...", refString);
                         var appletName = AppletName.Parse(refString);
-                        var resolvedPackage = PakMan.Repository.PackageRepositoryUtil.GetFromAny(appletName.Id, appletName.GetVersion());
-                        if (resolvedPackage == null)
+                        // Find the latest version 
+                        try
                         {
-                            throw new KeyNotFoundException(appletName.ToString());
-                        }
-                        if (resolvedPackage is AppletSolution solution)
-                        {
-                            foreach (var inc in solution.Include)
+                            var resolvedPackage = PakMan.Repository.PackageRepositoryUtil.GetFromAny(appletName.Id, appletName.GetVersion());
+                            this.m_tracer.TraceInfo("Resolved {0} v{1}", resolvedPackage.Meta.Id, resolvedPackage.Meta.Version);
+                            if (resolvedPackage == null)
                             {
-                                this.LoadApplet(inc.Unpack());
+                                throw new KeyNotFoundException(appletName.ToString());
+                            }
+                            if (resolvedPackage is AppletSolution solution)
+                            {
+                                foreach (var inc in solution.Include)
+                                {
+                                    this.LoadApplet(inc.Unpack());
+                                }
+                            }
+                            else
+                            {
+                                this.LoadApplet(resolvedPackage.Unpack());
                             }
                         }
-                        else
+                        catch(Exception ex)
                         {
-                            this.LoadApplet(resolvedPackage.Unpack());
+                            this.m_tracer.TraceError("Error - {0}", ex);
+                            throw new Exception($"Could not locate {appletName} in any repository - does the version exist?");
                         }
                     }
                 }
