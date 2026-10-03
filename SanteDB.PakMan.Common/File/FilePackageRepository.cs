@@ -225,20 +225,20 @@ namespace SanteDB.PakMan.Repository.File
             }
 
             this.m_basePath = basePath;
-            this.m_packageInfos = new Dictionary<String, AppletInfo>();
-            foreach (var f in Directory.GetFiles(this.GetRepositoryPath(), "*.pak"))
-            {
-                try
+            lock (this.m_lockObject) {
+                this.m_packageInfos =
+                Directory.EnumerateFiles(this.GetRepositoryPath(), "*.pak").AsParallel().Select(file =>
                 {
-                    lock (this.m_lockObject)
+                    try
                     {
-                        this.m_packageInfos.Add(f, this.OpenPackage(f).Meta);
+                        return new { file = file, meta = this.OpenPackage(file).Meta };
                     }
-                }
-                catch (System.Exception e)
-                {
-                    this.m_traceSource.TraceEvent(TraceEventType.Error, e.HResult, "Error loading {0} - {1}", f, e);
-                }
+                    catch(Exception e)
+                    {
+                        this.m_traceSource.TraceEvent(TraceEventType.Error, e.HResult, "Error loading {0} - {1}", file, e);
+                        return null;
+                    }
+                }).Where(r=>r != null).ToDictionary(o => o.file, o => o.meta);
             }
         }
     }
