@@ -18,6 +18,7 @@
  * User: fyfej
  * Date: 2023-6-21
  */
+using DocumentFormat.OpenXml.Office.Y2022.FeaturePropertyBag;
 using SanteDB.Core.Applets.Model;
 using System;
 using System.Collections.Generic;
@@ -139,6 +140,59 @@ namespace SanteDB.PakMan
         }
 
         /// <summary>
+        /// Extract the pak file contents
+        /// </summary>
+        internal int Extract(string target)
+        {
+            if (!Directory.Exists(target))
+            {
+                Directory.CreateDirectory(target);
+            }
+
+            foreach (var itm in this.m_applet.Unpack().Assets)
+            {
+                var targetFile = Path.Combine(target, itm.Name.Replace("/", "\\"));
+                var targetDir = Path.GetDirectoryName(targetFile);
+                if(!Directory.Exists(targetDir))
+                {
+                    Directory.CreateDirectory(targetDir);
+                }
+
+                switch (itm.Content)
+                {
+                    case byte[] b:
+                        {
+                            File.WriteAllBytes(targetFile, b);
+                            break;
+                        }
+                    case string s:
+                        {
+                            File.WriteAllText(targetFile, s);
+                            break;
+                        }
+                    case XElement xe:
+                        {
+                            xe.Save(targetFile);
+                            break;
+                        }
+                    case AppletAssetCdata cd:
+                        {
+                            File.WriteAllText(targetFile, cd.Value);
+                            break;
+                        }
+                    case AppletAssetHtml ht:
+                        {
+                            ht.Html.Save(targetFile);
+                            break;
+                        }
+                    default:
+                        throw new InvalidOperationException(String.Format("Cannot determine how to extract {0}", itm.Name));
+                }
+            }
+            return 0;
+        }
+
+        /// <summary>
         /// Dump the inforation for the package
         /// </summary>
         internal int Dump()
@@ -181,7 +235,7 @@ namespace SanteDB.PakMan
                 Console.WriteLine("VIEW MODELS: {0}", String.Join(" , ", mfst.ViewModel.Select(o => $"{o.ViewModelId} = {o.Definition}")));
                 Console.WriteLine("LOCALES: {0}", String.Join(" , ", mfst.Locales.Select(o => o.Code)));
                 Console.WriteLine("I18N STRINGS: {0}", String.Join(" , ", mfst.Strings.Select(o => $"{o.Language} ({o.String.Count()} strings - Refer: {o.Reference})")));
-                Console.WriteLine("CONFIGURATION SUPPLEMENTS: {0}", String.Join(" , ", mfst.ConfigurationSupplements.Select(o=>o.Description)));
+                Console.WriteLine("CONFIGURATION SUPPLEMENTS: {0}", String.Join(" , ", mfst.ConfigurationSupplements.Select(o => o.Description)));
                 Console.WriteLine("-- CONTENTS --");
                 var contents = mfst.Assets.Select(itm =>
                 {

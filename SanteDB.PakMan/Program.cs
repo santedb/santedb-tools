@@ -56,6 +56,10 @@ namespace SanteDB.PakMan
                 // Load the file and dump the contents
                 return new Inspector(parameters).Dump();
             }
+            else if(parameters.Extract)
+            {
+                return new Inspector(parameters).Extract(parameters.Output);
+            }
             else if (parameters.Compose)
             {
                 var retVal = new Composer(parameters).Compose();
@@ -74,7 +78,7 @@ namespace SanteDB.PakMan
             {
                 return new Signer(parameters).Sign();
             }
-            else if(!String.IsNullOrEmpty(parameters.Get))
+            else if (!String.IsNullOrEmpty(parameters.Get))
             {
                 return new Manager(parameters).Get();
             }

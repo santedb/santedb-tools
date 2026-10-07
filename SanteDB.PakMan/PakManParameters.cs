@@ -23,6 +23,7 @@ using System;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Windows.Forms;
 
@@ -101,7 +102,15 @@ namespace SanteDB.PakMan
         /// </summary>
         [Parameter("compile")]
         [Description("Initiates a compilation of the specified applet source directories")]
-        public bool Compile { get; internal set; }
+        public bool Compile { get; set; }
+
+
+        /// <summary>
+        /// Extract
+        /// </summary>
+        [Parameter("extract")]
+        [Description("Extract the contents of the PAK file")]
+        public bool Extract { get; set; }
 
         /// <summary>
         /// Get a package from any source
@@ -115,7 +124,7 @@ namespace SanteDB.PakMan
         /// </summary>
         [Parameter("sign")]
         [Description("Signs an already existing applet pak file")]
-        public bool Sign { get; internal set; }
+        public bool Sign { get; set; }
 
         [Parameter("certHash")]
         [Description("The thumprint of the key to use for signing (in your user's personal store)")]
