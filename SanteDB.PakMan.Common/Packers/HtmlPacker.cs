@@ -132,7 +132,7 @@ namespace SanteDB.PakMan.Packers
                 }));
                 htmlAsset.Style = new List<string>(xe.Descendants().OfType<XElement>().Where(o => o.Name == (XNamespace)PakManTool.XS_APPLET + "style").Select(o => PakManTool.TranslatePath(o.Value)));
 
-                var demand = viewElement?.Elements().OfType<XElement>().Where(o => o.Name == (XNamespace)PakManTool.XS_APPLET + "demand").Select(o => o.Value).ToList();
+                var demand = viewElement?.Elements().Where(o => o.Name == (XNamespace)PakManTool.XS_APPLET + "demand").Select(o => o.Value).ToList();
 
                 var includes = xe.DescendantNodes().OfType<XComment>().Where(o => o?.Value?.Trim().StartsWith("#include virtual=\"") == true).ToList();
                 foreach (var inc in includes)
