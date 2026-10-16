@@ -76,7 +76,7 @@ namespace SanteDB.PakMan.Packers
                             Policies = o.Elements().Where(d => d.Name == (XNamespace)PakManTool.XS_APPLET + "demand")?.Select(d => d?.Value).ToList(),
                             Guard = o.Elements().Where(d => d.Name == (XNamespace)PakManTool.XS_APPLET + "guard").Select(d => d.Value).ToList()
                         }).ToList(),
-                        Badges = viewElement.Element((XNamespace)PakManTool.XS_APPLET + "badges")?.Elements().Where(o=>o.Name == (XNamespace)PakManTool.XS_APPLET + "badge").Select(o=> new AppletBadge()
+                        Badges = viewElement.Element((XNamespace)PakManTool.XS_APPLET + "badges")?.Elements().Where(o => o.Name == (XNamespace)PakManTool.XS_APPLET + "badge").Select(o => new AppletBadge()
                         {
                             BadgeClass = o.Attribute("badge")?.Value,
                             IconClass = o.Attribute("icon")?.Value,
@@ -132,7 +132,7 @@ namespace SanteDB.PakMan.Packers
                 }));
                 htmlAsset.Style = new List<string>(xe.Descendants().OfType<XElement>().Where(o => o.Name == (XNamespace)PakManTool.XS_APPLET + "style").Select(o => PakManTool.TranslatePath(o.Value)));
 
-                var demand = viewElement?.Elements().Where(o => o.Name == (XNamespace)PakManTool.XS_APPLET + "demand").Select(o => o.Value).ToList();
+                var demand = (xe.Element((XNamespace)PakManTool.XS_APPLET + "state") ?? xe.Element((XNamespace)PakManTool.XS_APPLET + "widget"))?.Elements().Where(o => o.Name == (XNamespace)PakManTool.XS_APPLET + "demand").Select(o => o.Value).ToList();
 
                 var includes = xe.DescendantNodes().OfType<XComment>().Where(o => o?.Value?.Trim().StartsWith("#include virtual=\"") == true).ToList();
                 foreach (var inc in includes)
@@ -176,7 +176,7 @@ namespace SanteDB.PakMan.Packers
                 if ("true".Equals(manifest.GetSetting(PakmanConstants.AllowMalformedHtml), StringComparison.InvariantCultureIgnoreCase))
                 {
                     var content = System.IO.File.ReadAllText(file);
-                    if("true".Equals(manifest.GetSetting(PakmanConstants.InjectCspIntoHtml), StringComparison.InvariantCultureIgnoreCase))
+                    if ("true".Equals(manifest.GetSetting(PakmanConstants.InjectCspIntoHtml), StringComparison.InvariantCultureIgnoreCase))
                     {
                         content = content.Replace("<script", "<script nonce=\"{{ $csp_nonce }}\"");
                     }

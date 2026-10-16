@@ -578,7 +578,7 @@ namespace SanteDB.Tools.Debug.Services
                     }));
                     htmlAsset.Style = new List<string>(xe.Descendants().OfType<XElement>().Where(o => o.Name == xs_santedb + "style").Select(o => this.CorrectAppletName(o.Value)));
 
-                    navigateAsset.Policies  = xe.Elements().Where(o => o.Name == xs_santedb + "demand").Select(o => o.Value).ToList();
+                    navigateAsset.Policies  = (xe.Element(xs_santedb + "state") ?? xe.Element(xs_santedb + "widget"))?.Elements().Where(o => o.Name == xs_santedb + "demand").Select(o => o.Value).ToList();
                     var includes = xe.DescendantNodes().OfType<XComment>().Where(o => o?.Value?.Trim().StartsWith("#include virtual=\"") == true).ToList();
                     foreach (var inc in includes)
                     {
