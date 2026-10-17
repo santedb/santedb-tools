@@ -185,6 +185,10 @@ namespace SanteDB.PakMan
                             ht.Html.Save(targetFile);
                             break;
                         }
+                    case AppletAssetVirtual v:
+                        {
+                            break;
+                        }
                     default:
                         throw new InvalidOperationException(String.Format("Cannot determine how to extract {0}", itm.Name));
                 }
