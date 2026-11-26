@@ -18,6 +18,9 @@
  * User: fyfej
  * Date: 2023-6-21
  */
+using DocumentFormat.OpenXml.EMMA;
+using DocumentFormat.OpenXml.Office2010.PowerPoint;
+using DocumentFormat.OpenXml.Office2013.Excel;
 using MohawkCollege.Util.Console.Parameters;
 using SanteDB.AdminConsole.Attributes;
 using SanteDB.AdminConsole.Util;
@@ -27,8 +30,10 @@ using SanteDB.Core.Model.AMI.Collections;
 using SanteDB.Core.Model.Constants;
 using SanteDB.Core.Model.Patch;
 using SanteDB.Core.Model.Security;
+using SanteDB.Core.Security.Tfa;
 using SanteDB.Messaging.AMI.Client;
 using System;
+using System.CodeDom;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
@@ -379,6 +384,90 @@ namespace SanteDB.AdminConsole.Shell.CmdLets
         }
 
         #endregion Change Roles
+
+        #region User MFA
+
+        internal class UserTfaParms : GenericUserParms
+        {
+
+            /// <summary>
+            /// Set the mechanism
+            /// </summary>
+            [Parameter("mechanism"), Description("The MFA mechanism to set - none, email, or sms")]
+            public string Mechanism { get; set; }
+
+            /// <summary>
+            /// Set the validation
+            /// </summary>
+            [Parameter("validate"), Description("Set the email or phone number as validated")]
+            public bool Valid { get; set; }
+
+        }
+
+        [AdminCommand("user.tfa", "Changes TFA for a user")]
+        [Description("This command will reset the TFA method for the user")]
+        internal static void ResetMfa(UserTfaParms parameters)
+        {
+
+            var mechanism = m_client.GetTwoFactorMechanisms();
+            foreach (var un in parameters.UserName)
+            {
+                var user = m_client.GetUsers(o => o.UserName == un).CollectionItem.FirstOrDefault() as SecurityUserInfo;
+                if (user == null)
+                {
+                    throw new KeyNotFoundException($"User {un} not found");
+                }
+
+                switch(parameters.Mechanism)
+                {
+                    case "email":
+                        
+                        if(String.IsNullOrEmpty(user.Entity.Email))
+                        {
+                            throw new InvalidOperationException("User doesn't have an email address");
+                        }
+                        if(parameters.Valid)
+                        {
+                            user.Entity.EmailConfirmed = true;
+                        }
+                        else if(!user.Entity.EmailConfirmed)
+                        {
+                            throw new InvalidOperationException("Email must be set to confirmed");
+                        }
+                        user.Entity.TwoFactorMechnaismKey = TfaEmailMechanism.MechanismId;
+                        user.Entity.TwoFactorEnabled = true;
+                        break;
+                    case "sms":
+                        if (String.IsNullOrEmpty(user.Entity.PhoneNumber))
+                        {
+                            throw new InvalidOperationException("User doesn't have an email address");
+                        }
+                        if (parameters.Valid)
+                        {
+                            user.Entity.PhoneNumberConfirmed = true;
+                        }
+                        else if (!user.Entity.PhoneNumberConfirmed)
+                        {
+                            throw new InvalidOperationException("Phone must be set to confirmed");
+                        }
+                        user.Entity.TwoFactorMechnaismKey = Guid.Parse("08124835-6C24-43C9-8650-9D605F6B5BD6");
+                        user.Entity.TwoFactorEnabled = true;
+                        break;
+                    case "none":
+                        user.Entity.TwoFactorMechnaismKey = null;
+                        user.Entity.TwoFactorEnabled = false;
+                        break;
+                    default:
+                        Console.WriteLine("{0} - {1} / {2}", user.Entity.UserName, mechanism.CollectionItem.OfType<TfaMechanismInfo>().FirstOrDefault(o => o.Id == user.Entity.TwoFactorMechnaismKey)?.Name, user.Entity.TwoFactorEnabled);
+                        continue;
+                }
+
+                m_client.UpdateUser(user.Entity.Key.Value, user);
+
+            }
+        }
+
+        #endregion
 
         /// <summary>
         /// Gets or sets the password
